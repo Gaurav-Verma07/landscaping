@@ -1,9 +1,7 @@
 export type MockNavContext = {
-  source?: "clients" | "projects" | "storm" | "invoices" | "estimates"
-  clientId?: string
-  projectId?: string
-  dealId?: string
-  invoiceId?: string
+  source?: "customers" | "communications"
+  customerId?: string
+  communicationId?: string
 }
 
 const KEY = "landscaping.mockctx.v1"

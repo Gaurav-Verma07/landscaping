@@ -14,6 +14,7 @@ import {
   Plus,
   Trash2,
   Upload,
+  FolderKanban,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,8 @@ import {
 } from "@/components/ui/field"
 import { useCommunicationStore } from "@/lib/communication-store"
 import { useCustomerStore } from "@/lib/customer-store"
+import { useProjectStore } from "@/lib/project-store"
+import { PROJECT_STATUS_LABELS } from "@/lib/project-types"
 import {
   CUSTOMER_STATUS_LABELS,
   LEAD_SOURCE_LABELS,
@@ -44,8 +47,10 @@ export default function CustomerDetailPage() {
     removeAttachment,
   } = useCustomerStore()
   const { getCommunicationsByContactId } = useCommunicationStore()
+  const { getProjectsByCustomerId } = useProjectStore()
   const customer = getCustomer(id)
   const customerComms = customer ? getCommunicationsByContactId(customer.id) : []
+  const customerProjects = customer ? getProjectsByCustomerId(customer.id) : []
   const [mergeOpen, setMergeOpen] = useState(false)
   const [newNote, setNewNote] = useState("")
   const [timelineTitle, setTimelineTitle] = useState("")
@@ -266,6 +271,34 @@ export default function CustomerDetailPage() {
                 ))}
               </ul>
             )}
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4 flex items-center gap-2">
+              <FolderKanban className="size-4" />
+              Projects
+              {customerProjects.length > 0 ? ` (${customerProjects.length})` : ""}
+            </h2>
+            {customerProjects.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No projects for this customer.</p>
+            ) : (
+              <ul className="space-y-2">
+                {customerProjects.map((proj) => (
+                  <li key={proj.id}>
+                    <Link
+                      href={`/dashboard/projects/${proj.id}`}
+                      className="flex items-center justify-between rounded-md border border-border p-3 text-sm hover:bg-muted/50"
+                    >
+                      <span className="font-medium">{proj.name}</span>
+                      <span className="text-xs text-muted-foreground">{PROJECT_STATUS_LABELS[proj.status]}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Button variant="outline" size="sm" className="mt-2" asChild>
+              <Link href={`/dashboard/projects?new=1&customerId=${id}`}>New project</Link>
+            </Button>
           </section>
 
           <section>

@@ -7,14 +7,11 @@ import {
   Bell,
   ChevronsUpDown,
   CreditCard,
-  DollarSign,
-  Hammer,
   LogOut,
   Moon,
   Plug,
   Settings2,
   Sun,
-  UserCog,
 } from "lucide-react"
 
 import {
@@ -151,24 +148,6 @@ export function NavUser({
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-muted-foreground text-xs">Management</DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/management/staff">
-                    <UserCog />
-                    Staff & Roles
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/management/subcontractors">
-                    <Hammer />
-                    Subcontractors
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/management/pricing">
-                    <DollarSign />
-                    Pricing Backend
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/management/integrations">
                     <Plug />

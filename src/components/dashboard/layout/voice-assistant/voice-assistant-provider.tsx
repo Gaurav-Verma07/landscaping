@@ -57,7 +57,7 @@ export function VoiceAssistantProvider({ children }: { children: React.ReactNode
       }
       const r = findRoute(t)
       if (!r) {
-        toast.error("Command not recognized", { description: `Try "Clients", "Invoices", or "Calendar".` })
+        toast.error("Command not recognized", { description: `Try "Customers", "Communications", or "Dashboard".` })
         return false
       }
       router.push(r.path)

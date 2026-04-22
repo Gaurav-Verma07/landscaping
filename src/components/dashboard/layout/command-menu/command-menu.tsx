@@ -4,14 +4,11 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 import {
-  Calculator,
-  Calendar,
   LayoutDashboard,
   Settings,
   User,
   Moon,
   Sun,
-  FileText,
   MessageSquare,
   Mail,
   PlusCircle,
@@ -69,14 +66,6 @@ export function CommandMenu({ open, setOpen }: CommandMenuProps) {
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <span>Dashboard</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/estimates/quick"))}>
-            <Calculator className="mr-2 h-4 w-4" />
-            <span>Quick Quote</span>
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/estimates/full"))}>
-            <FileText className="mr-2 h-4 w-4" />
-            <span>New Estimate</span>
-          </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Communications">
@@ -113,10 +102,6 @@ export function CommandMenu({ open, setOpen }: CommandMenuProps) {
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/customers"))}>
             <User className="mr-2 h-4 w-4" />
             <span>Customers</span>
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/schedule/calendar"))}>
-            <Calendar className="mr-2 h-4 w-4" />
-            <span>Calendar</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/management/settings"))}>
             <Settings className="mr-2 h-4 w-4" />

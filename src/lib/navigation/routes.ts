@@ -22,7 +22,6 @@ export interface RouteAlias {
  * Complete registry of all dashboard routes with voice command aliases
  */
 export const DASHBOARD_ROUTES: RouteAlias[] = [
-  // Main Dashboard
   {
     title: "Dashboard",
     path: "/dashboard",
@@ -30,14 +29,12 @@ export const DASHBOARD_ROUTES: RouteAlias[] = [
     category: "Main Navigation",
     description: "Main dashboard overview"
   },
-
-  // Clients Section
   {
-    title: "Clients",
-    path: "/dashboard/clients",
-    aliases: ["clients", "client list", "all clients", "customers"],
+    title: "Customers",
+    path: "/dashboard/customers",
+    aliases: ["customers", "customer list", "all customers", "crm"],
     category: "Main Navigation",
-    description: "Client management"
+    description: "Customer management"
   },
   {
     title: "Communications",
@@ -53,8 +50,20 @@ export const DASHBOARD_ROUTES: RouteAlias[] = [
     category: "Communications",
     description: "Create message and message templates"
   },
-
-  // Projects Section
+  {
+    title: "Outreach",
+    path: "/dashboard/outreach",
+    aliases: ["outreach", "lead generation", "leads", "linkedin"],
+    category: "Main Navigation",
+    description: "Lead generation and outreach automation"
+  },
+  {
+    title: "Appointments",
+    path: "/dashboard/appointments",
+    aliases: ["appointments", "calendar", "schedule", "booking"],
+    category: "Main Navigation",
+    description: "Appointments and calendar"
+  },
   {
     title: "Projects",
     path: "/dashboard/projects",
@@ -62,145 +71,75 @@ export const DASHBOARD_ROUTES: RouteAlias[] = [
     category: "Main Navigation",
     description: "Project management"
   },
-
-  // Schedule Section
   {
-    title: "Schedule",
-    path: "/dashboard/schedule",
-    aliases: ["schedule", "scheduling", "calendar view"],
-    category: "Main Navigation",
-    description: "Scheduling and calendar"
+    title: "Job Board",
+    path: "/dashboard/projects/job-board",
+    aliases: ["job board", "kanban", "board"],
+    category: "Projects",
+    description: "Project job board"
   },
   {
-    title: "Calendar",
-    path: "/dashboard/schedule/calendar",
-    aliases: ["calendar", "schedule calendar", "view calendar", "show calendar"],
-    category: "Schedule",
+    title: "Quotes",
+    path: "/dashboard/quotes",
+    aliases: ["quotes", "estimates", "quotations", "pricing"],
+    category: "Quotes & Invoicing",
+    description: "Quotes and estimates"
   },
   {
-    title: "Assign Crews",
-    path: "/dashboard/schedule/assign",
-    aliases: ["assign crews", "crew assignment", "assign team", "schedule crews"],
-    category: "Schedule",
+    title: "Contracts",
+    path: "/dashboard/contracts",
+    aliases: ["contracts", "agreements", "e-signature"],
+    category: "Quotes & Invoicing",
+    description: "Contracts"
   },
-  {
-    title: "Weather Alerts",
-    path: "/dashboard/schedule/weather",
-    aliases: ["weather alerts", "weather", "weather warnings", "forecast"],
-    category: "Schedule",
-  },
-
-  // Invoices Section
   {
     title: "Invoices",
     path: "/dashboard/invoices",
     aliases: ["invoices", "billing", "all invoices"],
+    category: "Quotes & Invoicing",
+    description: "Invoicing"
+  },
+  {
+    title: "Crew & Labor",
+    path: "/dashboard/crew",
+    aliases: ["crew", "labor", "team", "time tracking", "crew management"],
     category: "Main Navigation",
-    description: "Invoice management"
+    description: "Labor and crew management"
   },
   {
-    title: "Create Invoice",
-    path: "/dashboard/invoices/create",
-    aliases: ["create invoice", "new invoice", "add invoice", "make invoice"],
-    category: "Invoices",
-  },
-  {
-    title: "Materials Costs",
-    path: "/dashboard/invoices/materials",
-    aliases: ["materials costs", "material expenses", "materials"],
-    category: "Invoices",
-  },
-  {
-    title: "Labor Costs",
-    path: "/dashboard/invoices/labor",
-    aliases: ["labor costs", "labor expenses", "workforce costs"],
-    category: "Invoices",
-  },
-  {
-    title: "Invoice Status",
-    path: "/dashboard/invoices/status",
-    aliases: ["invoice status", "paid invoices", "unpaid invoices", "payment status"],
-    category: "Invoices",
-  },
-
-  // Estimates Section
-  {
-    title: "Estimates",
-    path: "/dashboard/estimates",
-    aliases: ["estimates", "quotes", "quotations", "pricing"],
+    title: "Equipment",
+    path: "/dashboard/equipment",
+    aliases: ["equipment", "trucks", "scheduling", "machinery"],
     category: "Main Navigation",
-    description: "Estimate and quote generation"
+    description: "Equipment and truck scheduling"
   },
   {
-    title: "Quick Quote",
-    path: "/dashboard/estimates/quick",
-    aliases: ["quick quote", "fast quote", "quick estimate", "simple estimate"],
-    category: "Estimates",
-  },
-  {
-    title: "Full Estimate",
-    path: "/dashboard/estimates/full",
-    aliases: ["full estimate", "detailed estimate", "complete estimate", "comprehensive quote"],
-    category: "Estimates",
-  },
-  {
-    title: "Templates",
-    path: "/dashboard/estimates/templates",
-    aliases: ["estimate templates", "quote templates", "templates"],
-    category: "Estimates",
-  },
-
-  // Storm Mode Section
-  {
-    title: "Storm Mode",
-    path: "/dashboard/storm-mode",
-    aliases: ["storm mode", "emergency mode", "storm"],
+    title: "Documents",
+    path: "/dashboard/documents",
+    aliases: ["documents", "files", "media", "vault"],
     category: "Main Navigation",
-    description: "Storm response management"
+    description: "Document and media management"
   },
   {
-    title: "Reps & Territory",
-    path: "/dashboard/storm-mode/reps",
-    aliases: ["reps", "representatives", "territory", "sales reps", "reps and territory"],
-    category: "Storm Mode",
+    title: "Design",
+    path: "/dashboard/design",
+    aliases: ["design", "landscape design", "design tool"],
+    category: "Main Navigation",
+    description: "Landscape design tool"
   },
   {
-    title: "Deals Closed",
-    path: "/dashboard/storm-mode/deals",
-    aliases: ["deals closed", "closed deals", "sales", "won deals"],
-    category: "Storm Mode",
+    title: "Marketing",
+    path: "/dashboard/marketing",
+    aliases: ["marketing", "campaigns", "marketing automation"],
+    category: "Main Navigation",
+    description: "Marketing automation"
   },
   {
-    title: "Commission Calculator",
-    path: "/dashboard/storm-mode/commission",
-    aliases: ["commission calculator", "calculate commission", "commissions"],
-    category: "Storm Mode",
-  },
-  {
-    title: "Payouts Due",
-    path: "/dashboard/storm-mode/payouts",
-    aliases: ["payouts due", "pending payouts", "payouts", "payments due"],
-    category: "Storm Mode",
-  },
-
-  // Management Section
-  {
-    title: "Staff & Roles",
-    path: "/dashboard/management/staff",
-    aliases: ["staff", "roles", "staff and roles", "employees", "team members", "user management"],
-    category: "Management",
-  },
-  {
-    title: "Subcontractors",
-    path: "/dashboard/management/subcontractors",
-    aliases: ["subcontractors", "contractors", "subs"],
-    category: "Management",
-  },
-  {
-    title: "Pricing Backend",
-    path: "/dashboard/management/pricing",
-    aliases: ["pricing backend", "pricing", "price management", "pricing settings"],
-    category: "Management",
+    title: "Admin & Audit",
+    path: "/dashboard/admin",
+    aliases: ["admin", "audit", "audit logs", "administration"],
+    category: "Main Navigation",
+    description: "Admin and audit"
   },
   {
     title: "Integrations",

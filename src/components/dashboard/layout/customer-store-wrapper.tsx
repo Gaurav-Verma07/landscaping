@@ -2,6 +2,7 @@
 
 import { CommunicationStoreProvider } from "@/lib/communication-store"
 import { CustomerStoreProvider } from "@/lib/customer-store"
+import { ProjectStoreProvider } from "@/lib/project-store"
 
 export function CustomerStoreWrapper({
   children,
@@ -10,7 +11,9 @@ export function CustomerStoreWrapper({
 }) {
   return (
     <CustomerStoreProvider>
-      <CommunicationStoreProvider>{children}</CommunicationStoreProvider>
+      <ProjectStoreProvider>
+        <CommunicationStoreProvider>{children}</CommunicationStoreProvider>
+      </ProjectStoreProvider>
     </CustomerStoreProvider>
   )
 }
