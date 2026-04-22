@@ -6,15 +6,14 @@ import { useTheme } from "next-themes"
 import {
   Calculator,
   Calendar,
-  CreditCard,
   LayoutDashboard,
   Settings,
-  Smile,
   User,
   Moon,
   Sun,
-  Laptop,
   FileText,
+  MessageSquare,
+  Mail,
   PlusCircle,
 } from "lucide-react"
 
@@ -26,8 +25,8 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command"
+import { useCommunicationStore } from "@/lib/communication-store"
 
 interface CommandMenuProps {
   open: boolean
@@ -37,6 +36,11 @@ interface CommandMenuProps {
 export function CommandMenu({ open, setOpen }: CommandMenuProps) {
   const router = useRouter()
   const { setTheme } = useTheme()
+  const { communications } = useCommunicationStore()
+  const searchComms = React.useMemo(
+    () => communications.slice(0, 25),
+    [communications]
+  )
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -75,16 +79,46 @@ export function CommandMenu({ open, setOpen }: CommandMenuProps) {
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
+        <CommandGroup heading="Communications">
+          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/communications"))}>
+            <MessageSquare className="mr-2 h-4 w-4" />
+            <span>Communications</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/communications?create=1"))}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            <span>Create message</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/communications/settings"))}>
+            <Mail className="mr-2 h-4 w-4" />
+            <span>Communication settings</span>
+          </CommandItem>
+        </CommandGroup>
+        {searchComms.length > 0 && (
+          <CommandGroup heading="Search communications">
+            {searchComms.map((c) => (
+              <CommandItem
+                key={c.id}
+                value={`${c.subject} ${c.contactName} ${c.body.slice(0, 100)} ${c.contactEmail ?? ""} ${c.contactPhone ?? ""}`}
+                onSelect={() => runCommand(() => router.push(`/dashboard/communications?open=${c.id}`))}
+              >
+                <span className="truncate">
+                  {c.channel === "email" && c.subject ? c.subject : c.channel === "sms" ? "SMS" : "Call"} · {c.contactName}
+                </span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        <CommandSeparator />
         <CommandGroup heading="Navigation">
           <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/customers"))}>
             <User className="mr-2 h-4 w-4" />
             <span>Customers</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/calendar"))}>
+          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/schedule/calendar"))}>
             <Calendar className="mr-2 h-4 w-4" />
             <span>Calendar</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/settings"))}>
+          <CommandItem onSelect={() => runCommand(() => router.push("/dashboard/management/settings"))}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </CommandItem>

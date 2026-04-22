@@ -39,6 +39,20 @@ export const DASHBOARD_ROUTES: RouteAlias[] = [
     category: "Main Navigation",
     description: "Client management"
   },
+  {
+    title: "Communications",
+    path: "/dashboard/communications",
+    aliases: ["communications", "messages", "inbox", "emails", "sms", "calls"],
+    category: "Main Navigation",
+    description: "Emails, SMS and call logs"
+  },
+  {
+    title: "Communication settings",
+    path: "/dashboard/communications/settings",
+    aliases: ["communication settings", "message templates", "create message", "communications settings"],
+    category: "Communications",
+    description: "Create message and message templates"
+  },
 
   // Projects Section
   {

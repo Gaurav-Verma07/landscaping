@@ -8,6 +8,7 @@ import {
   Pencil,
   Merge,
   MessageSquare,
+  Mail,
   FileText,
   Paperclip,
   Plus,
@@ -21,11 +22,13 @@ import {
   FieldDescription,
   FieldLabel,
 } from "@/components/ui/field"
+import { useCommunicationStore } from "@/lib/communication-store"
 import { useCustomerStore } from "@/lib/customer-store"
 import {
   CUSTOMER_STATUS_LABELS,
   LEAD_SOURCE_LABELS,
 } from "@/lib/customer-types"
+import { CHANNEL_LABELS } from "@/lib/communication-types"
 import { formatDate, formatBytes } from "@/lib/utils"
 import { MergeCustomerModal } from "@/components/dashboard/customers/merge-customer-modal"
 
@@ -40,7 +43,9 @@ export default function CustomerDetailPage() {
     addAttachment,
     removeAttachment,
   } = useCustomerStore()
+  const { getCommunicationsByContactId } = useCommunicationStore()
   const customer = getCustomer(id)
+  const customerComms = customer ? getCommunicationsByContactId(customer.id) : []
   const [mergeOpen, setMergeOpen] = useState(false)
   const [newNote, setNewNote] = useState("")
   const [timelineTitle, setTimelineTitle] = useState("")
@@ -222,6 +227,45 @@ export default function CustomerDetailPage() {
                 ))
               )}
             </ul>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4 flex items-center gap-2">
+              <Mail className="size-4" />
+              Communications
+            </h2>
+            <p className="text-sm text-muted-foreground mb-3">
+              All emails, SMS and calls with this customer (inbox and sent).
+            </p>
+            {customerComms.length === 0 ? (
+              <p className="text-sm text-muted-foreground rounded-md border border-border p-4">
+                No communications yet. Send a message from the Communications inbox or Create message.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {customerComms.map((c) => (
+                  <li
+                    key={c.id}
+                    className="flex items-start gap-3 rounded-md border border-border p-3 text-sm"
+                  >
+                    <span className="text-muted-foreground shrink-0">
+                      {c.channel === "email" ? "📧" : c.channel === "sms" ? "💬" : "📞"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">
+                        {c.channel === "email" && c.subject ? c.subject : c.channel === "call" ? "Call" : "SMS"}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {CHANNEL_LABELS[c.channel]} · {c.direction} · {formatDate(c.createdAt)}
+                      </p>
+                      {c.body ? (
+                        <p className="mt-1 text-muted-foreground line-clamp-2">{c.body}</p>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
 
           <section>

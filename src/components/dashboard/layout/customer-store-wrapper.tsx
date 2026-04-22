@@ -1,5 +1,6 @@
 "use client"
 
+import { CommunicationStoreProvider } from "@/lib/communication-store"
 import { CustomerStoreProvider } from "@/lib/customer-store"
 
 export function CustomerStoreWrapper({
@@ -7,5 +8,9 @@ export function CustomerStoreWrapper({
 }: {
   children: React.ReactNode
 }) {
-  return <CustomerStoreProvider>{children}</CustomerStoreProvider>
+  return (
+    <CustomerStoreProvider>
+      <CommunicationStoreProvider>{children}</CommunicationStoreProvider>
+    </CustomerStoreProvider>
+  )
 }

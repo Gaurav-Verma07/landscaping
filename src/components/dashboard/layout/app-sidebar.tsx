@@ -10,6 +10,7 @@ import {
   FolderKanban,
   Hammer,
   LayoutDashboard,
+  MessageSquare,
   Plug,
   Settings2,
   UserCog,
@@ -45,6 +46,15 @@ const nav = {
       title: "Customers",
       url: "/dashboard/customers",
       icon: UserCircle,
+    },
+    {
+      title: "Communications",
+      url: "/dashboard/communications",
+      icon: MessageSquare,
+      items: [
+        { title: "Inbox", url: "/dashboard/communications" },
+        { title: "Settings", url: "/dashboard/communications/settings" },
+      ],
     },
     {
       title: "Projects",
