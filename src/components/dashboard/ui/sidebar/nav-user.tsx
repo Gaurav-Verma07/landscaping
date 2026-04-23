@@ -55,8 +55,7 @@ export function NavUser({
   const user = storeUser || propUser
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
-  
-  // Fallback values
+
   const name = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User"
   const email = user?.email || ""
   const avatar = user?.user_metadata?.avatar_url || ""

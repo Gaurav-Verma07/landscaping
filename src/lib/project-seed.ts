@@ -3,7 +3,6 @@ import type { Project } from "@/lib/project-types"
 const now = new Date().toISOString()
 const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-/** Seed projects linked to customer seed ids (seed-1, seed-2, ...) */
 export const PROJECT_SEED_DATA: Project[] = [
   {
     id: "proj-seed-1",

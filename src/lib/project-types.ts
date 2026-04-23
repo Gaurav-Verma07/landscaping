@@ -1,7 +1,3 @@
-/**
- * Project module types per PRD — Module E (Project Management) & Module F (Job Board)
- */
-
 export const PROJECT_TYPES = [
   "New Construction",
   "Remodel",
@@ -22,7 +18,6 @@ export const PROJECT_TYPES = [
 
 export type ProjectType = (typeof PROJECT_TYPES)[number]
 
-/** Job board column statuses (PRD Module F) */
 export const PROJECT_STATUSES = [
   "Planned",
   "Awaiting Deposit",
@@ -38,7 +33,6 @@ export type ProjectStatus = (typeof PROJECT_STATUSES)[number]
 export const PROJECT_PRIORITIES = ["Low", "Medium", "High", "Urgent"] as const
 export type ProjectPriority = (typeof PROJECT_PRIORITIES)[number]
 
-/** Timeline milestone types (auto-created when quote accepted) */
 export const TIMELINE_MILESTONE_TYPES = [
   "deposit_payment",
   "material_ordering",
@@ -79,20 +73,17 @@ export interface Project {
   projectType: ProjectType
   status: ProjectStatus
   priority: ProjectPriority
-  /** Property details */
   propertySize: string
   estimatedLandscapeSqFt: number | null
   remainingSqFt: number | null
   estimatedPropertyValue: number | null
   terrainType: string
   accessNotes: string
-  /** Job board card fields */
   durationEstimate: string
   requiredMaterials: string[]
   equipment: string[]
   assignedCrew: string
   dependencyProjectIds: string[]
-  /** Timeline engine */
   timeline: TimelineMilestone[]
   createdAt: string
   updatedAt: string

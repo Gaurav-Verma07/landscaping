@@ -1,26 +1,11 @@
-/**
- * Navigation Routes Registry for Voice Commands
- * 
- * This module provides a centralized registry of all dashboard routes
- * with metadata for voice navigation commands.
- */
-
 export interface RouteAlias {
-  /** Display name for the route */
   title: string
-  /** Actual Next.js route path */
   path: string
-  /** Alternative names/phrases that can trigger this route */
   aliases: string[]
-  /** Category for grouping (Main Navigation, Management, etc.) */
   category: string
-  /** Optional description for better voice understanding */
   description?: string
 }
 
-/**
- * Complete registry of all dashboard routes with voice command aliases
- */
 export const DASHBOARD_ROUTES: RouteAlias[] = [
   {
     title: "Dashboard",
@@ -100,6 +85,20 @@ export const DASHBOARD_ROUTES: RouteAlias[] = [
     description: "Invoicing"
   },
   {
+    title: "Suppliers",
+    path: "/dashboard/suppliers",
+    aliases: ["suppliers", "supplier directory"],
+    category: "Quotes & Invoicing",
+    description: "Supplier directory"
+  },
+  {
+    title: "Materials",
+    path: "/dashboard/materials",
+    aliases: ["materials", "catalog", "material catalog"],
+    category: "Quotes & Invoicing",
+    description: "Material catalog"
+  },
+  {
     title: "Crew & Labor",
     path: "/dashboard/crew",
     aliases: ["crew", "labor", "team", "time tracking", "crew management"],
@@ -155,24 +154,15 @@ export const DASHBOARD_ROUTES: RouteAlias[] = [
   },
 ]
 
-/**
- * Find a route based on a natural language query
- * Uses fuzzy matching to find the best match
- * 
- * @param query - Natural language query (e.g., "show me clients", "go to calendar")
- * @returns RouteAlias if found, null otherwise
- */
 export function findRoute(query: string): RouteAlias | null {
   const normalizedQuery = query.toLowerCase().trim()
-  
-  // First, try exact matches on aliases
+
   for (const route of DASHBOARD_ROUTES) {
     if (route.aliases.some(alias => normalizedQuery === alias)) {
       return route
     }
   }
-  
-  // Second, try partial matches (query contains alias or alias contains query)
+
   for (const route of DASHBOARD_ROUTES) {
     if (route.aliases.some(alias => 
       normalizedQuery.includes(alias) || alias.includes(normalizedQuery)
@@ -180,8 +170,7 @@ export function findRoute(query: string): RouteAlias | null {
       return route
     }
   }
-  
-  // Third, try matching against the title
+
   for (const route of DASHBOARD_ROUTES) {
     const normalizedTitle = route.title.toLowerCase()
     if (normalizedQuery.includes(normalizedTitle) || normalizedTitle.includes(normalizedQuery)) {
@@ -192,18 +181,10 @@ export function findRoute(query: string): RouteAlias | null {
   return null
 }
 
-/**
- * Get all available route aliases for documentation/help
- * @returns Array of all route titles
- */
 export function getAllRouteAliases(): string[] {
   return DASHBOARD_ROUTES.map(route => route.title)
 }
 
-/**
- * Get routes grouped by category
- * @returns Record of category name to routes
- */
 export function getRoutesByCategory(): Record<string, RouteAlias[]> {
   return DASHBOARD_ROUTES.reduce((acc, route) => {
     if (!acc[route.category]) {

@@ -79,6 +79,8 @@ const nav = {
         { title: "Quotes", url: "/dashboard/quotes" },
         { title: "Contracts", url: "/dashboard/contracts" },
         { title: "Invoices", url: "/dashboard/invoices" },
+        { title: "Suppliers", url: "/dashboard/suppliers" },
+        { title: "Materials", url: "/dashboard/materials" },
       ],
     },
     {
