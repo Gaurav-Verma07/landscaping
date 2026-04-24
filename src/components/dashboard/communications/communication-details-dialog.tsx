@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Dialog,
@@ -6,29 +6,31 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import type { Communication } from "@/lib/communication-types"
-import { CHANNEL_LABELS } from "@/lib/communication-types"
-import { formatDistanceToNow } from "date-fns"
+} from "@/components/ui/dialog";
+import type { Communication } from "@/lib/communication-types";
+import { CHANNEL_LABELS } from "@/lib/communication-types";
+import { formatDistanceToNow } from "date-fns";
 
 export function CommunicationDetailsDialog({
   communication,
   open,
   onOpenChange,
 }: {
-  communication: Communication | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  communication: Communication | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  if (!communication) return null
+  if (!communication) return null;
 
   const title =
     communication.channel === "email" && communication.subject
       ? communication.subject
       : communication.channel === "call"
         ? "Call"
-        : "SMS"
-  const dateLabel = formatDistanceToNow(new Date(communication.createdAt), { addSuffix: true })
+        : "SMS";
+  const dateLabel = formatDistanceToNow(new Date(communication.createdAt), {
+    addSuffix: true,
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -37,7 +39,8 @@ export function CommunicationDetailsDialog({
           <DialogTitle className="flex items-center justify-between gap-3">
             <span className="truncate">{title}</span>
             <span className="text-xs font-normal text-muted-foreground shrink-0">
-              {CHANNEL_LABELS[communication.channel]} · {communication.direction}
+              {CHANNEL_LABELS[communication.channel]} ·{" "}
+              {communication.direction}
             </span>
           </DialogTitle>
           <DialogDescription>
@@ -66,10 +69,14 @@ export function CommunicationDetailsDialog({
               <div>
                 <div>{communication.contactName}</div>
                 {communication.contactEmail && (
-                  <div className="text-muted-foreground">{communication.contactEmail}</div>
+                  <div className="text-muted-foreground">
+                    {communication.contactEmail}
+                  </div>
                 )}
                 {communication.contactPhone && (
-                  <div className="text-muted-foreground">{communication.contactPhone}</div>
+                  <div className="text-muted-foreground">
+                    {communication.contactPhone}
+                  </div>
                 )}
               </div>
             </div>
@@ -77,7 +84,9 @@ export function CommunicationDetailsDialog({
               <div className="text-xs text-muted-foreground">Details</div>
               <div>
                 <div>{CHANNEL_LABELS[communication.channel]}</div>
-                <div className="text-muted-foreground capitalize">{communication.direction}</div>
+                <div className="text-muted-foreground capitalize">
+                  {communication.direction}
+                </div>
                 <div className="text-muted-foreground">{dateLabel}</div>
               </div>
             </div>
@@ -85,5 +94,5 @@ export function CommunicationDetailsDialog({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

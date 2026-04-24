@@ -169,7 +169,7 @@ export function AppointmentFormDialog({
             </Select>
           </Field>
           <Field>
-            <Label htmlFor="apt-address">Address</Label>
+            <Label htmlFor="apt-address">Address *</Label>
             <Input
               id="apt-address"
               value={address}

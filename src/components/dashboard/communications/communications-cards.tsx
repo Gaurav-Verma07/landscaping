@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   IconChevronDown,
   IconChevronLeft,
@@ -10,16 +10,16 @@ import {
   IconDotsVertical,
   IconFilter,
   IconPlus,
-} from "@tabler/icons-react"
-import { Search, Settings } from "lucide-react"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { formatDistanceToNow } from "date-fns"
+} from "@tabler/icons-react";
+import { Search, Settings } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
 
-import { CommunicationDetailsDialog } from "@/components/dashboard/communications/communication-details-dialog"
-import { CreateMessageDialog } from "@/components/dashboard/communications/create-message-dialog"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { CommunicationDetailsDialog } from "@/components/dashboard/communications/communication-details-dialog";
+import { CreateMessageDialog } from "@/components/dashboard/communications/create-message-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -27,63 +27,70 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import type { Communication, CommunicationChannel } from "@/lib/communication-types"
-import { CHANNEL_LABELS } from "@/lib/communication-types"
-import { useCommunicationStore } from "@/lib/communication-store"
+} from "@/components/ui/select";
+import type {
+  Communication,
+  CommunicationChannel,
+} from "@/lib/communication-types";
+import { CHANNEL_LABELS } from "@/lib/communication-types";
+import { useCommunicationStore } from "@/lib/communication-store";
 
 type CommunicationsFilters = {
-  channel: string
-  direction: string
-  read: string
-  sort: "newest" | "oldest"
-}
+  channel: string;
+  direction: string;
+  read: string;
+  sort: "newest" | "oldest";
+};
 
 function ChannelBadge({ channel }: { channel: CommunicationChannel }) {
   return (
     <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
       {CHANNEL_LABELS[channel]}
     </Badge>
-  )
+  );
 }
 
 function CommunicationCard({
   communication,
   onView,
 }: {
-  communication: Communication
-  onView: () => void
+  communication: Communication;
+  onView: () => void;
 }) {
   const displayTitle =
     communication.channel === "email" && communication.subject
       ? communication.subject
       : communication.channel === "call"
         ? "Call"
-        : "SMS"
+        : "SMS";
   const snippet =
-    communication.body.length > 80 ? `${communication.body.slice(0, 80)}…` : communication.body
-  const dateLabel = formatDistanceToNow(new Date(communication.createdAt), { addSuffix: true })
+    communication.body.length > 80
+      ? `${communication.body.slice(0, 80)}…`
+      : communication.body;
+  const dateLabel = formatDistanceToNow(new Date(communication.createdAt), {
+    addSuffix: true,
+  });
 
   return (
     <Card className="py-5">
@@ -93,7 +100,10 @@ function CommunicationCard({
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <ChannelBadge channel={communication.channel} />
             {!communication.read && (
-              <span className="rounded-full bg-primary size-2 shrink-0" aria-hidden />
+              <span
+                className="rounded-full bg-primary size-2 shrink-0"
+                aria-hidden
+              />
             )}
             <span className="text-xs text-muted-foreground truncate">
               {communication.contactName} · {dateLabel}
@@ -119,8 +129,12 @@ function CommunicationCard({
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-2">
-        <p className="text-sm text-muted-foreground line-clamp-2">{snippet || "—"}</p>
-        <div className="text-xs text-muted-foreground capitalize">{communication.direction}</div>
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {snippet || "—"}
+        </p>
+        <div className="text-xs text-muted-foreground capitalize">
+          {communication.direction}
+        </div>
       </CardContent>
       <CardFooter className="border-t pt-4 justify-end">
         <Button variant="outline" size="sm" onClick={onView}>
@@ -128,26 +142,26 @@ function CommunicationCard({
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }
 
 export function CommunicationsCards() {
-  const searchParams = useSearchParams()
-  const { communications } = useCommunicationStore()
-  const [searchQuery, setSearchQuery] = React.useState("")
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false)
-  const [isCreateMessageOpen, setIsCreateMessageOpen] = React.useState(false)
-  const [viewId, setViewId] = React.useState<string | null>(null)
+  const searchParams = useSearchParams();
+  const { communications } = useCommunicationStore();
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
+  const [isCreateMessageOpen, setIsCreateMessageOpen] = React.useState(false);
+  const [viewId, setViewId] = React.useState<string | null>(null);
   const [filters, setFilters] = React.useState<CommunicationsFilters>({
     channel: "all",
     direction: "all",
     read: "all",
     sort: "newest",
-  })
+  });
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 12,
-  })
+  });
 
   const filteredData = React.useMemo(() => {
     let list = communications.filter((c) => {
@@ -156,43 +170,51 @@ export function CommunicationsCards() {
         c.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.body.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (c.contactEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
-        (c.contactPhone?.includes(searchQuery) ?? false)
-      const channelMatch = filters.channel === "all" || c.channel === filters.channel
-      const directionMatch = filters.direction === "all" || c.direction === filters.direction
+        (c.contactEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+          false) ||
+        (c.contactPhone?.includes(searchQuery) ?? false);
+      const channelMatch =
+        filters.channel === "all" || c.channel === filters.channel;
+      const directionMatch =
+        filters.direction === "all" || c.direction === filters.direction;
       const readMatch =
         filters.read === "all" ||
         (filters.read === "read" && c.read) ||
-        (filters.read === "unread" && !c.read)
-      return searchMatch && channelMatch && directionMatch && readMatch
-    })
+        (filters.read === "unread" && !c.read);
+      return searchMatch && channelMatch && directionMatch && readMatch;
+    });
     if (filters.sort === "oldest") {
       list = [...list].sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      )
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
     } else {
       list = [...list].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
     }
-    return list
-  }, [communications, searchQuery, filters])
+    return list;
+  }, [communications, searchQuery, filters]);
 
   React.useEffect(() => {
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-  }, [filters, searchQuery])
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [filters, searchQuery]);
 
-  const pageCount = Math.max(1, Math.ceil(filteredData.length / pagination.pageSize))
-  const pageIndex = Math.min(pagination.pageIndex, pageCount - 1)
+  const pageCount = Math.max(
+    1,
+    Math.ceil(filteredData.length / pagination.pageSize),
+  );
+  const pageIndex = Math.min(pagination.pageIndex, pageCount - 1);
   const pagedData = React.useMemo(() => {
-    const start = pageIndex * pagination.pageSize
-    return filteredData.slice(start, start + pagination.pageSize)
-  }, [pageIndex, pagination.pageSize, filteredData])
+    const start = pageIndex * pagination.pageSize;
+    return filteredData.slice(start, start + pagination.pageSize);
+  }, [pageIndex, pagination.pageSize, filteredData]);
 
   const selected = React.useMemo(
     () => communications.find((c) => c.id === viewId) ?? null,
-    [communications, viewId]
-  )
+    [communications, viewId],
+  );
 
   const clearAllFilters = () => {
     setFilters({
@@ -200,15 +222,15 @@ export function CommunicationsCards() {
       direction: "all",
       read: "all",
       sort: "newest",
-    })
-  }
+    });
+  };
 
   React.useEffect(() => {
-    const openId = searchParams.get("open")
-    const create = searchParams.get("create")
-    if (openId) setViewId(openId)
-    if (create === "1") setIsCreateMessageOpen(true)
-  }, [searchParams])
+    const openId = searchParams.get("open");
+    const create = searchParams.get("create");
+    if (openId) setViewId(openId);
+    if (create === "1") setIsCreateMessageOpen(true);
+  }, [searchParams]);
 
   return (
     <div className="flex flex-col h-full space-y-4">
@@ -220,7 +242,11 @@ export function CommunicationsCards() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsFiltersModalOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsFiltersModalOpen(true)}
+          >
             <IconFilter className="size-4" />
             <span className="hidden sm:inline">Filters</span>
             <IconChevronDown className="size-4" />
@@ -283,17 +309,28 @@ export function CommunicationsCards() {
         <div className="flex-1 text-sm text-muted-foreground">
           Showing{" "}
           <span className="font-medium text-foreground">
-            {filteredData.length === 0 ? 0 : pageIndex * pagination.pageSize + 1}-
-            {Math.min((pageIndex + 1) * pagination.pageSize, filteredData.length)}
+            {filteredData.length === 0
+              ? 0
+              : pageIndex * pagination.pageSize + 1}
+            -
+            {Math.min(
+              (pageIndex + 1) * pagination.pageSize,
+              filteredData.length,
+            )}
           </span>{" "}
-          of <span className="font-medium text-foreground">{filteredData.length}</span>
+          of{" "}
+          <span className="font-medium text-foreground">
+            {filteredData.length}
+          </span>
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Cards per page</p>
             <Select
               value={`${pagination.pageSize}`}
-              onValueChange={(v) => setPagination((prev) => ({ ...prev, pageSize: Number(v) }))}
+              onValueChange={(v) =>
+                setPagination((prev) => ({ ...prev, pageSize: Number(v) }))
+              }
             >
               <SelectTrigger className="h-8 w-[84px]">
                 <SelectValue placeholder={pagination.pageSize} />
@@ -314,7 +351,9 @@ export function CommunicationsCards() {
             <Button
               variant="outline"
               className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => setPagination((prev) => ({ ...prev, pageIndex: 0 }))}
+              onClick={() =>
+                setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+              }
               disabled={pageIndex === 0}
             >
               <span className="sr-only">Go to first page</span>
@@ -324,7 +363,10 @@ export function CommunicationsCards() {
               variant="outline"
               className="h-8 w-8 p-0"
               onClick={() =>
-                setPagination((prev) => ({ ...prev, pageIndex: Math.max(0, pageIndex - 1) }))
+                setPagination((prev) => ({
+                  ...prev,
+                  pageIndex: Math.max(0, pageIndex - 1),
+                }))
               }
               disabled={pageIndex === 0}
             >
@@ -348,7 +390,9 @@ export function CommunicationsCards() {
             <Button
               variant="outline"
               className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => setPagination((prev) => ({ ...prev, pageIndex: pageCount - 1 }))}
+              onClick={() =>
+                setPagination((prev) => ({ ...prev, pageIndex: pageCount - 1 }))
+              }
               disabled={pageIndex >= pageCount - 1}
             >
               <span className="sr-only">Go to last page</span>
@@ -371,7 +415,9 @@ export function CommunicationsCards() {
                 </Label>
                 <Select
                   value={filters.channel}
-                  onValueChange={(v) => setFilters((prev) => ({ ...prev, channel: v }))}
+                  onValueChange={(v) =>
+                    setFilters((prev) => ({ ...prev, channel: v }))
+                  }
                 >
                   <SelectTrigger id="channel" className="w-full">
                     <SelectValue placeholder="Any" />
@@ -390,7 +436,9 @@ export function CommunicationsCards() {
                 </Label>
                 <Select
                   value={filters.direction}
-                  onValueChange={(v) => setFilters((prev) => ({ ...prev, direction: v }))}
+                  onValueChange={(v) =>
+                    setFilters((prev) => ({ ...prev, direction: v }))
+                  }
                 >
                   <SelectTrigger id="direction" className="w-full">
                     <SelectValue placeholder="Any" />
@@ -408,7 +456,9 @@ export function CommunicationsCards() {
                 </Label>
                 <Select
                   value={filters.read}
-                  onValueChange={(v) => setFilters((prev) => ({ ...prev, read: v }))}
+                  onValueChange={(v) =>
+                    setFilters((prev) => ({ ...prev, read: v }))
+                  }
                 >
                   <SelectTrigger id="read" className="w-full">
                     <SelectValue placeholder="Any" />
@@ -427,7 +477,10 @@ export function CommunicationsCards() {
                 <Select
                   value={filters.sort}
                   onValueChange={(v) =>
-                    setFilters((prev) => ({ ...prev, sort: v as CommunicationsFilters["sort"] }))
+                    setFilters((prev) => ({
+                      ...prev,
+                      sort: v as CommunicationsFilters["sort"],
+                    }))
                   }
                 >
                   <SelectTrigger id="sort" className="w-full">
@@ -446,14 +499,19 @@ export function CommunicationsCards() {
               Clear All
             </Button>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsFiltersModalOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsFiltersModalOpen(false)}
+              >
                 Cancel
               </Button>
-              <Button onClick={() => setIsFiltersModalOpen(false)}>Apply Filters</Button>
+              <Button onClick={() => setIsFiltersModalOpen(false)}>
+                Apply Filters
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

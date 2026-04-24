@@ -102,7 +102,7 @@ export function TemplateFormDialog({
           </FieldGroup>
           {channel === "email" && (
             <FieldGroup>
-              <FieldLabel>Subject (optional)</FieldLabel>
+              <FieldLabel>Subject</FieldLabel>
               <Input
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}

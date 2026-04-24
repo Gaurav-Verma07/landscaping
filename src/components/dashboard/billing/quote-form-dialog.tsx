@@ -313,7 +313,7 @@ export function QuoteFormDialog({
 
             <Field>
               <FieldLabel>Notes</FieldLabel>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Optional" />
+              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Notes" />
             </Field>
           </div>
           <DialogFooter className="px-6 py-4 border-t">

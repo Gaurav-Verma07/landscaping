@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,91 +8,99 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import type { CommunicationChannel } from "@/lib/communication-types"
-import { CHANNEL_LABELS } from "@/lib/communication-types"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useCommunicationStore, applyTemplatePlaceholders } from "@/lib/communication-store"
-import { toast } from "sonner"
+} from "@/components/ui/field";
+import type { CommunicationChannel } from "@/lib/communication-types";
+import { CHANNEL_LABELS } from "@/lib/communication-types";
+import { useCustomerStore } from "@/lib/customer-store";
+import {
+  useCommunicationStore,
+  applyTemplatePlaceholders,
+} from "@/lib/communication-store";
+import { toast } from "sonner";
 
 interface CreateMessageDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function CreateMessageDialog({ open, onOpenChange }: CreateMessageDialogProps) {
-  const { customers, addTimelineEvent } = useCustomerStore()
-  const { templates, addCommunication } = useCommunicationStore()
+export function CreateMessageDialog({
+  open,
+  onOpenChange,
+}: CreateMessageDialogProps) {
+  const { customers, addTimelineEvent } = useCustomerStore();
+  const { templates, addCommunication } = useCommunicationStore();
 
-  const [channel, setChannel] = React.useState<CommunicationChannel>("email")
-  const [contactId, setContactId] = React.useState("")
-  const [templateId, setTemplateId] = React.useState("")
-  const [subject, setSubject] = React.useState("")
-  const [body, setBody] = React.useState("")
-  const [sending, setSending] = React.useState(false)
+  const [channel, setChannel] = React.useState<CommunicationChannel>("email");
+  const [contactId, setContactId] = React.useState("");
+  const [templateId, setTemplateId] = React.useState("");
+  const [subject, setSubject] = React.useState("");
+  const [body, setBody] = React.useState("");
+  const [sending, setSending] = React.useState(false);
 
-  const contact = contactId ? customers.find((c) => c.id === contactId) : null
-  const selectedTemplate = templateId ? templates.find((t) => t.id === templateId) : null
+  const contact = contactId ? customers.find((c) => c.id === contactId) : null;
+  const selectedTemplate = templateId
+    ? templates.find((t) => t.id === templateId)
+    : null;
 
   React.useEffect(() => {
     if (selectedTemplate && contact) {
       const { body: b, subject: s } = applyTemplatePlaceholders(
         selectedTemplate.body,
         selectedTemplate.subject,
-        contact.name
-      )
-      setChannel(selectedTemplate.channel)
-      setSubject(s)
-      setBody(b)
+        contact.name,
+      );
+      setChannel(selectedTemplate.channel);
+      setSubject(s);
+      setBody(b);
     }
-  }, [selectedTemplate?.id, contact?.id])
+  }, [selectedTemplate?.id, contact?.id]);
 
   const reset = () => {
-    setChannel("email")
-    setContactId("")
-    setTemplateId("")
-    setSubject("")
-    setBody("")
-  }
+    setChannel("email");
+    setContactId("");
+    setTemplateId("");
+    setSubject("");
+    setBody("");
+  };
 
   const handleOpenChange = (next: boolean) => {
-    if (!next) reset()
-    onOpenChange(next)
-  }
+    if (!next) reset();
+    onOpenChange(next);
+  };
 
   const handleSend = async () => {
     if (!contact) {
-      toast.error("Please select a contact.")
-      return
+      toast.error("Please select a contact.");
+      return;
     }
     if (!body.trim()) {
-      toast.error("Please enter a message.")
-      return
+      toast.error("Please enter a message.");
+      return;
     }
     if (channel === "email" && !subject.trim()) {
-      toast.error("Please enter a subject for email.")
-      return
+      toast.error("Please enter a subject for email.");
+      return;
     }
-    setSending(true)
+    setSending(true);
     try {
-      await new Promise((r) => setTimeout(r, 400))
-      const now = new Date().toISOString()
+      await new Promise((r) => setTimeout(r, 400));
+      const now = new Date().toISOString();
       addCommunication({
         channel,
         subject: channel === "email" ? subject : "",
@@ -104,33 +112,44 @@ export function CreateMessageDialog({ open, onOpenChange }: CreateMessageDialogP
         direction: "outbound",
         read: true,
         createdAt: now,
-      })
+      });
       addTimelineEvent(contact.id, {
         type: "communication",
-        title: channel === "email" ? subject || "Email" : channel === "sms" ? "SMS" : "Call",
+        title:
+          channel === "email"
+            ? subject || "Email"
+            : channel === "sms"
+              ? "SMS"
+              : "Call",
         date: now,
         description: body.slice(0, 200),
-      })
-      toast.success("Message sent.")
-      handleOpenChange(false)
+      });
+      toast.success("Message sent.");
+      handleOpenChange(false);
     } catch {
-      toast.error("Failed to send.")
+      toast.error("Failed to send.");
     } finally {
-      setSending(false)
+      setSending(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Create message</DialogTitle>
-          <DialogDescription>Compose and send an email or SMS to a contact. Use a template to fill subject and body.</DialogDescription>
+          <DialogDescription>
+            Compose and send an email or SMS to a contact. Use a template to
+            fill subject and body.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-2">
           <FieldGroup>
             <FieldLabel>Use template</FieldLabel>
-            <Select value={templateId || "none"} onValueChange={(v) => setTemplateId(v === "none" ? "" : v)}>
+            <Select
+              value={templateId || "none"}
+              onValueChange={(v) => setTemplateId(v === "none" ? "" : v)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="None – write from scratch" />
               </SelectTrigger>
@@ -143,7 +162,9 @@ export function CreateMessageDialog({ open, onOpenChange }: CreateMessageDialogP
                 ))}
               </SelectContent>
             </Select>
-            <FieldDescription>Optional. Picks channel, subject and body; you can edit after.</FieldDescription>
+            <FieldDescription>
+              Picks channel, subject and body; you can edit after.
+            </FieldDescription>
           </FieldGroup>
           <FieldGroup>
             <FieldLabel>Channel</FieldLabel>
@@ -162,7 +183,10 @@ export function CreateMessageDialog({ open, onOpenChange }: CreateMessageDialogP
           </FieldGroup>
           <FieldGroup>
             <FieldLabel>To</FieldLabel>
-            <Select value={contactId || "none"} onValueChange={(v) => setContactId(v === "none" ? "" : v)}>
+            <Select
+              value={contactId || "none"}
+              onValueChange={(v) => setContactId(v === "none" ? "" : v)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select contact" />
               </SelectTrigger>
@@ -215,5 +239,5 @@ export function CreateMessageDialog({ open, onOpenChange }: CreateMessageDialogP
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

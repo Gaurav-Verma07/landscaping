@@ -188,7 +188,7 @@ export function ProjectFormDialog({
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field>
-                <FieldLabel>Project name</FieldLabel>
+                <FieldLabel>Project name *</FieldLabel>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -282,7 +282,7 @@ export function ProjectFormDialog({
                     min={0}
                     value={remainingSqFt}
                     onChange={(e) => setRemainingSqFt(e.target.value)}
-                    placeholder="Optional"
+                    placeholder="—"
                   />
                 </Field>
                 <Field>
@@ -292,7 +292,7 @@ export function ProjectFormDialog({
                     min={0}
                     value={estimatedPropertyValue}
                     onChange={(e) => setEstimatedPropertyValue(e.target.value)}
-                    placeholder="Optional"
+                    placeholder="—"
                   />
                 </Field>
                 <Field className="sm:col-span-2">

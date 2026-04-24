@@ -85,7 +85,7 @@ export function RecordPaymentDialog({
             <Input value={method} onChange={(e) => setMethod(e.target.value)} placeholder="e.g. Bank transfer" />
           </Field>
           <Field>
-            <FieldLabel>Reference (optional)</FieldLabel>
+            <FieldLabel>Reference</FieldLabel>
             <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Payment reference" />
           </Field>
           <DialogFooter>

@@ -106,7 +106,7 @@ export function MaterialFormDialog({ open, onOpenChange, material, onSaved }: Ma
             <FieldLabel>Supplier</FieldLabel>
             <Select value={supplierId || "none"} onValueChange={(v) => setSupplierId(v === "none" ? "" : v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Optional" />
+                <SelectValue placeholder="None" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
@@ -117,7 +117,7 @@ export function MaterialFormDialog({ open, onOpenChange, material, onSaved }: Ma
             </Select>
           </Field>
           <Field>
-            <FieldLabel>SKU (optional)</FieldLabel>
+            <FieldLabel>SKU</FieldLabel>
             <Input value={sku} onChange={(e) => setSku(e.target.value)} placeholder="Supplier SKU" />
           </Field>
           <Field>

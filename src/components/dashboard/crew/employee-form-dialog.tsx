@@ -102,7 +102,7 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSaved }: Em
         </DialogHeader>
         <form id="employee-form" onSubmit={handleSubmit} className="space-y-4">
           <Field>
-            <FieldLabel>Name</FieldLabel>
+            <FieldLabel>Name *</FieldLabel>
             <Input value={name} onChange={(e) => setName(e.target.value)} required />
           </Field>
           <Field>

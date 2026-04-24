@@ -462,7 +462,7 @@ export function ManagementSettingsWorkspace() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Voice assistant</CardTitle>
-              <CardDescription>Optional helper for navigation and quick actions.</CardDescription>
+              <CardDescription>Helper for navigation and quick actions.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="flex items-center justify-between rounded-lg border p-3">

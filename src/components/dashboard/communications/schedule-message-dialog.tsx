@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,26 +8,31 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { FieldGroup, FieldLabel } from "@/components/ui/field"
-import type { MessageTemplate } from "@/lib/communication-types"
-import type { Customer } from "@/lib/customer-types"
+} from "@/components/ui/select";
+import { FieldGroup, FieldLabel } from "@/components/ui/field";
+import type { MessageTemplate } from "@/lib/communication-types";
+import type { Customer } from "@/lib/customer-types";
 
 interface ScheduleMessageDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  templates: MessageTemplate[]
-  customers: Customer[]
-  onSchedule: (data: { contactId: string; contactName: string; templateId: string; sendAt: string }) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  templates: MessageTemplate[];
+  customers: Customer[];
+  onSchedule: (data: {
+    contactId: string;
+    contactName: string;
+    templateId: string;
+    sendAt: string;
+  }) => void;
 }
 
 export function ScheduleMessageDialog({
@@ -37,25 +42,25 @@ export function ScheduleMessageDialog({
   customers,
   onSchedule,
 }: ScheduleMessageDialogProps) {
-  const [contactId, setContactId] = React.useState("")
-  const [templateId, setTemplateId] = React.useState("")
-  const [sendAt, setSendAt] = React.useState("")
+  const [contactId, setContactId] = React.useState("");
+  const [templateId, setTemplateId] = React.useState("");
+  const [sendAt, setSendAt] = React.useState("");
 
-  const contact = contactId ? customers.find((c) => c.id === contactId) : null
+  const contact = contactId ? customers.find((c) => c.id === contactId) : null;
 
   const handleSubmit = () => {
-    if (!contact || !templateId || !sendAt) return
+    if (!contact || !templateId || !sendAt) return;
     onSchedule({
       contactId: contact.id,
       contactName: contact.name,
       templateId,
       sendAt: new Date(sendAt).toISOString(),
-    })
-    onOpenChange(false)
-    setContactId("")
-    setTemplateId("")
-    setSendAt("")
-  }
+    });
+    onOpenChange(false);
+    setContactId("");
+    setTemplateId("");
+    setSendAt("");
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,13 +68,17 @@ export function ScheduleMessageDialog({
         <DialogHeader>
           <DialogTitle>Schedule message</DialogTitle>
           <DialogDescription>
-            Schedule a one-off message to be sent at a specific date and time (demo: run &quot;Run due now&quot; to send).
+            Schedule a one-off message to be sent at a specific date and time
+            (demo: run &quot;Run due now&quot; to send).
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-2">
           <FieldGroup>
             <FieldLabel>Contact</FieldLabel>
-            <Select value={contactId || "none"} onValueChange={(v) => setContactId(v === "none" ? "" : v)}>
+            <Select
+              value={contactId || "none"}
+              onValueChange={(v) => setContactId(v === "none" ? "" : v)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select contact" />
               </SelectTrigger>
@@ -86,7 +95,10 @@ export function ScheduleMessageDialog({
           </FieldGroup>
           <FieldGroup>
             <FieldLabel>Template</FieldLabel>
-            <Select value={templateId || "none"} onValueChange={(v) => setTemplateId(v === "none" ? "" : v)}>
+            <Select
+              value={templateId || "none"}
+              onValueChange={(v) => setTemplateId(v === "none" ? "" : v)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -110,12 +122,17 @@ export function ScheduleMessageDialog({
           </FieldGroup>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={!contact || !templateId || !sendAt}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!contact || !templateId || !sendAt}
+          >
             Schedule
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

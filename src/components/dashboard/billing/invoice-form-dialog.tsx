@@ -229,7 +229,7 @@ export function InvoiceFormDialog({
               </Field>
               {!isEdit && customerId && customerQuotes.length > 0 && (
                 <Field>
-                  <FieldLabel>Create from quote (optional)</FieldLabel>
+                  <FieldLabel>Create from quote</FieldLabel>
                   <Select value={quoteId ?? "none"} onValueChange={(v) => setQuoteId(v === "none" ? null : v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="None" />

@@ -146,7 +146,7 @@ export function ProjectTimelineSection({ project }: ProjectTimelineSectionProps)
               />
             </div>
             <div className="space-y-2">
-              <Label>Due date (optional)</Label>
+              <Label>Due date</Label>
               <Input
                 type="date"
                 value={newDueDate}

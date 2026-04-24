@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { Input } from "@/components/ui/input"
-import { Field, FieldLabel } from "@/components/ui/field"
-import type { CustomerFormData } from "@/lib/customer-types"
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel } from "@/components/ui/field";
+import type { CustomerFormData } from "@/lib/customer-types";
 
 type Props = {
-  form: CustomerFormData
-  setForm: React.Dispatch<React.SetStateAction<CustomerFormData>>
-}
+  form: CustomerFormData;
+  setForm: React.Dispatch<React.SetStateAction<CustomerFormData>>;
+};
 
 export function BasicInfoSection({ form, setForm }: Props) {
   return (
@@ -36,5 +36,5 @@ export function BasicInfoSection({ form, setForm }: Props) {
         </Field>
       </div>
     </div>
-  )
+  );
 }

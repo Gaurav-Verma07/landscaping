@@ -143,7 +143,7 @@ export function AcceptQuoteDialog({
         <DialogHeader>
           <DialogTitle>Accept quote</DialogTitle>
           <DialogDescription>
-            Create a contract from quote {quote.quoteNumber}. Optionally create a project and link it.
+            Create a contract from quote {quote.quoteNumber}. You can create a project and link it.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4 overflow-y-auto">
