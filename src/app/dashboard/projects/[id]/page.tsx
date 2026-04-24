@@ -10,7 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { useProjectStore } from "@/lib/project-store"
 import { useCustomerStore } from "@/lib/customer-store"
+import { useAppointmentStore } from "@/lib/appointment-store"
+import { useDocumentStore } from "@/lib/document-store"
 import { PROJECT_STATUS_LABELS, MILESTONE_TYPE_LABELS } from "@/lib/project-types"
+import { DOCUMENT_TYPE_LABELS } from "@/lib/document-types"
 import { ProjectFormDialog } from "@/components/dashboard/projects/project-form-dialog"
 import { ProjectTimelineSection } from "@/components/dashboard/projects/project-timeline-section"
 import { ProjectSupervisorReportsSection } from "@/components/dashboard/projects/project-supervisor-reports-section"
@@ -21,8 +24,12 @@ export default function ProjectDetailPage() {
   const id = params.id as string
   const { getProject, getSupervisorReports } = useProjectStore()
   const { getCustomer } = useCustomerStore()
+  const { getAppointmentsByProjectId } = useAppointmentStore()
+  const { getDocumentsByProjectId } = useDocumentStore()
   const project = getProject(id)
   const [editOpen, setEditOpen] = useState(false)
+  const projectAppointments = project ? getAppointmentsByProjectId(project.id) : []
+  const projectDocuments = project ? getDocumentsByProjectId(project.id) : []
 
   if (!project) {
     return (
@@ -73,6 +80,8 @@ export default function ProjectDetailPage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="reports">Supervisor reports</TabsTrigger>
+          <TabsTrigger value="appointments">Appointments ({projectAppointments.length})</TabsTrigger>
+          <TabsTrigger value="documents">Documents ({projectDocuments.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="flex-1 space-y-4 mt-4">
@@ -140,6 +149,65 @@ export default function ProjectDetailPage() {
 
         <TabsContent value="reports" className="flex-1 mt-4">
           <ProjectSupervisorReportsSection project={project} reports={reports} />
+        </TabsContent>
+
+        <TabsContent value="appointments" className="flex-1 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Appointments for this project</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {projectAppointments.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No appointments linked to this project.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {projectAppointments.map((apt) => (
+                    <li key={apt.id} className="flex items-center justify-between rounded-md border p-3 text-sm">
+                      <span>
+                        {new Date(apt.startAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
+                        {" · "}
+                        {apt.address}
+                      </span>
+                      {apt.notes && <span className="text-muted-foreground truncate max-w-xs">{apt.notes}</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Button variant="outline" size="sm" className="mt-2" asChild>
+                <Link href="/dashboard/appointments">All appointments</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="documents" className="flex-1 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Documents for this project</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {projectDocuments.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No documents linked to this project.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {projectDocuments.map((doc) => (
+                    <li key={doc.id} className="flex items-center justify-between rounded-md border p-3 text-sm">
+                      <span className="font-medium">{doc.name}</span>
+                      <Badge variant="secondary">{DOCUMENT_TYPE_LABELS[doc.type]}</Badge>
+                      {doc.fileUrl && (
+                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">
+                          Open
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Button variant="outline" size="sm" className="mt-2" asChild>
+                <Link href="/dashboard/documents">All documents</Link>
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

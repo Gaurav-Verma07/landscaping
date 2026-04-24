@@ -15,6 +15,8 @@ import {
   Trash2,
   Upload,
   FolderKanban,
+  Calendar,
+  ClipboardList,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,6 +28,9 @@ import {
 import { useCommunicationStore } from "@/lib/communication-store"
 import { useCustomerStore } from "@/lib/customer-store"
 import { useProjectStore } from "@/lib/project-store"
+import { useAppointmentStore } from "@/lib/appointment-store"
+import { useDocumentStore } from "@/lib/document-store"
+import { DOCUMENT_TYPE_LABELS } from "@/lib/document-types"
 import { PROJECT_STATUS_LABELS } from "@/lib/project-types"
 import {
   CUSTOMER_STATUS_LABELS,
@@ -48,9 +53,13 @@ export default function CustomerDetailPage() {
   } = useCustomerStore()
   const { getCommunicationsByContactId } = useCommunicationStore()
   const { getProjectsByCustomerId } = useProjectStore()
+  const { getAppointmentsByCustomerId } = useAppointmentStore()
+  const { getDocumentsByCustomerId } = useDocumentStore()
   const customer = getCustomer(id)
   const customerComms = customer ? getCommunicationsByContactId(customer.id) : []
   const customerProjects = customer ? getProjectsByCustomerId(customer.id) : []
+  const customerAppointments = customer ? getAppointmentsByCustomerId(customer.id) : []
+  const customerDocuments = customer ? getDocumentsByCustomerId(customer.id) : []
   const [mergeOpen, setMergeOpen] = useState(false)
   const [newNote, setNewNote] = useState("")
   const [timelineTitle, setTimelineTitle] = useState("")
@@ -298,6 +307,71 @@ export default function CustomerDetailPage() {
             )}
             <Button variant="outline" size="sm" className="mt-2" asChild>
               <Link href={`/dashboard/projects?new=1&customerId=${id}`}>New project</Link>
+            </Button>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4 flex items-center gap-2">
+              <Calendar className="size-4" />
+              Appointments
+              {customerAppointments.length > 0 ? ` (${customerAppointments.length})` : ""}
+            </h2>
+            {customerAppointments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No appointments for this customer.</p>
+            ) : (
+              <ul className="space-y-2">
+                {customerAppointments.slice(0, 5).map((apt) => (
+                  <li key={apt.id}>
+                    <span className="text-sm">
+                      {new Date(apt.startAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
+                      {" · "}
+                      {apt.address}
+                      {apt.projectId ? " · " : ""}
+                      {apt.projectId ? (
+                        <Link href={`/dashboard/projects/${apt.projectId}`} className="text-primary hover:underline">Project</Link>
+                      ) : null}
+                    </span>
+                  </li>
+                ))}
+                {customerAppointments.length > 5 && (
+                  <li className="text-sm text-muted-foreground">+{customerAppointments.length - 5} more</li>
+                )}
+              </ul>
+            )}
+            <Button variant="outline" size="sm" className="mt-2" asChild>
+              <Link href="/dashboard/appointments">View all appointments</Link>
+            </Button>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4 flex items-center gap-2">
+              <ClipboardList className="size-4" />
+              Documents
+              {customerDocuments.length > 0 ? ` (${customerDocuments.length})` : ""}
+            </h2>
+            {customerDocuments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No documents for this customer.</p>
+            ) : (
+              <ul className="space-y-2">
+                {customerDocuments.slice(0, 5).map((doc) => (
+                  <li key={doc.id}>
+                    <span className="text-sm">
+                      {doc.name}
+                      {doc.type ? ` (${DOCUMENT_TYPE_LABELS[doc.type]})` : ""}
+                      {doc.projectId ? " · " : ""}
+                      {doc.projectId ? (
+                        <Link href={`/dashboard/projects/${doc.projectId}`} className="text-primary hover:underline">Project</Link>
+                      ) : null}
+                    </span>
+                  </li>
+                ))}
+                {customerDocuments.length > 5 && (
+                  <li className="text-sm text-muted-foreground">+{customerDocuments.length - 5} more</li>
+                )}
+              </ul>
+            )}
+            <Button variant="outline" size="sm" className="mt-2" asChild>
+              <Link href="/dashboard/documents">View all documents</Link>
             </Button>
           </section>
 
