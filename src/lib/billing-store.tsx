@@ -94,18 +94,32 @@ function loadBilling(): BillingData {
   }
 }
 
+function lineAmountAfterDiscount(l: QuoteLineItem): number {
+  const base = l.quantity * l.unitPrice
+  const pct = l.discountPercent ?? 0
+  return Math.round(base * (1 - pct / 100) * 100) / 100
+}
+
+function invoiceLineAmountAfterDiscount(l: InvoiceLineItem): number {
+  const base = l.quantity * l.unitPrice
+  const pct = l.discountPercent ?? 0
+  return Math.round(base * (1 - pct / 100) * 100) / 100
+}
+
 function recalcQuoteTotals(q: Quote): Quote {
-  const subtotal = q.lineItems.reduce((s, l) => s + l.amount, 0)
+  const lineItems = q.lineItems.map((l) => ({ ...l, amount: lineAmountAfterDiscount(l) }))
+  const subtotal = lineItems.reduce((s, l) => s + l.amount, 0)
   const taxAmount = (subtotal * q.taxRatePercent) / 100
   const total = subtotal + taxAmount
-  return { ...q, subtotal, taxAmount, total }
+  return { ...q, lineItems, subtotal, taxAmount, total }
 }
 
 function recalcInvoiceTotals(inv: Invoice): Invoice {
-  const subtotal = inv.lineItems.reduce((s, l) => s + l.amount, 0)
+  const lineItems = inv.lineItems.map((l) => ({ ...l, amount: invoiceLineAmountAfterDiscount(l) }))
+  const subtotal = lineItems.reduce((s, l) => s + l.amount, 0)
   const taxAmount = (subtotal * inv.taxRatePercent) / 100
   const total = subtotal + taxAmount
-  return { ...inv, subtotal, taxAmount, total }
+  return { ...inv, lineItems, subtotal, taxAmount, total }
 }
 
 type BillingStoreValue = {
@@ -132,10 +146,16 @@ type BillingStoreValue = {
   getInvoice: (id: string) => Invoice | undefined
   getInvoicesByCustomerId: (customerId: string) => Invoice[]
   getInvoicesByProjectId: (projectId: string) => Invoice[]
+  getInvoicesByQuoteId: (quoteId: string) => Invoice[]
   createInvoice: (data: Omit<Invoice, "id" | "invoiceNumber" | "createdAt" | "updatedAt" | "payments" | "paidAmount">) => Invoice
   updateInvoice: (id: string, data: Partial<Omit<Invoice, "id" | "createdAt" | "updatedAt">>) => void
   recordPayment: (invoiceId: string, amount: number, method: string, reference?: string) => void
   deleteInvoice: (id: string) => void
+  /** Create multiple invoices from a quote (e.g. deposit %, progress %, final %) with due date offsets. */
+  createPaymentScheduleFromQuote: (
+    quoteId: string,
+    entries: { percent: number; type: InvoiceType; dueOffsetDays: number; label?: string }[],
+  ) => Invoice[] | null
   createSupplier: (data: Omit<Supplier, "id" | "createdAt" | "updatedAt">) => Supplier
   updateSupplier: (id: string, data: Partial<Omit<Supplier, "id" | "createdAt" | "updatedAt">>) => void
   deleteSupplier: (id: string) => void
@@ -267,6 +287,7 @@ export function BillingStoreProvider({ children }: { children: React.ReactNode }
   const getInvoice = useCallback((id: string) => data.invoices.find((i) => i.id === id), [data.invoices])
   const getInvoicesByCustomerId = useCallback((customerId: string) => data.invoices.filter((i) => i.customerId === customerId), [data.invoices])
   const getInvoicesByProjectId = useCallback((projectId: string) => data.invoices.filter((i) => i.projectId === projectId), [data.invoices])
+  const getInvoicesByQuoteId = useCallback((quoteId: string) => data.invoices.filter((i) => i.quoteId === quoteId), [data.invoices])
 
   const createInvoice = useCallback(
     (input: Omit<Invoice, "id" | "invoiceNumber" | "createdAt" | "updatedAt" | "payments" | "paidAmount">) => {
@@ -315,6 +336,70 @@ export function BillingStoreProvider({ children }: { children: React.ReactNode }
 
   const deleteInvoice = useCallback(
     (id: string) => persist({ ...data, invoices: data.invoices.filter((i) => i.id !== id) }),
+    [data, persist],
+  )
+
+  const createPaymentScheduleFromQuote = useCallback(
+    (
+      quoteId: string,
+      entries: { percent: number; type: InvoiceType; dueOffsetDays: number; label?: string }[],
+    ): Invoice[] | null => {
+      const quote = data.quotes.find((q) => q.id === quoteId)
+      if (!quote || entries.length === 0) return null
+      const totalPct = entries.reduce((s, e) => s + e.percent, 0)
+      if (Math.abs(totalPct - 100) > 0.01) return null
+      const now = new Date().toISOString()
+      const baseDate = new Date()
+      let nextInvNum = data.invoices
+        .map((i) => (i.invoiceNumber ?? "").replace(/^\D+/, ""))
+        .filter(Boolean)
+        .map((n) => parseInt(n, 10))
+        .filter((n) => !Number.isNaN(n))
+      const nextNum = nextInvNum.length === 0 ? 1 : Math.max(...nextInvNum) + 1
+      const created: Invoice[] = []
+      let invIndex = 0
+      for (const entry of entries) {
+        const amount = Math.round((quote.total * entry.percent) / 100 * 100) / 100
+        const dueDate = new Date(baseDate)
+        dueDate.setDate(dueDate.getDate() + entry.dueOffsetDays)
+        const label = entry.label ?? `${entry.type} (${entry.percent}%)`
+        const lineItem: InvoiceLineItem = {
+          id: createId(),
+          description: label,
+          quantity: 1,
+          unit: "item",
+          unitPrice: amount,
+          amount,
+          sortOrder: 0,
+        }
+        const invoiceNumber = `INV-${String(nextNum + invIndex).padStart(3, "0")}`
+        const invoice: Invoice = recalcInvoiceTotals({
+          id: createId(),
+          invoiceNumber,
+          customerId: quote.customerId,
+          projectId: quote.projectId,
+          quoteId: quote.id,
+          type: entry.type,
+          status: "draft",
+          lineItems: [lineItem],
+          subtotal: amount,
+          taxRatePercent: 0,
+          taxAmount: 0,
+          total: amount,
+          dueDate: dueDate.toISOString().slice(0, 10),
+          paidAmount: 0,
+          payments: [],
+          paymentTermsDays: 30,
+          notes: `From quote ${quote.quoteNumber}; ${entry.percent}% of total.`,
+          createdAt: now,
+          updatedAt: now,
+        })
+        created.push(invoice)
+        invIndex += 1
+      }
+      persist({ ...data, invoices: [...created, ...data.invoices] })
+      return created
+    },
     [data, persist],
   )
 
@@ -418,10 +503,12 @@ export function BillingStoreProvider({ children }: { children: React.ReactNode }
     getInvoice,
     getInvoicesByCustomerId,
     getInvoicesByProjectId,
+    getInvoicesByQuoteId,
     createInvoice,
     updateInvoice,
     recordPayment,
     deleteInvoice,
+    createPaymentScheduleFromQuote,
     createSupplier,
     updateSupplier,
     deleteSupplier,

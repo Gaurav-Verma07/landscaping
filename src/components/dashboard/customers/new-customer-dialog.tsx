@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useCustomerStore } from "@/lib/customer-store"
+import { useAuditStore } from "@/lib/audit-store"
 
 const NEW_CUSTOMER_FORM_ID = "new-customer-form"
 
@@ -27,16 +28,19 @@ export function NewCustomerDialog({
   onCustomerAdded,
 }: NewCustomerDialogProps) {
   const { createCustomer, createCustomerWithAttachments } = useCustomerStore()
+  const { log: auditLog } = useAuditStore()
 
   const handleSubmit = async (
     data: Parameters<typeof createCustomer>[0],
     initialFiles?: File[],
   ) => {
+    let customer
     if (initialFiles?.length) {
-      await createCustomerWithAttachments(data, initialFiles)
+      customer = await createCustomerWithAttachments(data, initialFiles)
     } else {
-      createCustomer(data)
+      customer = createCustomer(data)
     }
+    auditLog("customer_created", "customer", customer.id, customer.name || customer.companyName || customer.id)
     toast.success("Customer created.")
     onOpenChange(false)
     onCustomerAdded?.()

@@ -16,6 +16,7 @@ import { Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { NewCustomerDialog } from "@/components/dashboard/customers/new-customer-dialog"
+import { ImportCustomersCsvDialog } from "@/components/dashboard/customers/import-customers-csv-dialog"
 import { CustomerDetailsDialog } from "@/components/dashboard/customers/customer-details-dialog"
 import { DeleteCustomerModal } from "@/components/dashboard/customers/delete-customer-modal"
 import { MergeCustomerModal } from "@/components/dashboard/customers/merge-customer-modal"
@@ -199,6 +200,7 @@ export function CustomersCards() {
   const [mergeCustomerId, setMergeCustomerId] = React.useState<string | null>(
     null,
   )
+  const [isImportCsvOpen, setIsImportCsvOpen] = React.useState(false)
 
   const [filters, setFilters] = React.useState<CustomersFilters>({
     nameSort: "none",
@@ -272,7 +274,7 @@ export function CustomersCards() {
             <span className="hidden sm:inline">Filters</span>
             <IconChevronDown className="size-4" />
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => setIsImportCsvOpen(true)}>
             <IconUpload className="size-4" />
             <span className="hidden sm:inline">Import CSV</span>
           </Button>
@@ -286,6 +288,11 @@ export function CustomersCards() {
       <NewCustomerDialog
         open={isNewCustomerDialogOpen}
         onOpenChange={setIsNewCustomerDialogOpen}
+      />
+
+      <ImportCustomersCsvDialog
+        open={isImportCsvOpen}
+        onOpenChange={setIsImportCsvOpen}
       />
 
       <CustomerDetailsDialog

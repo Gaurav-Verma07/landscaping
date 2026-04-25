@@ -25,6 +25,13 @@ import type { Quote } from "@/lib/quote-types"
 import { useBillingStore } from "@/lib/billing-store"
 import { useCustomerStore } from "@/lib/customer-store"
 import { useProjectStore } from "@/lib/project-store"
+import { useCommunicationStore } from "@/lib/communication-store"
+import { useAuditStore } from "@/lib/audit-store"
+import {
+  TIMELINE_MILESTONE_TYPES,
+  MILESTONE_TYPE_LABELS,
+  type TimelineMilestoneType,
+} from "@/lib/project-types"
 
 interface AcceptQuoteDialogProps {
   open: boolean
@@ -50,6 +57,8 @@ export function AcceptQuoteDialog({
   const { acceptQuote, contractTemplates } = useBillingStore()
   const { getCustomer } = useCustomerStore()
   const { createProject, updateContract } = useProjectStore()
+  const { triggerAutomation } = useCommunicationStore()
+  const { log: auditLog } = useAuditStore()
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [templateId, setTemplateId] = useState<string>("")
@@ -105,8 +114,30 @@ export function AcceptQuoteDialog({
       return
     }
     toast.success("Quote accepted. Contract created.")
+    auditLog("quote_accepted", "quote", quote.id, quote.quoteNumber)
+    auditLog("contract_signed", "contract", contract.id, contract.contractNumber)
+
+    const customer = getCustomer(quote.customerId)
+    if (customer) {
+      triggerAutomation("quote_accepted", {
+        contactId: customer.id,
+        contactName: customer.name || customer.companyName || "Customer",
+        contactEmail: customer.emails[0],
+        contactPhone: customer.phones[0],
+      })
+    }
 
     if (createProjectFromContract && !contract.projectId) {
+      const now = Date.now()
+      const defaultTimeline = TIMELINE_MILESTONE_TYPES.map((type: TimelineMilestoneType, index) => ({
+        id: `milestone-${now}-${index}`,
+        type,
+        title: MILESTONE_TYPE_LABELS[type],
+        dueDate: null,
+        completedAt: null,
+        order: index,
+        notes: undefined,
+      }))
       const project = createProject({
         name: title.trim(),
         customerId: quote.customerId,
@@ -124,6 +155,7 @@ export function AcceptQuoteDialog({
         equipment: [],
         assignedCrew: "",
         dependencyProjectIds: [],
+        timeline: defaultTimeline,
       })
       updateContract(contract.id, { projectId: project.id })
       toast.success("Project created and linked to contract.")

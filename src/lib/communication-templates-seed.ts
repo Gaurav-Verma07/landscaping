@@ -20,6 +20,14 @@ export const MESSAGE_TEMPLATE_SEED: MessageTemplate[] = [
     updatedAt: now,
   },
   {
+    id: "tpl-supervisor-photos-missing",
+    name: "Supervisor report reminder (photos required)",
+    channel: "email",
+    subject: "Reminder: daily photos required ({{date}})",
+    body: "Hi {{contact_name}},\n\nThis is a reminder to submit your daily supervisor report with at least one progress photo for {{date}}.\n\nThank you,\nLandscaping Office",
+    updatedAt: now,
+  },
+  {
     id: "tpl-3",
     name: "Appointment confirmation (SMS)",
     channel: "sms",

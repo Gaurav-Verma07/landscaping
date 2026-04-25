@@ -34,6 +34,8 @@ import type { Quote, QuoteLineItem, QuoteStatus } from "@/lib/quote-types"
 import { QUOTE_STATUSES, QUOTE_STATUS_LABELS } from "@/lib/quote-types"
 import { useBillingStore } from "@/lib/billing-store"
 import { useCustomerStore } from "@/lib/customer-store"
+import { useCommunicationStore } from "@/lib/communication-store"
+import { useAuditStore } from "@/lib/audit-store"
 
 const FORM_ID = "quote-form"
 
@@ -44,13 +46,16 @@ function createEmptyLineItem(sortOrder: number): QuoteLineItem {
     quantity: 1,
     unit: "item",
     unitPrice: 0,
+    discountPercent: 0,
     amount: 0,
     sortOrder,
   }
 }
 
 function recalcLineAmount(line: QuoteLineItem): QuoteLineItem {
-  const amount = line.quantity * line.unitPrice
+  const base = line.quantity * line.unitPrice
+  const pct = line.discountPercent ?? 0
+  const amount = Math.round(base * (1 - pct / 100) * 100) / 100
   return { ...line, amount }
 }
 
@@ -71,6 +76,8 @@ export function QuoteFormDialog({
 }: QuoteFormDialogProps) {
   const { createQuote, updateQuote } = useBillingStore()
   const { customers } = useCustomerStore()
+  const { triggerAutomation } = useCommunicationStore()
+  const { log: auditLog } = useAuditStore()
   const isEdit = !!quote
 
   const [customerId, setCustomerId] = useState("")
@@ -143,8 +150,21 @@ export function QuoteFormDialog({
         notes,
       })
       toast.success("Quote updated.")
+      const becameSent = quote.status !== "sent" && status === "sent"
+      if (becameSent) {
+        auditLog("quote_sent", "quote", quote.id, quote.quoteNumber)
+        const customer = customers.find((c) => c.id === customerId)
+        if (customer) {
+          triggerAutomation("quote_sent", {
+            contactId: customer.id,
+            contactName: customer.name || customer.companyName || "Customer",
+            contactEmail: customer.emails[0],
+            contactPhone: customer.phones[0],
+          })
+        }
+      }
     } else {
-      createQuote({
+      const createdQuote = createQuote({
         customerId,
         projectId: null,
         status,
@@ -158,6 +178,21 @@ export function QuoteFormDialog({
         templateId: null,
       })
       toast.success("Quote created.")
+      auditLog("quote_created", "quote", createdQuote.id, createdQuote.quoteNumber)
+      if (status === "sent") {
+        auditLog("quote_sent", "quote", createdQuote.id, createdQuote.quoteNumber)
+      }
+      if (status === "sent") {
+        const customer = customers.find((c) => c.id === customerId)
+        if (customer) {
+          triggerAutomation("quote_sent", {
+            contactId: customer.id,
+            contactName: customer.name || customer.companyName || "Customer",
+            contactEmail: customer.emails[0],
+            contactPhone: customer.phones[0],
+          })
+        }
+      }
     }
     onOpenChange(false)
     onSaved?.()
@@ -221,6 +256,7 @@ export function QuoteFormDialog({
                       <TableHead className="w-24">Qty</TableHead>
                       <TableHead className="w-24">Unit</TableHead>
                       <TableHead className="w-28">Unit price</TableHead>
+                      <TableHead className="w-20">Disc. %</TableHead>
                       <TableHead className="w-28">Amount</TableHead>
                       <TableHead className="w-10" />
                     </TableRow>
@@ -262,6 +298,17 @@ export function QuoteFormDialog({
                             className="h-8 w-28"
                             value={line.unitPrice}
                             onChange={(e) => updateLine(line.id, { unitPrice: Number(e.target.value) || 0 })}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step={1}
+                            className="h-8 w-20"
+                            value={line.discountPercent ?? 0}
+                            onChange={(e) => updateLine(line.id, { discountPercent: Number(e.target.value) || 0 })}
                           />
                         </TableCell>
                         <TableCell className="font-medium">{line.amount.toFixed(2)}</TableCell>

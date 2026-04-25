@@ -26,6 +26,7 @@ import type { Appointment, CreateAppointmentData } from "@/lib/appointment-types
 import { useAppointmentStore } from "@/lib/appointment-store"
 import { useCustomerStore } from "@/lib/customer-store"
 import { useProjectStore } from "@/lib/project-store"
+import { useCommunicationStore } from "@/lib/communication-store"
 
 interface AppointmentFormDialogProps {
   open: boolean
@@ -48,9 +49,10 @@ export function AppointmentFormDialog({
   defaultProjectId,
   onSaved,
 }: AppointmentFormDialogProps) {
-  const { createAppointment, updateAppointment } = useAppointmentStore()
+  const { appointments, createAppointment, updateAppointment } = useAppointmentStore()
   const { customers } = useCustomerStore()
   const { getProjectsByCustomerId } = useProjectStore()
+  const { triggerAutomation } = useCommunicationStore()
   const isEdit = !!appointment
 
   const [customerId, setCustomerId] = useState("")
@@ -118,11 +120,46 @@ export function AppointmentFormDialog({
       equipmentRequired: parseList(equipmentRequiredStr),
       notes: notes.trim(),
     }
+    const overlaps = appointments.filter((a) => {
+      if (isEdit && appointment && a.id === appointment.id) return false
+      const aStart = new Date(a.startAt).getTime()
+      const aEnd = new Date(a.endAt).getTime()
+      const s = start.getTime()
+      const eMs = end.getTime()
+      const intersects = s < aEnd && eMs > aStart
+      if (!intersects) return false
+      const sameCustomer = a.customerId === customerId
+      const overlapUsers =
+        data.assignedUserIds.length > 0 &&
+        a.assignedUserIds.some((id) => data.assignedUserIds.includes(id))
+      return sameCustomer || overlapUsers
+    })
+    if (overlaps.length > 0) {
+      toast.warning(
+        `This appointment overlaps with ${overlaps.length} existing appointment${
+          overlaps.length > 1 ? "s" : ""
+        } for the same customer or assigned user(s).`,
+      )
+    }
     if (isEdit) {
       updateAppointment(appointment.id, data)
       toast.success("Appointment updated.")
     } else {
-      createAppointment(data)
+      const created = createAppointment(data)
+      const customer = customers.find((c) => c.id === customerId)
+      if (customer) {
+        const startLocale = new Date(created.startAt)
+        triggerAutomation("appointment_reminder", {
+          contactId: customer.id,
+          contactName: customer.name || customer.companyName || "Customer",
+          contactEmail: customer.emails[0],
+          contactPhone: customer.phones[0],
+          extras: {
+            date: startLocale.toLocaleDateString(),
+            time: startLocale.toLocaleTimeString(),
+          },
+        })
+      }
       toast.success("Appointment created.")
     }
     onOpenChange(false)

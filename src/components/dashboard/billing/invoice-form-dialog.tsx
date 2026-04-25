@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { toast } from "sonner"
 import { Plus, Trash2 } from "lucide-react"
 import {
@@ -34,6 +34,8 @@ import type { Invoice, InvoiceLineItem, InvoiceType } from "@/lib/quote-types"
 import { INVOICE_TYPES, INVOICE_TYPE_LABELS } from "@/lib/quote-types"
 import { useBillingStore } from "@/lib/billing-store"
 import { useCustomerStore } from "@/lib/customer-store"
+import { useCommunicationStore } from "@/lib/communication-store"
+import { useAuditStore } from "@/lib/audit-store"
 
 const FORM_ID = "invoice-form"
 
@@ -44,13 +46,17 @@ function createEmptyLineItem(sortOrder: number): InvoiceLineItem {
     quantity: 1,
     unit: "item",
     unitPrice: 0,
+    discountPercent: 0,
     amount: 0,
     sortOrder,
   }
 }
 
 function recalcLineAmount(line: InvoiceLineItem): InvoiceLineItem {
-  return { ...line, amount: line.quantity * line.unitPrice }
+  const base = line.quantity * line.unitPrice
+  const pct = line.discountPercent ?? 0
+  const amount = Math.round(base * (1 - pct / 100) * 100) / 100
+  return { ...line, amount }
 }
 
 interface InvoiceFormDialogProps {
@@ -72,8 +78,9 @@ export function InvoiceFormDialog({
 }: InvoiceFormDialogProps) {
   const { createInvoice, updateInvoice, getQuote, quotes } = useBillingStore()
   const { customers } = useCustomerStore()
+  const { triggerAutomation } = useCommunicationStore()
+  const { log: auditLog } = useAuditStore()
   const isEdit = !!invoice
-  const customerQuotes = quotes.filter((q) => q.customerId === customerId && (q.status === "accepted" || q.status === "sent"))
 
   const [customerId, setCustomerId] = useState("")
   const [quoteId, setQuoteId] = useState<string | null>(null)
@@ -83,6 +90,11 @@ export function InvoiceFormDialog({
   const [dueDate, setDueDate] = useState("")
   const [paymentTermsDays, setPaymentTermsDays] = useState(14)
   const [notes, setNotes] = useState("")
+
+  const customerQuotes = useMemo(
+    () => quotes.filter((q) => q.customerId === customerId && (q.status === "accepted" || q.status === "sent")),
+    [quotes, customerId],
+  )
 
   useEffect(() => {
     if (invoice) {
@@ -114,15 +126,21 @@ export function InvoiceFormDialog({
     if (quote) {
       setCustomerId(quote.customerId)
       setLineItems(
-        quote.lineItems.map((l, i) => ({
-          id: `invli-${l.id}-${i}`,
-          description: l.description,
-          quantity: l.quantity,
-          unit: l.unit,
-          unitPrice: l.unitPrice,
-          amount: l.amount,
-          sortOrder: i,
-        })),
+        quote.lineItems.map((l, i) => {
+          const discountPercent = l.discountPercent ?? 0
+          const base = l.quantity * l.unitPrice
+          const amount = Math.round(base * (1 - discountPercent / 100) * 100) / 100
+          return {
+            id: `invli-${l.id}-${i}`,
+            description: l.description,
+            quantity: l.quantity,
+            unit: l.unit,
+            unitPrice: l.unitPrice,
+            discountPercent,
+            amount,
+            sortOrder: i,
+          }
+        }),
       )
     }
   }, [quoteId, open, isEdit, getQuote])
@@ -179,7 +197,7 @@ export function InvoiceFormDialog({
       })
       toast.success("Invoice updated.")
     } else {
-      createInvoice({
+      const created = createInvoice({
         customerId,
         projectId: null,
         quoteId,
@@ -194,7 +212,21 @@ export function InvoiceFormDialog({
         paymentTermsDays,
         notes,
       })
+      auditLog("invoice_created", "invoice", created.id, created.invoiceNumber)
       toast.success("Invoice created.")
+      const customer = customers.find((c) => c.id === customerId)
+      if (customer) {
+        triggerAutomation("invoice_due", {
+          contactId: customer.id,
+          contactName: customer.name || customer.companyName || "Customer",
+          contactEmail: customer.emails[0],
+          contactPhone: customer.phones[0],
+          extras: {
+            invoice_number: created.invoiceNumber,
+            due_date: created.dueDate,
+          },
+        })
+      }
     }
     onOpenChange(false)
     onSaved?.()
@@ -274,6 +306,7 @@ export function InvoiceFormDialog({
                       <TableHead className="w-24">Qty</TableHead>
                       <TableHead className="w-24">Unit</TableHead>
                       <TableHead className="w-28">Unit price</TableHead>
+                      <TableHead className="w-20">Disc. %</TableHead>
                       <TableHead className="w-28">Amount</TableHead>
                       <TableHead className="w-10" />
                     </TableRow>
@@ -314,6 +347,17 @@ export function InvoiceFormDialog({
                             className="h-8 w-28"
                             value={line.unitPrice}
                             onChange={(e) => updateLine(line.id, { unitPrice: Number(e.target.value) || 0 })}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step={1}
+                            className="h-8 w-20"
+                            value={line.discountPercent ?? 0}
+                            onChange={(e) => updateLine(line.id, { discountPercent: Number(e.target.value) || 0 })}
                           />
                         </TableCell>
                         <TableCell className="font-medium">{line.amount.toFixed(2)}</TableCell>

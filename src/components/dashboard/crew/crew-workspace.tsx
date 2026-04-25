@@ -84,6 +84,16 @@ export function CrewWorkspace() {
       toast.error("Select employee and project.");
       return;
     }
+    const active = getActiveTimeEntry(clockInEmployeeId);
+    if (active) {
+      const project = projects.find((p) => p.id === active.projectId);
+      toast.error(
+        `This employee is already clocked in on "${
+          project?.name ?? "another project"
+        }". Clock them out before starting a new entry.`,
+      );
+      return;
+    }
     clockIn(clockInEmployeeId, clockInProjectId, false);
     toast.success("Clocked in.");
     setClockInEmployeeId("");

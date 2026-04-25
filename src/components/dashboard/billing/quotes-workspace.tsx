@@ -26,16 +26,24 @@ import { useCustomerStore } from "@/lib/customer-store"
 import { QUOTE_STATUSES, QUOTE_STATUS_LABELS } from "@/lib/quote-types"
 import { QuoteFormDialog } from "./quote-form-dialog"
 import { AcceptQuoteDialog } from "./accept-quote-dialog"
+import { PaymentScheduleDialog } from "./payment-schedule-dialog"
+import { QuoteInvoicesDialog } from "./quote-invoices-dialog"
+import { InvoiceFormDialog } from "./invoice-form-dialog"
 import type { Quote } from "@/lib/quote-types"
+import type { Invoice } from "@/lib/quote-types"
 
 export function QuotesWorkspace() {
-  const { quotes, getQuote, deleteQuote } = useBillingStore()
+  const { quotes, getQuote, deleteQuote, getInvoicesByQuoteId } = useBillingStore()
   const { getCustomer } = useCustomerStore()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [formOpen, setFormOpen] = useState(false)
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null)
   const [acceptQuote, setAcceptQuote] = useState<Quote | null>(null)
+  const [scheduleQuote, setScheduleQuote] = useState<Quote | null>(null)
+  const [viewInvoicesQuote, setViewInvoicesQuote] = useState<Quote | null>(null)
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null)
+  const [invoiceFormOpen, setInvoiceFormOpen] = useState(false)
 
   const filtered = useMemo(() => {
     return quotes.filter((q) => {
@@ -120,6 +128,12 @@ export function QuotesWorkspace() {
                       <DropdownMenuItem asChild>
                         <Link href={`/dashboard/contracts?quoteId=${quote.id}`}>View contract</Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setScheduleQuote(quote)}>
+                        Create payment schedule
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setViewInvoicesQuote(quote)}>
+                        View invoices
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive"
@@ -138,6 +152,18 @@ export function QuotesWorkspace() {
               <CardContent className="pt-0 text-sm text-muted-foreground">
                 {quote.lineItems.length} line item(s)
                 {quote.validUntil && ` · Valid until ${quote.validUntil}`}
+                {getInvoicesByQuoteId(quote.id).length > 0 && (
+                  <>
+                    {" · "}
+                    <button
+                      type="button"
+                      className="underline hover:no-underline"
+                      onClick={() => setViewInvoicesQuote(quote)}
+                    >
+                      {getInvoicesByQuoteId(quote.id).length} invoice(s)
+                    </button>
+                  </>
+                )}
               </CardContent>
             </Card>
           )
@@ -171,6 +197,24 @@ export function QuotesWorkspace() {
         onOpenChange={(open) => !open && setAcceptQuote(null)}
         quote={acceptQuote}
         onAccepted={() => setAcceptQuote(null)}
+      />
+      <PaymentScheduleDialog
+        open={!!scheduleQuote}
+        onOpenChange={(open) => !open && setScheduleQuote(null)}
+        quote={scheduleQuote}
+        onCreated={() => setScheduleQuote(null)}
+      />
+      <QuoteInvoicesDialog
+        open={!!viewInvoicesQuote}
+        onOpenChange={(open) => !open && setViewInvoicesQuote(null)}
+        quote={viewInvoicesQuote}
+        onEditInvoice={(inv) => { setEditingInvoice(inv); setInvoiceFormOpen(true) }}
+      />
+      <InvoiceFormDialog
+        open={invoiceFormOpen}
+        onOpenChange={setInvoiceFormOpen}
+        invoice={editingInvoice}
+        onSaved={() => setEditingInvoice(null)}
       />
     </div>
   )

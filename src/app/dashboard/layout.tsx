@@ -6,6 +6,9 @@ import StoreInitializer from "@/components/store-initializer"
 import { DashboardHeader } from "@/components/dashboard/layout/dashboard-header"
 import { VoiceAssistantProvider } from "@/components/dashboard/layout/voice-assistant/voice-assistant-provider"
 import { VoiceAssistantDock } from "@/components/dashboard/layout/voice-assistant/voice-assistant-dock"
+import { OutreachStoreProvider } from "@/lib/outreach-store"
+import { EquipmentStoreProvider } from "@/lib/equipment-store"
+import { AuditStoreProvider } from "@/lib/audit-store"
 
 export default async function DashboardLayout({
   children,
@@ -24,9 +27,15 @@ export default async function DashboardLayout({
       <SidebarInset>
         <CustomerStoreWrapper>
           <VoiceAssistantProvider>
-            <DashboardHeader />
-            <div className="flex flex-1 flex-col p-4 pt-0">{children}</div>
-            <VoiceAssistantDock />
+            <OutreachStoreProvider>
+              <EquipmentStoreProvider>
+                <AuditStoreProvider>
+                  <DashboardHeader />
+                  <div className="flex flex-1 flex-col p-4 pt-0">{children}</div>
+                  <VoiceAssistantDock />
+                </AuditStoreProvider>
+              </EquipmentStoreProvider>
+            </OutreachStoreProvider>
           </VoiceAssistantProvider>
         </CustomerStoreWrapper>
       </SidebarInset>

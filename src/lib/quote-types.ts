@@ -7,6 +7,8 @@ export interface QuoteLineItem {
   quantity: number
   unit: string
   unitPrice: number
+  /** Optional discount applied to this line (0–100). */
+  discountPercent?: number
   amount: number
   sortOrder: number
 }
@@ -60,6 +62,8 @@ export interface InvoiceLineItem {
   quantity: number
   unit: string
   unitPrice: number
+  /** Optional discount applied to this line (0–100). */
+  discountPercent?: number
   amount: number
   sortOrder: number
 }

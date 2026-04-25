@@ -17,15 +17,21 @@ import { DOCUMENT_TYPE_LABELS } from "@/lib/document-types"
 import { ProjectFormDialog } from "@/components/dashboard/projects/project-form-dialog"
 import { ProjectTimelineSection } from "@/components/dashboard/projects/project-timeline-section"
 import { ProjectSupervisorReportsSection } from "@/components/dashboard/projects/project-supervisor-reports-section"
+import { applyTemplatePlaceholders, useCommunicationStore } from "@/lib/communication-store"
+import { toast } from "sonner"
+
+const SUPERVISOR_PHOTO_REMINDER_STORAGE_KEY = "landscaping-v2-supervisor-photo-reminders"
+const SUPERVISOR_PHOTO_REMINDER_TEMPLATE_ID = "tpl-supervisor-photos-missing"
 
 export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
   const { getProject, getSupervisorReports } = useProjectStore()
-  const { getCustomer } = useCustomerStore()
+  const { getCustomer, addTimelineEvent } = useCustomerStore()
   const { getAppointmentsByProjectId } = useAppointmentStore()
   const { getDocumentsByProjectId } = useDocumentStore()
+  const { addCommunication, templates } = useCommunicationStore()
   const project = getProject(id)
   const [editOpen, setEditOpen] = useState(false)
   const projectAppointments = project ? getAppointmentsByProjectId(project.id) : []
@@ -44,6 +50,76 @@ export default function ProjectDetailPage() {
 
   const customer = getCustomer(project.customerId)
   const reports = getSupervisorReports(project.id)
+  const today = new Date().toISOString().slice(0, 10)
+  const todayReport = reports.find((r) => r.date === today)
+  const missingPhotosToday = !todayReport || todayReport.photoUrls.length === 0
+
+  const loadReminderMap = (): Record<string, string> => {
+    if (typeof window === "undefined") return {}
+    try {
+      const raw = localStorage.getItem(SUPERVISOR_PHOTO_REMINDER_STORAGE_KEY)
+      if (!raw) return {}
+      const parsed = JSON.parse(raw) as Record<string, string>
+      return parsed && typeof parsed === "object" ? parsed : {}
+    } catch {
+      return {}
+    }
+  }
+
+  const saveReminderMap = (map: Record<string, string>) => {
+    if (typeof window === "undefined") return
+    try {
+      localStorage.setItem(SUPERVISOR_PHOTO_REMINDER_STORAGE_KEY, JSON.stringify(map))
+    } catch {}
+  }
+
+  const sendSupervisorPhotosReminder = () => {
+    const customer = getCustomer(project.customerId)
+    if (!customer) return
+
+    const reminderMap = loadReminderMap()
+    if (reminderMap[project.id] === today) {
+      toast.info("Reminder already sent today.")
+      return
+    }
+
+    const template = templates.find((t) => t.id === SUPERVISOR_PHOTO_REMINDER_TEMPLATE_ID)
+    if (!template) {
+      toast.error("Reminder template not found. Add it in Communication settings.")
+      return
+    }
+
+    const contactName = customer.name || customer.companyName || "Customer"
+    const { body, subject } = applyTemplatePlaceholders(
+      template.body,
+      template.subject,
+      contactName,
+      { date: today },
+    )
+
+    addCommunication({
+      channel: template.channel,
+      subject: template.channel === "email" ? subject : "",
+      body,
+      contactName,
+      contactId: customer.id,
+      contactEmail: template.channel === "email" ? customer.emails?.[0] : undefined,
+      contactPhone: template.channel === "sms" ? customer.phones?.[0] : undefined,
+      direction: "outbound",
+      read: true,
+      createdAt: new Date().toISOString(),
+    })
+
+    addTimelineEvent(customer.id, {
+      type: "communication",
+      title: template.channel === "email" ? subject || "Email" : "SMS",
+      date: new Date().toISOString(),
+      description: body.slice(0, 200),
+    })
+
+    saveReminderMap({ ...reminderMap, [project.id]: today })
+    toast.success("Daily photo reminder sent.")
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -148,6 +224,24 @@ export default function ProjectDetailPage() {
         </TabsContent>
 
         <TabsContent value="reports" className="flex-1 mt-4">
+          {missingPhotosToday && (
+            <Card className="mb-4 border-warning/50 bg-warning/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Daily photos required</CardTitle>
+                <p className="text-muted-foreground text-sm">
+                  No daily supervisor report with photos submitted for today ({today}). Add photos to keep the project moving.
+                </p>
+              </CardHeader>
+              <CardContent className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  Submitting a report with at least one photo satisfies this requirement.
+                </p>
+                <Button size="sm" variant="outline" onClick={sendSupervisorPhotosReminder}>
+                  Send reminder
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           <ProjectSupervisorReportsSection project={project} reports={reports} />
         </TabsContent>
 

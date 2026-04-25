@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { IconDotsVertical, IconPlus } from "@tabler/icons-react"
+import { IconDotsVertical, IconPlus, IconFileExport } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -49,6 +49,23 @@ export function InvoicesWorkspace() {
     })
   }, [invoices, search, statusFilter, typeFilter, getCustomer])
 
+  const exportCsv = () => {
+    const header = "invoiceNumber,customerName,type,status,total,paidAmount,dueDate,createdAt"
+    const rows = filtered.map((inv) => {
+      const customer = getCustomer(inv.customerId)
+      const name = (customer?.name || customer?.companyName || "").replace(/"/g, '""')
+      return [inv.invoiceNumber, `"${name}"`, inv.type, inv.status, inv.total, inv.paidAmount, inv.dueDate, inv.createdAt].join(",")
+    })
+    const csv = [header, ...rows].join("\n")
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `invoices-export-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -58,6 +75,14 @@ export function InvoicesWorkspace() {
             Deposit, progress, and final invoices. Record payments and track status.
           </p>
         </div>
+        <Button variant="outline" size="sm" onClick={exportCsv}>
+          <IconFileExport className="mr-2 size-4" />
+          Export CSV
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportCsv}>
+          <IconFileExport className="mr-2 size-4" />
+          Export CSV
+        </Button>
         <Button size="sm" onClick={() => { setEditingInvoice(null); setFormOpen(true) }}>
           <IconPlus className="mr-2 size-4" />
           New invoice

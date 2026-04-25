@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Field, FieldLabel } from "@/components/ui/field"
 import type { Invoice } from "@/lib/quote-types"
 import { useBillingStore } from "@/lib/billing-store"
+import { useAuditStore } from "@/lib/audit-store"
 
 interface RecordPaymentDialogProps {
   open: boolean
@@ -30,6 +31,7 @@ export function RecordPaymentDialog({
   onRecorded,
 }: RecordPaymentDialogProps) {
   const { recordPayment } = useBillingStore()
+  const { log: auditLog } = useAuditStore()
   const [amount, setAmount] = useState("")
   const [method, setMethod] = useState("Bank transfer")
   const [reference, setReference] = useState("")
@@ -48,6 +50,7 @@ export function RecordPaymentDialog({
       return
     }
     recordPayment(invoice.id, amt, method.trim(), reference.trim() || undefined)
+    auditLog("payment_recorded", "invoice", invoice.id, `£${amt.toFixed(2)} ${method.trim()}`)
     toast.success("Payment recorded.")
     setAmount("")
     setReference("")
