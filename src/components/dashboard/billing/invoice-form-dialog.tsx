@@ -163,7 +163,7 @@ export function InvoiceFormDialog({
   const taxAmount = (subtotal * taxRatePercent) / 100
   const total = subtotal + taxAmount
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit =async (e: React.SubmitEvent) => {
     e.preventDefault()
     if (!customerId) {
       toast.error("Select a customer.")
@@ -197,7 +197,7 @@ export function InvoiceFormDialog({
       })
       toast.success("Invoice updated.")
     } else {
-      const created = createInvoice({
+      const created =await createInvoice({
         customerId,
         projectId: null,
         quoteId,
@@ -212,6 +212,10 @@ export function InvoiceFormDialog({
         paymentTermsDays,
         notes,
       })
+      if (!created) {
+        toast.error("Failed to create invoice.")
+        return
+      }
       auditLog("invoice_created", "invoice", created.id, created.invoiceNumber)
       toast.success("Invoice created.")
       const customer = customers.find((c) => c.id === customerId)

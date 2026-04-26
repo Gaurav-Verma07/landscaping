@@ -87,7 +87,7 @@ export function CommandMenu({ open, setOpen }: CommandMenuProps) {
 
         <CommandGroup heading="Customers">
           {globalSearchCustomers.map((c) => {
-            const searchValue = `customer ${c.name} ${c.companyName ?? ""} ${c.email ?? ""} ${c.phone ?? ""} ${c.id}`.toLowerCase()
+            const searchValue = `customer ${c.name} ${c.companyName ?? ""} ${c.emails[0] ?? ""} ${c.phones[0] ?? ""} ${c.id}`.toLowerCase()
             return (
               <CommandItem
                 key={`customer-${c.id}`}
@@ -95,7 +95,7 @@ export function CommandMenu({ open, setOpen }: CommandMenuProps) {
                 onSelect={() => runCommand(() => router.push(`/dashboard/customers?open=${c.id}`))}
               >
                 <Users className="mr-2 h-4 w-4 shrink-0" />
-                <span className="truncate">{c.name || c.companyName || c.email || c.id}</span>
+                <span className="truncate">{c.name || c.companyName || c.emails[0] || c.id}</span>
               </CommandItem>
             )
           })}

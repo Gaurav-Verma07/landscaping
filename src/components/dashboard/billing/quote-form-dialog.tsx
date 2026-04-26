@@ -123,7 +123,7 @@ export function QuoteFormDialog({
   const taxAmount = (subtotal * taxRatePercent) / 100
   const total = subtotal + taxAmount
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit =async (e: React.SubmitEvent) => {
     e.preventDefault()
     if (!customerId) {
       toast.error("Select a customer.")
@@ -164,7 +164,7 @@ export function QuoteFormDialog({
         }
       }
     } else {
-      const createdQuote = createQuote({
+      const createdQuote =await createQuote({
         customerId,
         projectId: null,
         status,

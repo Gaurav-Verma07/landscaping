@@ -24,23 +24,25 @@ export async function register() {
     )
   }
 
-  process.on('uncaughtException', (err) => {
-    try {
-      enqueue({ type: 'process_error', name: err?.name, message: err?.message, stack: err?.stack, timestamp: new Date().toISOString() })
-    } catch { /**/ }
-  })
+  if (typeof process !== 'undefined' && typeof process.on === 'function') {
+    process.on('uncaughtException', (err) => {
+      try {
+        enqueue({ type: 'process_error', name: err?.name, message: err?.message, stack: err?.stack, timestamp: new Date().toISOString() })
+      } catch { /**/ }
+    })
 
-  process.on('unhandledRejection', (reason) => {
-    try {
-      enqueue({ type: 'process_error', message: reason != null ? String(reason) : 'unhandledRejection', timestamp: new Date().toISOString() })
-    } catch { /**/ }
-  })
+    process.on('unhandledRejection', (reason) => {
+      try {
+        enqueue({ type: 'process_error', message: reason != null ? String(reason) : 'unhandledRejection', timestamp: new Date().toISOString() })
+      } catch { /**/ }
+    })
 
-  process.on('warning', (warn) => {
-    try {
-      enqueue({ type: 'process_error', name: warn?.name ?? 'Warning', message: warn?.message ?? String(warn), timestamp: new Date().toISOString() })
-    } catch { /**/ }
-  })
+    process.on('warning', (warn) => {
+      try {
+        enqueue({ type: 'process_error', name: warn?.name ?? 'Warning', message: warn?.message ?? String(warn), timestamp: new Date().toISOString() })
+      } catch { /**/ }
+    })
+  }
 }
 
 function one(h: Record<string, string | string[] | undefined>, key: string): string {

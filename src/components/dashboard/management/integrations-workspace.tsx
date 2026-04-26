@@ -3,26 +3,65 @@
 import * as React from "react"
 import { useMemo, useState } from "react"
 import {
-  Cloud,
-  CreditCard,
-  Link2,
-  MapPinned,
-  MessageSquare,
-  Mountain,
-  Radar,
-  Camera,
-  Boxes,
+  Cloud, CreditCard, Link2, MapPinned, MessageSquare,
+  Mountain, Radar, Camera, Boxes,
 } from "lucide-react"
-
-import type { Integration } from "@/lib/mock/backend"
-import { setMockDb, upsertById } from "@/lib/mock/backend"
-import { useMockDb } from "@/lib/mock/backend/react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+
+type IntegrationKey = "quickbooks" | "stripe" | "companycam" | "hover" | "pix4d" | "twilio" | "google_calendar" | "google_drive" | "eagleview"
+type IntegrationCategory = "Accounting" | "Payments" | "Photos" | "Measurements" | "Drone Mapping" | "Messaging" | "Scheduling" | "Storage"
+
+interface Integration {
+  id: string
+  key: IntegrationKey
+  name: string
+  category: IntegrationCategory
+  connected: boolean
+  enabledInWorkflows: boolean
+  updatedAt: string
+}
+
+const now = new Date().toISOString()
+
+const INITIAL_INTEGRATIONS: Integration[] = [
+  { id: "int-quickbooks", key: "quickbooks", name: "QuickBooks Online", category: "Accounting", connected: false, enabledInWorkflows: false, updatedAt: now },
+  { id: "int-stripe", key: "stripe", name: "Stripe", category: "Payments", connected: false, enabledInWorkflows: false, updatedAt: now },
+  { id: "int-companycam", key: "companycam", name: "CompanyCam", category: "Photos", connected: true, enabledInWorkflows: true, updatedAt: now },
+  { id: "int-hover", key: "hover", name: "HOVER", category: "Measurements", connected: false, enabledInWorkflows: false, updatedAt: now },
+  { id: "int-pix4d", key: "pix4d", name: "Pix4D", category: "Drone Mapping", connected: false, enabledInWorkflows: false, updatedAt: now },
+  { id: "int-twilio", key: "twilio", name: "Twilio", category: "Messaging", connected: false, enabledInWorkflows: false, updatedAt: now },
+  { id: "int-google-calendar", key: "google_calendar", name: "Google Calendar", category: "Scheduling", connected: false, enabledInWorkflows: false, updatedAt: now },
+  { id: "int-google-drive", key: "google_drive", name: "Google Drive", category: "Storage", connected: false, enabledInWorkflows: false, updatedAt: now },
+  { id: "int-eagleview", key: "eagleview", name: "EagleView", category: "Measurements", connected: false, enabledInWorkflows: false, updatedAt: now },
+]
+
+const iconByKey: Record<string, React.ElementType> = {
+  quickbooks: CreditCard,
+  stripe: CreditCard,
+  companycam: Camera,
+  hover: Mountain,
+  twilio: MessageSquare,
+  google_calendar: MapPinned,
+  google_drive: Cloud,
+  eagleview: Radar,
+  pix4d: Boxes,
+}
+
+const iconByCategory: Record<string, React.ElementType> = {
+  Accounting: CreditCard,
+  Payments: CreditCard,
+  Messaging: MessageSquare,
+  Scheduling: MapPinned,
+  Measurements: Radar,
+  Photos: Camera,
+  Storage: Cloud,
+  "Drone Mapping": Boxes,
+}
 
 function statusBadge(connected: boolean) {
   return connected ? (
@@ -33,89 +72,34 @@ function statusBadge(connected: boolean) {
 }
 
 export function IntegrationsWorkspace() {
-  const db = useMockDb()
-  const integrations = db.management.integrations
+  const [integrations, setIntegrations] = useState<Integration[]>(INITIAL_INTEGRATIONS)
   const [query, setQuery] = useState("")
 
-  const iconByKey = useMemo(
-    () => ({
-      quickbooks: CreditCard,
-      stripe: CreditCard,
-      companycam: Camera,
-      hover: Mountain,
-      twilio: MessageSquare,
-      google_calendar: MapPinned,
-      google_drive: Cloud,
-      eagleview: Radar,
-      pix4d: Boxes,
-    }),
-    []
-  )
-
-  const iconByCategory = useMemo(
-    () => ({
-      Accounting: CreditCard,
-      Payments: CreditCard,
-      Messaging: MessageSquare,
-      Scheduling: MapPinned,
-      Measurements: Radar,
-      Photos: Camera,
-      Storage: Cloud,
-      "Drone Mapping": Boxes,
-    }),
-    []
-  )
-
-  const integrationsWithPix4d = useMemo(() => {
-    const hasPix4d = integrations.some((integration) => integration.key === "pix4d")
-    if (hasPix4d) {
-      return integrations
-    }
-    const now = new Date().toISOString()
-    const pix4dPlaceholder: Integration = {
-      id: "int-pix4d-placeholder",
-      key: "pix4d",
-      name: "Pix4D",
-      category: "Drone Mapping",
-      connected: false,
-      enabledInWorkflows: false,
-      updatedAt: now,
-    }
-    return [
-      ...integrations,
-      pix4dPlaceholder,
-    ]
-  }, [integrations])
+  const update = (id: string, patch: Partial<Integration>) => {
+    setIntegrations((prev) =>
+      prev.map((i) => i.id === id ? { ...i, ...patch, updatedAt: new Date().toISOString() } : i)
+    )
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return integrationsWithPix4d.filter(
-      (i) =>
-        !q ||
-        i.name.toLowerCase().includes(q) ||
-        i.category.toLowerCase().includes(q) ||
-        i.key.toLowerCase().includes(q)
+    if (!q) return integrations
+    return integrations.filter((i) =>
+      i.name.toLowerCase().includes(q) ||
+      i.category.toLowerCase().includes(q) ||
+      i.key.toLowerCase().includes(q)
     )
-  }, [integrationsWithPix4d, query])
+  }, [integrations, query])
 
-  const connectedCount = useMemo(() => integrations.filter((i) => i.connected).length, [integrations])
-  const enabledCount = useMemo(() => integrations.filter((i) => i.enabledInWorkflows).length, [integrations])
-
-  const update = (integration: Integration, patch: Partial<Integration>) => {
-    const now = new Date().toISOString()
-    const next: Integration = { ...integration, ...patch, updatedAt: now }
-    setMockDb((prev) => ({
-      ...prev,
-      management: { ...prev.management, integrations: upsertById(prev.management.integrations, next) },
-    }))
-  }
+  const connectedCount = integrations.filter((i) => i.connected).length
+  const enabledCount = integrations.filter((i) => i.enabledInWorkflows).length
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Integrations</h1>
-          <p className="text-muted-foreground">Connect tools and control which workflows can use them (mock DB backed).</p>
+          <p className="text-muted-foreground">Connect tools and control which workflows can use them.</p>
         </div>
       </div>
 
@@ -148,12 +132,17 @@ export function IntegrationsWorkspace() {
         <CardContent className="grid gap-4">
           <div className="grid gap-3 md:grid-cols-4">
             <div className="md:col-span-2">
-              <Label className="sr-only" htmlFor="int-q">
-                Search
-              </Label>
-              <Input id="int-q" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search integrations..." />
+              <Label className="sr-only" htmlFor="int-q">Search</Label>
+              <Input
+                id="int-q"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search integrations..."
+              />
             </div>
-            <div className="md:col-span-2 flex items-center justify-end text-sm text-muted-foreground">{filtered.length} results</div>
+            <div className="md:col-span-2 flex items-center justify-end text-sm text-muted-foreground">
+              {filtered.length} results
+            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -181,7 +170,7 @@ export function IntegrationsWorkspace() {
                         <div className="flex items-center gap-2">
                           <Switch
                             checked={i.enabledInWorkflows}
-                            onCheckedChange={(v) => update(i, { enabledInWorkflows: v })}
+                            onCheckedChange={(v) => update(i.id, { enabledInWorkflows: v })}
                             disabled={!i.connected}
                           />
                           <span className="text-xs text-muted-foreground">{i.enabledInWorkflows ? "on" : "off"}</span>
@@ -189,11 +178,11 @@ export function IntegrationsWorkspace() {
                       </div>
                       <div className="flex justify-end">
                         {i.connected ? (
-                          <Button variant="outline" size="sm" onClick={() => update(i, { connected: false, enabledInWorkflows: false })}>
+                          <Button variant="outline" size="sm" onClick={() => update(i.id, { connected: false, enabledInWorkflows: false })}>
                             Disconnect
                           </Button>
                         ) : (
-                          <Button size="sm" onClick={() => update(i, { connected: true })}>
+                          <Button size="sm" onClick={() => update(i.id, { connected: true })}>
                             <Link2 className="mr-2 h-4 w-4" />
                             Connect
                           </Button>
@@ -205,7 +194,9 @@ export function IntegrationsWorkspace() {
               })
             ) : (
               <Card className="col-span-full">
-                <CardContent className="py-10 text-center text-sm text-muted-foreground">No integrations found.</CardContent>
+                <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                  No integrations found.
+                </CardContent>
               </Card>
             )}
           </div>
@@ -214,4 +205,3 @@ export function IntegrationsWorkspace() {
     </div>
   )
 }
-

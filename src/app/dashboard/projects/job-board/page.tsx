@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import {
   DndContext,
@@ -285,11 +285,24 @@ export default function JobBoardPage() {
   const { createInvoice, getInvoicesByProjectId } = useBillingStore()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [view, setView] = useState<JobBoardView>("kanban")
+  const [reportsMap, setReportsMap] = useState<Record<string, any[]>>({})
 
-  const isSupervisorPhotosMissingToday = (projectId: string) => {
-    const report = getSupervisorReports(projectId).find((r) => r.date === todayIso())
-    return !report || report.photoUrls.length === 0
-  }
+ 
+  useEffect(() => {
+    async function loadReports() {
+      const map: Record<string, any[]> = {}
+  
+      for (const p of projects) {
+        map[p.id] = await getSupervisorReports(p.id)
+      }
+  
+      setReportsMap(map)
+    }
+  
+    if (projects.length) {
+      loadReports()
+    }
+  }, [projects])
 
   const sendSupervisorPhotosReminder = (project: Project) => {
     if (!project?.customerId) return
@@ -378,6 +391,12 @@ export default function JobBoardPage() {
     const previousStatus = project?.status
     const wasCompleted = previousStatus === "Completed"
 
+    const isSupervisorPhotosMissingToday = (projectId: string) => {
+      const reports = reportsMap[projectId] || []
+      const report = reports.find((r) => r.date === todayIso())
+      return !report || report.photoUrls.length === 0
+    }
+    
     if (
       project &&
       previousStatus !== "In Progress" &&

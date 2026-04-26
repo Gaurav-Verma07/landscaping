@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowLeft, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -32,6 +32,7 @@ export default function ProjectDetailPage() {
   const { getAppointmentsByProjectId } = useAppointmentStore()
   const { getDocumentsByProjectId } = useDocumentStore()
   const { addCommunication, templates } = useCommunicationStore()
+  const [reports, setReports] = useState([])
   const project = getProject(id)
   const [editOpen, setEditOpen] = useState(false)
   const projectAppointments = project ? getAppointmentsByProjectId(project.id) : []
@@ -49,7 +50,17 @@ export default function ProjectDetailPage() {
   }
 
   const customer = getCustomer(project.customerId)
-  const reports = getSupervisorReports(project.id)
+  useEffect(() => {
+    async function loadReports() {
+      const data = await getSupervisorReports(project.id)
+      setReports(data)
+    }
+  
+    if (project?.id) {
+      loadReports()
+    }
+  }, [project?.id])
+  
   const today = new Date().toISOString().slice(0, 10)
   const todayReport = reports.find((r) => r.date === today)
   const missingPhotosToday = !todayReport || todayReport.photoUrls.length === 0

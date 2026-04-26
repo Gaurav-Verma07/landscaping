@@ -85,7 +85,7 @@ export function ImportCustomersCsvDialog({
   const [csv, setCsv] = useState("")
   const [importing, setImporting] = useState(false)
 
-  const handleImport = () => {
+  const handleImport =async () => {
     const rows = parseCsv(csv)
     if (rows.length === 0) {
       toast.error("No valid rows. Use header: " + CSV_HEADER)
@@ -94,7 +94,7 @@ export function ImportCustomersCsvDialog({
     setImporting(true)
     let created = 0
     for (const row of rows) {
-      const customer = createCustomer({
+      const customer =await createCustomer({
         name: row.name,
         companyName: row.companyName,
         phones: row.phone ? [row.phone] : [],

@@ -73,13 +73,13 @@ export function PaymentScheduleDialog({
     setEntries((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit =async (e: React.SubmitEvent) => {
     e.preventDefault()
     if (!quote || !valid) {
       if (totalPercent !== 100) toast.error("Percents must total 100%.")
       return
     }
-    const created = createPaymentScheduleFromQuote(
+    const created =await createPaymentScheduleFromQuote(
       quote.id,
       entries.map((e) => ({ percent: e.percent, type: e.type, dueOffsetDays: e.dueOffsetDays })),
     )

@@ -112,7 +112,7 @@ export function AppointmentsWorkspace() {
             <SelectItem value="all">All customers</SelectItem>
             {customers.map((c) => (
               <SelectItem key={c.id} value={c.id}>
-                {c.name || c.companyName || c.email}
+                {c.name || c.companyName || c.emails?.[0] || '—'}
               </SelectItem>
             ))}
           </SelectContent>

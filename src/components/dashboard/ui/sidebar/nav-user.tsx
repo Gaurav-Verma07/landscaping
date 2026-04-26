@@ -37,8 +37,15 @@ import {
 
 import { useUserStore } from "@/store/use-user-store"
 import { signOut } from "@/app/auth/actions"
+import { getProfile } from "@/app/actions/profile"
 import { AccountSettingsDialog } from "@/components/dashboard/ui/sidebar/account-settings-dialog"
 import { useTheme } from "next-themes"
+
+type ProfileSnapshot = {
+  full_name: string | null
+  avatar_url: string | null
+  team_logo_url: string | null
+}
 
 export function NavUser({
   user: propUser,
@@ -55,16 +62,34 @@ export function NavUser({
   const user = storeUser || propUser
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
-
-  const name = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User"
-  const email = user?.email || ""
-  const avatar = user?.user_metadata?.avatar_url || ""
-  const initials = name.charAt(0).toUpperCase()
   const [accountOpen, setAccountOpen] = React.useState(false)
+  const [profile, setProfile] = React.useState<ProfileSnapshot | null>(null)
+
+  const fetchProfile = React.useCallback(async () => {
+    const data = await getProfile()
+    if (data) {
+      setProfile({
+        full_name: data.full_name ?? null,
+        avatar_url: data.avatar_url ?? null,
+        team_logo_url: data.team_logo_url ?? null,
+      })
+    }
+  }, [])
 
   React.useEffect(() => {
     setMounted(true)
-  }, [])
+    fetchProfile()
+
+    // Re-sync whenever settings are saved
+    window.addEventListener("settings-updated", fetchProfile)
+    return () => window.removeEventListener("settings-updated", fetchProfile)
+  }, [fetchProfile])
+
+  // Profile DB data takes priority over auth metadata
+  const name = profile?.full_name  || user?.email?.split("@")[0] || "User"
+  const email = user?.email || ""
+  const avatar = profile?.team_logo_url || profile?.avatar_url  || ""
+  const initials = name.charAt(0).toUpperCase()
 
   const handleSignOut = async () => {
     await signOut()
@@ -72,13 +97,7 @@ export function NavUser({
 
   const cycleTheme = () => {
     if (!mounted) return
-    if (theme === "light") {
-      setTheme("dark")
-    } else if (theme === "dark") {
-      setTheme("light")
-    } else {
-      setTheme("light")
-    }
+    setTheme(theme === "dark" ? "light" : "dark")
   }
 
   return (

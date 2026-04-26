@@ -69,7 +69,7 @@ export function AccountSettingsDialog({
     const run = async () => {
       setLoading(true)
       try {
-        const data = await getProfile(storeUser.id)
+        const data = await getProfile()
         const row: ProfileRow = data
           ? {
               id: data.id,
@@ -131,10 +131,10 @@ export function AccountSettingsDialog({
       const nameTrimmed = fullName.trim() || null
       const avatarUrl = removeAvatar ? null : (profile?.avatar_url ?? null)
 
-      await upsertProfile(storeUser.id, {
+      await upsertProfile({
         email: storeUser.email ?? null,
-        fullName: nameTrimmed,
-        avatarUrl,
+        full_name: nameTrimmed,
+        avatar_url: avatarUrl,
       })
       toast.success("Account updated.")
       onOpenChange(false)

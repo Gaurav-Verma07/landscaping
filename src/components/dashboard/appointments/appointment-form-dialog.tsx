@@ -90,7 +90,7 @@ export function AppointmentFormDialog({
     }
   }, [appointment, defaultCustomerId, defaultProjectId, open])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     if (!customerId.trim()) {
       toast.error("Select a customer.")
@@ -142,12 +142,12 @@ export function AppointmentFormDialog({
       )
     }
     if (isEdit) {
-      updateAppointment(appointment.id, data)
+      await updateAppointment(appointment.id, data)
       toast.success("Appointment updated.")
     } else {
-      const created = createAppointment(data)
+      const created = await createAppointment(data)
       const customer = customers.find((c) => c.id === customerId)
-      if (customer) {
+      if (customer && created) {
         const startLocale = new Date(created.startAt)
         triggerAutomation("appointment_reminder", {
           contactId: customer.id,
@@ -185,7 +185,7 @@ export function AppointmentFormDialog({
               <SelectContent>
                 {customers.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
-                    {c.name || c.companyName || c.email}
+                    {c.name || c.companyName || c.emails?.[0] || '—'}
                   </SelectItem>
                 ))}
               </SelectContent>

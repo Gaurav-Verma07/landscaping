@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useCustomerStore } from "@/lib/customer-store"
 import { useAuditStore } from "@/lib/audit-store"
+import { addAttachment ,createCustomer as createCustomerAction } from "@/lib/actions/customers"
 
 const NEW_CUSTOMER_FORM_ID = "new-customer-form"
 
@@ -27,20 +28,35 @@ export function NewCustomerDialog({
   onOpenChange,
   onCustomerAdded,
 }: NewCustomerDialogProps) {
-  const { createCustomer, createCustomerWithAttachments } = useCustomerStore()
+  const { createCustomer, refresh } = useCustomerStore()
   const { log: auditLog } = useAuditStore()
 
   const handleSubmit = async (
     data: Parameters<typeof createCustomer>[0],
     initialFiles?: File[],
   ) => {
-    let customer
-    if (initialFiles?.length) {
-      customer = await createCustomerWithAttachments(data, initialFiles)
-    } else {
-      customer = createCustomer(data)
+    const result = await createCustomerAction(data)
+    if ('error' in result || !result.data) {
+      toast.error("Failed to create customer.")
+      return
     }
-    auditLog("customer_created", "customer", customer.id, customer.name || customer.companyName || customer.id)
+  
+    const customerId = result.data.id
+    const customerName = result.data.name || result.data.company_name || customerId
+  
+    if (initialFiles?.length) {
+      for (const file of initialFiles) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const res = await addAttachment(customerId, formData)
+        if (res && 'error' in res) {
+          toast.error(`Failed to upload ${file.name}: ${res.error}`)
+        }
+      }
+    }
+  
+    await refresh()
+    auditLog("customer_created", "customer", customerId, customerName)
     toast.success("Customer created.")
     onOpenChange(false)
     onCustomerAdded?.()

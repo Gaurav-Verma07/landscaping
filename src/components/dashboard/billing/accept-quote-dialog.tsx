@@ -54,9 +54,9 @@ export function AcceptQuoteDialog({
   quote,
   onAccepted,
 }: AcceptQuoteDialogProps) {
-  const { acceptQuote, contractTemplates } = useBillingStore()
+  const { acceptQuote, contractTemplates, updateContract} = useBillingStore()
   const { getCustomer } = useCustomerStore()
-  const { createProject, updateContract } = useProjectStore()
+  const { createProject} = useProjectStore()
   const { triggerAutomation } = useCommunicationStore()
   const { log: auditLog } = useAuditStore()
   const [title, setTitle] = useState("")
@@ -102,13 +102,14 @@ export function AcceptQuoteDialog({
     }
   }, [templateId, contractTemplates, quote, getCustomer])
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (!quote || quote.status !== "sent") return
     if (!title.trim()) {
       toast.error("Enter a contract title.")
       return
     }
-    const contract = acceptQuote(quote.id, title.trim(), content.trim())
+  
+    const contract = await acceptQuote(quote.id, title.trim(), content.trim())
     if (!contract) {
       toast.error("Quote could not be accepted.")
       return
@@ -116,7 +117,7 @@ export function AcceptQuoteDialog({
     toast.success("Quote accepted. Contract created.")
     auditLog("quote_accepted", "quote", quote.id, quote.quoteNumber)
     auditLog("contract_signed", "contract", contract.id, contract.contractNumber)
-
+  
     const customer = getCustomer(quote.customerId)
     if (customer) {
       triggerAutomation("quote_accepted", {
@@ -126,7 +127,7 @@ export function AcceptQuoteDialog({
         contactPhone: customer.phones[0],
       })
     }
-
+  
     if (createProjectFromContract && !contract.projectId) {
       const now = Date.now()
       const defaultTimeline = TIMELINE_MILESTONE_TYPES.map((type: TimelineMilestoneType, index) => ({
@@ -138,7 +139,7 @@ export function AcceptQuoteDialog({
         order: index,
         notes: undefined,
       }))
-      const project = createProject({
+      const project = await createProject({
         name: title.trim(),
         customerId: quote.customerId,
         projectType: "Custom",
@@ -157,13 +158,15 @@ export function AcceptQuoteDialog({
         dependencyProjectIds: [],
         timeline: defaultTimeline,
       })
-      updateContract(contract.id, { projectId: project.id })
-      toast.success("Project created and linked to contract.")
+      if (project) {
+        await updateContract(contract.id, { projectId: project.id })
+        toast.success("Project created and linked to contract.")
+      }
       onAccepted?.(contract.id)
     } else {
       onAccepted?.(contract.id)
     }
-
+  
     onOpenChange(false)
   }
 

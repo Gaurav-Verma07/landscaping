@@ -214,7 +214,7 @@ function BookingFormDialog({
     onOpenChange(next)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.SubmitEvent) => {
     e.preventDefault()
     if (!assetId.trim()) {
       toast.error("Select equipment.")
@@ -232,7 +232,7 @@ function BookingFormDialog({
     }
     const startIso = start.toISOString()
     const endIso = end.toISOString()
-    const conflicts = getConflictingBookings(assetId, startIso, endIso, isEdit ? booking?.id : undefined)
+    const conflicts =await getConflictingBookings(assetId, startIso, endIso, isEdit ? booking?.id : undefined)
     if (conflicts.length > 0) {
       toast.warning(
         `This time slot overlaps with ${conflicts.length} existing booking(s) for this equipment. Consider choosing a different time or asset.`,

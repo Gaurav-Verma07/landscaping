@@ -50,6 +50,7 @@ export default function CustomerDetailPage() {
     addTimelineEvent,
     addAttachment,
     removeAttachment,
+    refresh
   } = useCustomerStore()
   const { getCommunicationsByContactId } = useCommunicationStore()
   const { getProjectsByCustomerId } = useProjectStore()
@@ -98,9 +99,12 @@ export default function CustomerDetailPage() {
     setShowTimelineForm(false)
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange =async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) addAttachment(id, file)
+    if (file) {
+      await addAttachment(id, file)
+      await refresh()
+    }
     e.target.value = ""
   }
 
@@ -505,7 +509,8 @@ export default function CustomerDetailPage() {
                   >
                     <a
                       href={a.url}
-                      download={a.name}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-primary hover:underline truncate max-w-[200px]"
                     >
                       {a.name}

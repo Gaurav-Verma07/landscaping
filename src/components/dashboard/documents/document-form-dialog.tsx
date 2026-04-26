@@ -39,7 +39,7 @@ interface DocumentFormDialogProps {
 }
 
 export function DocumentFormDialog({ open, onOpenChange, document, defaultCustomerId, defaultProjectId, onSaved }: DocumentFormDialogProps) {
-  const { createDocument, updateDocument } = useDocumentStore()
+  const { createDocument,uploadDocument, updateDocument } = useDocumentStore()
   const { customers } = useCustomerStore()
   const { getProjectsByCustomerId } = useProjectStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -51,10 +51,12 @@ export function DocumentFormDialog({ open, onOpenChange, document, defaultCustom
   const [name, setName] = useState("")
   const [fileUrl, setFileUrl] = useState("")
   const [tagsStr, setTagsStr] = useState("")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const customerProjects = customerId ? getProjectsByCustomerId(customerId) : []
 
   useEffect(() => {
+    setSelectedFile(null)
     if (document) {
       setCustomerId(document.customerId ?? "")
       setProjectId(document.projectId ?? null)
@@ -75,42 +77,40 @@ export function DocumentFormDialog({ open, onOpenChange, document, defaultCustom
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setFileUrl(reader.result as string)
-    reader.readAsDataURL(file)
+    setSelectedFile(file)
     if (!name.trim()) setName(file.name)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
-    if (!name.trim()) {
-      toast.error("Enter a name.")
-      return
-    }
-    if (!fileUrl && !isEdit) {
-      toast.error("Select a file to upload.")
-      return
-    }
-    const data: CreateDocumentData = {
+    if (!name.trim()) { toast.error("Enter a name."); return }
+    if (!selectedFile && !isEdit) { toast.error("Select a file to upload."); return }
+  
+    const meta = {
       customerId: customerId || null,
       projectId: projectId || null,
       type,
       name: name.trim(),
-      fileUrl: fileUrl || document!.fileUrl,
       tags: parseTags(tagsStr),
     }
+  
     if (isEdit) {
-      updateDocument(document.id, data)
+      if (selectedFile) {
+        await uploadDocument(selectedFile, meta)
+      } else {
+        await updateDocument(document.id, { ...meta, fileUrl: document.fileUrl })
+      }
       toast.success("Document updated.")
     } else {
-      createDocument(data)
-      toast.success("Document added.")
+      await uploadDocument(selectedFile!, meta)
+      toast.success("Document uploaded.")
     }
+  
     onOpenChange(false)
     onSaved?.()
+    setSelectedFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -128,7 +128,7 @@ export function DocumentFormDialog({ open, onOpenChange, document, defaultCustom
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
                 {customers.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name || c.companyName || c.email}</SelectItem>
+                  <SelectItem key={c.id} value={c.id}>{c.name || c.companyName || c.emails?.[0] || '—'}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

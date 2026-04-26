@@ -104,7 +104,7 @@ export function DocumentsWorkspace() {
           <SelectContent>
             <SelectItem value="all">All customers</SelectItem>
             {customers.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name || c.companyName || c.email}</SelectItem>
+              <SelectItem key={c.id} value={c.id}>{c.name || c.companyName || c.emails?.[0] || '—'}</SelectItem>
             ))}
           </SelectContent>
         </Select>

@@ -29,6 +29,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { getProfile } from "@/app/actions/profile"
 
 const nav = {
   navMain: [
@@ -132,12 +133,15 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
   const [teams, setTeams] = React.useState<{ name: string; logoSrc: string; plan: string }[]>([])
 
   const load = React.useCallback(async () => {
-    if (!user?.id) {
-      setTeams([{ name: "Landscaping", logoSrc: "/logo.png", plan: "Enterprise" }])
-      return
+    try {
+      const profile = await getProfile()
+      const name = profile?.team_name || 'Landscaping'
+      const logoSrc = profile?.team_logo_url || '/logo.png'
+      setTeams([{ name, logoSrc, plan: 'Enterprise' }])
+    } catch {
+      setTeams([{ name: 'Landscaping', logoSrc: '/logo.png', plan: 'Enterprise' }])
     }
-    setTeams([{ name: "Landscaping", logoSrc: "/logo.png", plan: "Enterprise" }])
-  }, [user?.id])
+  }, [])
 
   React.useEffect(() => {
     load()

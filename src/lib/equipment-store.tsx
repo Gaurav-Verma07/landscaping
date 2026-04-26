@@ -1,53 +1,28 @@
-"use client"
+'use client'
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
-import type { EquipmentAsset, EquipmentBooking, EquipmentStatus, BookingStatus } from "@/lib/equipment-types"
-
-const ASSETS_KEY = "landscaping-v2-equipment-assets"
-const BOOKINGS_KEY = "landscaping-v2-equipment-bookings"
-
-function loadJson<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback
-  try {
-    const raw = localStorage.getItem(key)
-    if (!raw || raw === "") return fallback
-    return JSON.parse(raw) as T
-  } catch {
-    return fallback
-  }
-}
-
-function saveJson(key: string, data: unknown) {
-  if (typeof window === "undefined") return
-  try {
-    localStorage.setItem(key, JSON.stringify(data))
-  } catch {}
-}
-
-function createId() {
-  return `eq-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-}
-
-function rangesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
-  const aS = new Date(aStart).getTime()
-  const aE = new Date(aEnd).getTime()
-  const bS = new Date(bStart).getTime()
-  const bE = new Date(bEnd).getTime()
-  return aS < bE && aE > bS
-}
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import type { EquipmentAsset, EquipmentBooking } from '@/lib/equipment-types'
+import {
+  getAssets, getBookings,
+  createAsset as createAssetAction, updateAsset as updateAssetAction, deleteAsset as deleteAssetAction,
+  createBooking as createBookingAction, updateBooking as updateBookingAction, deleteBooking as deleteBookingAction,
+  getConflictingBookings as getConflictingBookingsAction,
+} from '@/lib/actions/equipment'
 
 type EquipmentStoreValue = {
   assets: EquipmentAsset[]
   bookings: EquipmentBooking[]
-  createAsset: (data: Omit<EquipmentAsset, "id" | "createdAt" | "updatedAt">) => EquipmentAsset
-  updateAsset: (id: string, data: Partial<Omit<EquipmentAsset, "id" | "createdAt" | "updatedAt">>) => void
-  deleteAsset: (id: string) => void
-  createBooking: (data: Omit<EquipmentBooking, "id" | "createdAt" | "updatedAt">) => EquipmentBooking
-  updateBooking: (id: string, data: Partial<Omit<EquipmentBooking, "id" | "createdAt" | "updatedAt">>) => void
-  deleteBooking: (id: string) => void
+  loading: boolean
+  createAsset: (data: Omit<EquipmentAsset, 'id' | 'createdAt' | 'updatedAt'>) => Promise<EquipmentAsset | undefined>
+  updateAsset: (id: string, data: Partial<Omit<EquipmentAsset, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>
+  deleteAsset: (id: string) => Promise<void>
+  createBooking: (data: Omit<EquipmentBooking, 'id' | 'createdAt' | 'updatedAt'>) => Promise<EquipmentBooking | undefined>
+  updateBooking: (id: string, data: Partial<Omit<EquipmentBooking, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>
+  deleteBooking: (id: string) => Promise<void>
   getBookingsByAssetId: (assetId: string) => EquipmentBooking[]
   getBookingsByProjectId: (projectId: string) => EquipmentBooking[]
-  getConflictingBookings: (assetId: string, startAt: string, endAt: string, excludeBookingId?: string) => EquipmentBooking[]
+  getConflictingBookings: (assetId: string, startAt: string, endAt: string, excludeBookingId?: string) => Promise<EquipmentBooking[]>
+  refresh: () => Promise<void>
 }
 
 const EquipmentStoreContext = createContext<EquipmentStoreValue | null>(null)
@@ -55,117 +30,88 @@ const EquipmentStoreContext = createContext<EquipmentStoreValue | null>(null)
 export function EquipmentStoreProvider({ children }: { children: React.ReactNode }) {
   const [assets, setAssets] = useState<EquipmentAsset[]>([])
   const [bookings, setBookings] = useState<EquipmentBooking[]>([])
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    setAssets(loadJson<EquipmentAsset[]>(ASSETS_KEY, []))
-    setBookings(loadJson<EquipmentBooking[]>(BOOKINGS_KEY, []))
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    const [a, b] = await Promise.all([getAssets(), getBookings()])
+    setAssets(a)
+    setBookings(b)
+    setLoading(false)
   }, [])
 
-  const persistAssets = useCallback((list: EquipmentAsset[]) => {
-    setAssets(list)
-    saveJson(ASSETS_KEY, list)
+  useEffect(() => { refresh() }, [])
+
+  const createAsset = useCallback(async (data: Omit<EquipmentAsset, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const result = await createAssetAction(data)
+    if ('error' in result) return undefined
+    await refresh()
+    return assets.find((a) => a.id === result.data?.id)
+  }, [assets, refresh])
+
+  const updateAsset = useCallback(async (id: string, data: Partial<Omit<EquipmentAsset, 'id' | 'createdAt' | 'updatedAt'>>) => {
+    await updateAssetAction(id, data)
+    await refresh()
+  }, [refresh])
+
+  const deleteAsset = useCallback(async (id: string) => {
+    await deleteAssetAction(id)
+    setAssets((prev) => prev.filter((a) => a.id !== id))
+    setBookings((prev) => prev.filter((b) => b.assetId !== id))
   }, [])
 
-  const persistBookings = useCallback((list: EquipmentBooking[]) => {
-    setBookings(list)
-    saveJson(BOOKINGS_KEY, list)
+  const createBooking = useCallback(async (data: Omit<EquipmentBooking, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const result = await createBookingAction(data)
+    if ('error' in result) return undefined
+    await refresh()
+    return result.data
+  }, [refresh])
+
+  const updateBooking = useCallback(async (id: string, data: Partial<Omit<EquipmentBooking, 'id' | 'createdAt' | 'updatedAt'>>) => {
+    await updateBookingAction(id, data)
+    await refresh()
+  }, [refresh])
+
+  const deleteBooking = useCallback(async (id: string) => {
+    await deleteBookingAction(id)
+    setBookings((prev) => prev.filter((b) => b.id !== id))
   }, [])
-
-  const createAsset = useCallback(
-    (data: Omit<EquipmentAsset, "id" | "createdAt" | "updatedAt">) => {
-      const now = new Date().toISOString()
-      const asset: EquipmentAsset = { ...data, id: createId(), createdAt: now, updatedAt: now }
-      persistAssets([...assets, asset])
-      return asset
-    },
-    [assets, persistAssets],
-  )
-
-  const updateAsset = useCallback(
-    (id: string, data: Partial<Omit<EquipmentAsset, "id" | "createdAt" | "updatedAt">>) => {
-      const now = new Date().toISOString()
-      persistAssets(assets.map((a) => (a.id === id ? { ...a, ...data, updatedAt: now } : a)))
-    },
-    [assets, persistAssets],
-  )
-
-  const deleteAsset = useCallback(
-    (id: string) => {
-      persistAssets(assets.filter((a) => a.id !== id))
-      persistBookings(bookings.filter((b) => b.assetId !== id))
-    },
-    [assets, bookings, persistAssets, persistBookings],
-  )
-
-  const createBooking = useCallback(
-    (data: Omit<EquipmentBooking, "id" | "createdAt" | "updatedAt">) => {
-      const now = new Date().toISOString()
-      const booking: EquipmentBooking = { ...data, id: createId(), createdAt: now, updatedAt: now }
-      persistBookings([...bookings, booking])
-      return booking
-    },
-    [bookings, persistBookings],
-  )
-
-  const updateBooking = useCallback(
-    (id: string, data: Partial<Omit<EquipmentBooking, "id" | "createdAt" | "updatedAt">>) => {
-      const now = new Date().toISOString()
-      persistBookings(bookings.map((b) => (b.id === id ? { ...b, ...data, updatedAt: now } : b)))
-    },
-    [bookings, persistBookings],
-  )
-
-  const deleteBooking = useCallback(
-    (id: string) => persistBookings(bookings.filter((b) => b.id !== id)),
-    [bookings, persistBookings],
-  )
 
   const getBookingsByAssetId = useCallback(
     (assetId: string) =>
-      bookings.filter((b) => b.assetId === assetId && b.status !== "cancelled").sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()),
-    [bookings],
+      bookings
+        .filter((b) => b.assetId === assetId && b.status !== 'cancelled')
+        .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()),
+    [bookings]
   )
 
   const getBookingsByProjectId = useCallback(
     (projectId: string) =>
-      bookings.filter((b) => b.projectId === projectId && b.status !== "cancelled").sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()),
-    [bookings],
+      bookings
+        .filter((b) => b.projectId === projectId && b.status !== 'cancelled')
+        .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()),
+    [bookings]
   )
 
-  const getConflictingBookings = useCallback(
-    (assetId: string, startAt: string, endAt: string, excludeBookingId?: string) => {
-      return bookings.filter((b) => {
-        if (b.assetId !== assetId || b.status === "cancelled") return false
-        if (excludeBookingId && b.id === excludeBookingId) return false
-        return rangesOverlap(b.startAt, b.endAt, startAt, endAt)
-      })
-    },
-    [bookings],
-  )
+  const getConflictingBookings = useCallback(async (
+    assetId: string, startAt: string, endAt: string, excludeBookingId?: string
+  ) => {
+    return getConflictingBookingsAction(assetId, startAt, endAt, excludeBookingId)
+  }, [])
 
   const value: EquipmentStoreValue = {
-    assets,
-    bookings,
-    createAsset,
-    updateAsset,
-    deleteAsset,
-    createBooking,
-    updateBooking,
-    deleteBooking,
-    getBookingsByAssetId,
-    getBookingsByProjectId,
-    getConflictingBookings,
+    assets, bookings, loading,
+    createAsset, updateAsset, deleteAsset,
+    createBooking, updateBooking, deleteBooking,
+    getBookingsByAssetId, getBookingsByProjectId, getConflictingBookings,
+    refresh,
   }
 
-  return (
-    <EquipmentStoreContext.Provider value={value}>
-      {children}
-    </EquipmentStoreContext.Provider>
-  )
+  return <EquipmentStoreContext.Provider value={value}>{children}</EquipmentStoreContext.Provider>
 }
 
 export function useEquipmentStore(): EquipmentStoreValue {
   const ctx = useContext(EquipmentStoreContext)
-  if (!ctx) throw new Error("useEquipmentStore must be used within EquipmentStoreProvider")
+  if (!ctx) throw new Error('useEquipmentStore must be used within EquipmentStoreProvider')
   return ctx
 }

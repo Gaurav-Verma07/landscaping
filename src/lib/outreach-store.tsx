@@ -1,121 +1,70 @@
-"use client"
+'use client'
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
-import type { OutreachProspect, OutreachStage, OutreachTargetType } from "@/lib/outreach-types"
-
-const STORAGE_KEY = "landscaping-v2-outreach"
-
-function loadFromStorage(): OutreachProspect[] {
-  if (typeof window === "undefined") return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw || raw === "") return []
-    const parsed = JSON.parse(raw) as OutreachProspect[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-function saveToStorage(list: OutreachProspect[]) {
-  if (typeof window === "undefined") return
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-  } catch {}
-}
-
-function createId() {
-  return `outreach-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-}
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import type { OutreachProspect, OutreachStage } from '@/lib/outreach-types'
+import {
+  getProspects, createProspect as createAction,
+  updateProspect as updateAction, deleteProspect as deleteAction,
+  moveProspectStage as moveStageAction,
+} from '@/lib/actions/outreach'
 
 type OutreachStoreValue = {
   prospects: OutreachProspect[]
-  createProspect: (input: Omit<OutreachProspect, "id" | "createdAt" | "updatedAt">) => OutreachProspect
-  updateProspect: (id: string, patch: Partial<Omit<OutreachProspect, "id" | "createdAt" | "updatedAt">>) => void
-  deleteProspect: (id: string) => void
-  moveProspectStage: (id: string, stage: OutreachStage) => void
+  loading: boolean
+  createProspect: (input: Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>) => Promise<OutreachProspect | undefined>
+  updateProspect: (id: string, patch: Partial<Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>
+  deleteProspect: (id: string) => Promise<void>
+  moveProspectStage: (id: string, stage: OutreachStage) => Promise<void>
+  refresh: () => Promise<void>
 }
 
 const OutreachStoreContext = createContext<OutreachStoreValue | null>(null)
 
 export function OutreachStoreProvider({ children }: { children: React.ReactNode }) {
   const [prospects, setProspects] = useState<OutreachProspect[]>([])
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    setProspects(loadFromStorage())
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    const data = await getProspects()
+    setProspects(data)
+    setLoading(false)
   }, [])
 
-  const persist = useCallback((list: OutreachProspect[]) => {
-    setProspects(list)
-    saveToStorage(list)
+  useEffect(() => { refresh() }, [])
+
+  const createProspect = useCallback(async (input: Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const result = await createAction(input)
+    if ('error' in result) return undefined
+    await refresh()
+    return result.data
+  }, [refresh])
+
+  const updateProspect = useCallback(async (id: string, patch: Partial<Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>>) => {
+    await updateAction(id, patch)
+    await refresh()
+  }, [refresh])
+
+  const deleteProspect = useCallback(async (id: string) => {
+    await deleteAction(id)
+    setProspects((prev) => prev.filter((p) => p.id !== id))
   }, [])
 
-  const createProspect = useCallback(
-    (input: Omit<OutreachProspect, "id" | "createdAt" | "updatedAt">) => {
-      const now = new Date().toISOString()
-      const full: OutreachProspect = {
-        ...input,
-        id: createId(),
-        createdAt: now,
-        updatedAt: now,
-      }
-      const next = [full, ...prospects]
-      persist(next)
-      return full
-    },
-    [prospects, persist],
-  )
-
-  const updateProspect = useCallback(
-    (id: string, patch: Partial<Omit<OutreachProspect, "id" | "createdAt" | "updatedAt">>) => {
-      const now = new Date().toISOString()
-      persist(
-        prospects.map((p) =>
-          p.id === id
-            ? {
-                ...p,
-                ...patch,
-                updatedAt: now,
-              }
-            : p,
-        ),
-      )
-    },
-    [prospects, persist],
-  )
-
-  const deleteProspect = useCallback(
-    (id: string) => {
-      persist(prospects.filter((p) => p.id !== id))
-    },
-    [prospects, persist],
-  )
-
-  const moveProspectStage = useCallback(
-    (id: string, stage: OutreachStage) => {
-      updateProspect(id, { stage })
-    },
-    [updateProspect],
-  )
+  const moveProspectStage = useCallback(async (id: string, stage: OutreachStage) => {
+    await moveStageAction(id, stage)
+    setProspects((prev) => prev.map((p) => p.id === id ? { ...p, stage } : p))
+  }, [])
 
   const value: OutreachStoreValue = {
-    prospects,
-    createProspect,
-    updateProspect,
-    deleteProspect,
-    moveProspectStage,
+    prospects, loading,
+    createProspect, updateProspect, deleteProspect, moveProspectStage, refresh,
   }
 
-  return (
-    <OutreachStoreContext.Provider value={value}>
-      {children}
-    </OutreachStoreContext.Provider>
-  )
+  return <OutreachStoreContext.Provider value={value}>{children}</OutreachStoreContext.Provider>
 }
 
 export function useOutreachStore(): OutreachStoreValue {
   const ctx = useContext(OutreachStoreContext)
-  if (!ctx) throw new Error("useOutreachStore must be used within OutreachStoreProvider")
+  if (!ctx) throw new Error('useOutreachStore must be used within OutreachStoreProvider')
   return ctx
 }
-
