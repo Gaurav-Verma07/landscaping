@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import type { OutreachProspect, OutreachStage } from '@/lib/outreach-types'
 import {
   getProspects, createProspect as createAction,
+  createProspects as createProspectsAction,
   updateProspect as updateAction, deleteProspect as deleteAction,
   moveProspectStage as moveStageAction,
 } from '@/lib/actions/outreach'
@@ -12,6 +13,7 @@ type OutreachStoreValue = {
   prospects: OutreachProspect[]
   loading: boolean
   createProspect: (input: Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>) => Promise<OutreachProspect | undefined>
+  createProspects: (inputs: Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>[]) => Promise<void>
   updateProspect: (id: string, patch: Partial<Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>
   deleteProspect: (id: string) => Promise<void>
   moveProspectStage: (id: string, stage: OutreachStage) => Promise<void>
@@ -40,6 +42,13 @@ export function OutreachStoreProvider({ children }: { children: React.ReactNode 
     return result.data
   }, [refresh])
 
+  const createProspects = useCallback(async (
+    inputs: Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>[]
+  ) => {
+    await createProspectsAction(inputs)
+    await refresh()
+  }, [refresh])
+
   const updateProspect = useCallback(async (id: string, patch: Partial<Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>>) => {
     await updateAction(id, patch)
     await refresh()
@@ -56,7 +65,7 @@ export function OutreachStoreProvider({ children }: { children: React.ReactNode 
   }, [])
 
   const value: OutreachStoreValue = {
-    prospects, loading,
+    prospects, loading,createProspects,
     createProspect, updateProspect, deleteProspect, moveProspectStage, refresh,
   }
 

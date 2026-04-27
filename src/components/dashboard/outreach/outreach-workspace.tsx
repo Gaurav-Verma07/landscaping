@@ -52,6 +52,8 @@ import {
   type OutreachStage,
   type OutreachTargetType,
 } from "@/lib/outreach-types"
+import { Search } from 'lucide-react'
+import { FindLeadsDialog } from './find-leads-dialog'
 
 const STAGES: OutreachStage[] = ["New", "Contacted", "Responded", "Qualified", "Partner", "Archived"]
 
@@ -321,6 +323,7 @@ export function OutreachWorkspace() {
   const [viewing, setViewing] = useState<OutreachProspect | null>(null)
   const [viewOpen, setViewOpen] = useState(false)
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
+  const [findLeadsOpen, setFindLeadsOpen] = useState(false)
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -374,24 +377,34 @@ export function OutreachWorkspace() {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Lead Generation & Outreach</h1>
-          <p className="text-muted-foreground text-sm">
-            Track alliance prospects (realtors, contractors, designers, lawn care companies) through an outreach pipeline.
-          </p>
-        </div>
-        <Button
-          size="sm"
-          onClick={() => {
-            setEditing(null)
-            setFormOpen(true)
-          }}
-        >
-          <IconPlus className="mr-2 size-4" />
-          New prospect
-        </Button>
-      </div>
+<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 className="text-2xl font-bold tracking-tight">Lead Generation & Outreach</h1>
+    <p className="text-muted-foreground text-sm">
+      Track alliance prospects (realtors, contractors, designers, lawn care companies) through an outreach pipeline.
+    </p>
+  </div>
+  <div className="flex gap-2">
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => setFindLeadsOpen(true)}
+    >
+      <Search className="mr-2 size-4" />
+      Find Leads
+    </Button>
+    <Button
+      size="sm"
+      onClick={() => {
+        setEditing(null)
+        setFormOpen(true)
+      }}
+    >
+      <IconPlus className="mr-2 size-4" />
+      New prospect
+    </Button>
+  </div>
+</div>
 
       <div className="flex flex-wrap items-center gap-2">
         <Input
@@ -643,6 +656,8 @@ export function OutreachWorkspace() {
 
       <ProspectFormDialog open={formOpen} onOpenChange={setFormOpen} prospect={editing} />
       <ProspectViewDialog open={viewOpen} onOpenChange={setViewOpen} prospect={viewing} />
+      <FindLeadsDialog open={findLeadsOpen} onOpenChange={setFindLeadsOpen} />
+
     </div>
   )
 }

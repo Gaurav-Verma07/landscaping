@@ -49,6 +49,38 @@ export async function createProspect(
   return { data: mapProspect(data) }
 }
 
+export async function createProspects(
+  inputs: Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>[]
+) {
+  const { supabase, user } = await getUser()
+  if (!user) return { error: 'Not authenticated' }
+  if (inputs.length === 0) return { data: [] }
+
+  const { data, error } = await supabase
+    .from('outreach_prospects')
+    .insert(
+      inputs.map((input) => ({
+        profile_id: user.id,
+        name: input.name,
+        company: input.company,
+        target_type: input.targetType,
+        location: input.location,
+        industry: input.industry,
+        company_size: input.companySize,
+        email: input.email,
+        phone: input.phone,
+        notes: input.notes,
+        stage: input.stage,
+        lead_source: input.leadSource,
+      }))
+    )
+    .select()
+
+  if (error) return { error: error.message }
+  revalidatePath('/dashboard/outreach')
+  return { data: data.map(mapProspect) }
+}
+
 export async function updateProspect(
   id: string,
   patch: Partial<Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>>
