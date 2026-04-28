@@ -21,11 +21,15 @@ import {
 } from '@/components/ui/select'
 import { useOutreachStore } from '@/lib/outreach-store'
 import { CompaniesHouseSearch } from './companies-house-search'
-import { LeadImportPreview } from './lead-import-preview'
-import type { UnifiedLead } from '@/lib/actions/lead-generation'
-import type { OutreachTargetType } from '@/lib/outreach-types'
 import { OverpassSearch } from './overpass-search'
 import { GeoapifySearch } from './geoapify-search'
+import { LeadImportPreview } from './lead-import-preview'
+import type { UnifiedLead } from '@/lib/actions/lead-generation'
+import {
+  OUTREACH_TARGET_TYPE_LABELS,
+  STAGES,
+  type OutreachTargetType,
+} from '@/lib/outreach-types'
 
 type Source = 'companies_house' | 'openstreetmap' | 'geoapify'
 
@@ -48,7 +52,7 @@ function buildNotes(lead: UnifiedLead): string {
 }
 
 export function FindLeadsDialog({ open, onOpenChange }: FindLeadsDialogProps) {
-  const { createProspects, prospects, refresh } = useOutreachStore()
+  const { createProspects, prospects } = useOutreachStore()
   const [source, setSource] = useState<Source>('companies_house')
   const [targetType, setTargetType] = useState<OutreachTargetType>('Contractor')
   const [selected, setSelected] = useState<Map<string, UnifiedLead>>(new Map())
@@ -86,7 +90,7 @@ export function FindLeadsDialog({ open, onOpenChange }: FindLeadsDialogProps) {
   const handleImport = async () => {
     if (selectedArray.length === 0) return
     setImporting(true)
-  
+
     try {
       const inputs = selectedArray
         .filter((lead) => !existingNames.has(lead.name.toLowerCase().trim()))
@@ -100,15 +104,15 @@ export function FindLeadsDialog({ open, onOpenChange }: FindLeadsDialogProps) {
           email: lead.email,
           phone: lead.phone,
           notes: buildNotes(lead),
-          stage: 'New' as const,
+          stage: STAGES[0],
           leadSource: lead.source,
         }))
-  
+
       const skipped = selectedArray.length - inputs.length
       await createProspects(inputs)
-  
+
       toast.success(
-        `Imported ${inputs.length} lead${inputs.length !== 1 ? 's' : ''}.${
+        `Imported ${inputs.length} lead${inputs.length !== 1 ? 's' : ''} as ${OUTREACH_TARGET_TYPE_LABELS[targetType]}.${
           skipped ? ` Skipped ${skipped} duplicate${skipped !== 1 ? 's' : ''}.` : ''
         }`
       )
@@ -133,23 +137,49 @@ export function FindLeadsDialog({ open, onOpenChange }: FindLeadsDialogProps) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <DialogTitle>Find Leads</DialogTitle>
-              <DialogDescription>
-                Search and import prospects. Duplicates are automatically skipped.
-              </DialogDescription>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <DialogTitle>Find Leads</DialogTitle>
+                <DialogDescription>
+                  Search and import prospects. Duplicates are automatically skipped.
+                </DialogDescription>
+              </div>
             </div>
-            <Select value={source} onValueChange={(v) => { setSource(v as Source); setSelected(new Map()) }}>
-              <SelectTrigger className="w-52 shrink-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="companies_house">🏢 Companies House</SelectItem>
-                <SelectItem value="openstreetmap">🗺️ OpenStreetMap</SelectItem>
-                <SelectItem value="geoapify">📍 Geoapify Places</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-muted-foreground">Target Type</label>
+                <Select
+                  value={targetType}
+                  onValueChange={(v) => setTargetType(v as OutreachTargetType)}
+                >
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder="Target type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(OUTREACH_TARGET_TYPE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-muted-foreground">Source</label>
+                <Select
+                  value={source}
+                  onValueChange={(v) => { setSource(v as Source); setSelected(new Map()) }}
+                >
+                  <SelectTrigger className="w-52">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="companies_house">🏢 Companies House</SelectItem>
+                    <SelectItem value="openstreetmap">🗺️ OpenStreetMap</SelectItem>
+                    <SelectItem value="geoapify">📍 Geoapify Places</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </DialogHeader>
 
@@ -168,20 +198,21 @@ export function FindLeadsDialog({ open, onOpenChange }: FindLeadsDialogProps) {
               onSelectAll={handleSelectAll}
               onClearAll={handleClearAll}
             />
-          ):(
+          ) : (
             <GeoapifySearch
               selectedIds={new Set(selected.keys())}
               onToggle={handleToggle}
               onSelectAll={handleSelectAll}
               onClearAll={handleClearAll}
-            />)}
+            />
+          )}
 
           {selectedArray.length > 0 && (
             <>
               <Separator />
               <LeadImportPreview
                 selected={selectedArray}
-                targetType={targetType}
+                targetType={OUTREACH_TARGET_TYPE_LABELS[targetType]}
                 onRemove={handleRemove}
               />
             </>
@@ -192,7 +223,10 @@ export function FindLeadsDialog({ open, onOpenChange }: FindLeadsDialogProps) {
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleImport} disabled={selectedArray.length === 0 || importing}>
+          <Button
+            onClick={handleImport}
+            disabled={selectedArray.length === 0 || importing}
+          >
             {importing
               ? 'Importing...'
               : `Import ${selectedArray.length > 0 ? selectedArray.length : ''} lead${selectedArray.length !== 1 ? 's' : ''}`}

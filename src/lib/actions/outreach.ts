@@ -120,6 +120,44 @@ export async function moveProspectStage(id: string, stage: OutreachStage) {
   return updateProspect(id, { stage })
 }
 
+export async function bulkUpdateProspects(
+  ids: string[],
+  data: Partial<{
+    stage: string
+    target_type: string
+    lead_source: string
+    notes: string
+  }>
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { error } = await supabase
+    .from('outreach_prospects')
+    .update({ ...data, updated_at: new Date().toISOString() })
+    .in('id', ids)
+    .eq('profile_id', user.id)
+
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+export async function bulkDeleteProspects(ids: string[]) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { error } = await supabase
+    .from('outreach_prospects')
+    .delete()
+    .in('id', ids)
+    .eq('profile_id', user.id)
+
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
 function mapProspect(row: Record<string, unknown>): OutreachProspect {
   return {
     id: row.id as string,

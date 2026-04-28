@@ -47,3 +47,4 @@ export const OUTREACH_STAGE_LABELS: Record<OutreachStage, string> = {
   Archived: "Archived",
 }
 
+export const STAGES: OutreachStage[] = ['New', 'Contacted', 'Responded', 'Qualified', 'Partner', 'Archived']
