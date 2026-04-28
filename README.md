@@ -43,10 +43,15 @@ AI-powered landscaping business management software. CRM, project management, qu
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   COMPANIES_HOUSE_API_KEY=companies-house-api-key
+   GEOAPIFY_API_KEY=geoapify-api-key
 
    # ElevenLabs (optional, for voice/agent features)
    NEXT_PUBLIC_ELEVENLABS_AGENT_ID=your-agent-id
    ```
+
+   > For lead generation API setup instructions, see [lead_readMe.md](./lead_readMe.md)
+
 
 4. **Install Supabase CLI**
 
@@ -146,5 +151,3 @@ Build and run in production:
 bun run build
 bun run start
 ```
-
-Or deploy to Vercel (or any Node host); set `DATABASE_URL` and optional `NEXT_PUBLIC_ELEVENLABS_AGENT_ID` in the deployment environment.
