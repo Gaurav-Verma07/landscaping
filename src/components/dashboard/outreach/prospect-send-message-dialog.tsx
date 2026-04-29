@@ -2,46 +2,41 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { AlertTriangle, Loader2, Mail, MessageSquare } from 'lucide-react'
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Dialog, DialogContent, DialogFooter, DialogHeader,
+  DialogTitle, DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/field'
+import { Badge } from '@/components/ui/badge'
 import { useOutreachStore } from '@/lib/outreach-store'
-import { useCommunicationStore } from '@/lib/communication-store'
-import { applyTemplatePlaceholders } from '@/lib/communication-store'
+import { useCommunicationStore, applyTemplatePlaceholders } from '@/lib/communication-store'
+import { sendBulkEmails } from '@/lib/actions/email'
 import { CHANNEL_LABELS, type CommunicationChannel } from '@/lib/communication-types'
 import type { OutreachProspect } from '@/lib/outreach-types'
 
 interface ProspectSendMessageDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  prospect: OutreachProspect | null
+  prospect?: OutreachProspect | null
+  prospects?: OutreachProspect[]
   onSent?: () => void
 }
 
 export function ProspectSendMessageDialog({
-  open,
-  onOpenChange,
-  prospect,
-  onSent,
+  open, onOpenChange, prospect, prospects, onSent,
 }: ProspectSendMessageDialogProps) {
-  const { moveProspectStage } = useOutreachStore()
-  const { templates, addCommunication } = useCommunicationStore()
+  const isBulk = !!prospects && prospects.length > 0
+  const allProspects = isBulk ? prospects : prospect ? [prospect] : []
+
+  const { bulkUpdate } = useOutreachStore()
+  const { templates, addCommunication, refresh: refreshComms } = useCommunicationStore()
 
   const [channel, setChannel] = useState<CommunicationChannel>('email')
   const [templateId, setTemplateId] = useState('')
@@ -50,79 +45,130 @@ export function ProspectSendMessageDialog({
   const [sending, setSending] = useState(false)
 
   const selectedTemplate = templateId ? templates.find((t) => t.id === templateId) : null
+  const withEmail = allProspects.filter(p => p.email?.trim())
+  const withoutEmail = allProspects.filter(p => !p.email?.trim())
 
-  // Pre-fill from template
   useEffect(() => {
-    if (selectedTemplate && prospect) {
+    if (selectedTemplate) {
+      const contactName = isBulk ? '{{contact_name}}' : (prospect?.name || prospect?.company || '')
       const { body: b, subject: s } = applyTemplatePlaceholders(
-        selectedTemplate.body,
-        selectedTemplate.subject,
-        prospect.name || prospect.company,
+        selectedTemplate.body, selectedTemplate.subject, contactName,
       )
       setChannel(selectedTemplate.channel)
       setSubject(s)
       setBody(b)
     }
-  }, [selectedTemplate?.id, prospect?.id])
+  }, [selectedTemplate?.id])
 
-  // Reset when dialog opens
   useEffect(() => {
-    if (open) {
-      setChannel('email')
-      setTemplateId('')
-      setSubject('')
-      setBody('')
-    }
+    if (open) { setChannel('email'); setTemplateId(''); setSubject(''); setBody('') }
   }, [open])
 
   const handleSend = async () => {
-    if (!prospect) return
+    if (allProspects.length === 0) return
     if (!body.trim()) { toast.error('Please enter a message.'); return }
     if (channel === 'email' && !subject.trim()) { toast.error('Please enter a subject.'); return }
+    if (channel === 'email' && withEmail.length === 0) {
+      toast.error('None of the selected prospects have an email address.')
+      return
+    }
 
     setSending(true)
     try {
-      await new Promise((r) => setTimeout(r, 400))
-      const now = new Date().toISOString()
+      if (channel === 'email') {
+        const recipients = withEmail.map(p => ({
+          email: p.email!,
+          name: p.name || p.company,
+          prospectId: p.id,
+        }))
 
-      addCommunication({
-        channel,
-        subject: channel === 'email' ? subject : '',
-        body,
-        contactName: prospect.name || prospect.company,
-        contactId: prospect.id,
-        contactEmail: prospect.email,
-        contactPhone: prospect.phone,
-        direction: 'outbound',
-        read: true,
-        createdAt: now,
-      })
+        const result = await sendBulkEmails(recipients, subject, body)
 
-      // Auto-move stage to Contacted
-      if (prospect.stage === 'New') {
-        await moveProspectStage(prospect.id, 'Contacted')
+        // Log each email in Communications with prospectId + contactType: 'prospect'
+        const now = new Date().toISOString()
+        for (const p of withEmail) {
+          addCommunication({
+            channel: 'email',
+            subject,
+            body,
+            contactName: p.name || p.company,
+            contactId: null,
+            prospectId: p.id,
+            contactType: 'prospect',
+            contactEmail: p.email,
+            direction: 'outbound',
+            read: true,
+            createdAt: now,
+          })
+        }
+
+        // Move New → Contacted
+        const newProspectIds = withEmail.filter(p => p.stage === 'New').map(p => p.id)
+        if (newProspectIds.length > 0) {
+          await bulkUpdate(newProspectIds, { stage: 'Contacted' })
+        }
+
+        await refreshComms()
+
+        const parts = [`Sent ${result.sent} email${result.sent !== 1 ? 's' : ''}.`]
+        if (result.failed > 0) parts.push(`${result.failed} failed.`)
+        if (withoutEmail.length > 0) parts.push(`${withoutEmail.length} skipped (no email).`)
+        toast.success(parts.join(' '))
+        if (result.errors.length > 0) console.error('Email errors:', result.errors)
+      } else {
+        const now = new Date().toISOString()
+        for (const p of allProspects) {
+          addCommunication({
+            channel: 'sms',
+            subject: '',
+            body,
+            contactName: p.name || p.company,
+            contactId: null,
+            prospectId: p.id,
+            contactType: 'prospect',
+            contactPhone: p.phone,
+            direction: 'outbound',
+            read: true,
+            createdAt: now,
+          })
+        }
+        toast.success(`${allProspects.length} SMS logged.`)
       }
 
-      toast.success('Message sent. Prospect moved to Contacted.')
       onSent?.()
       onOpenChange(false)
     } catch {
-      toast.error('Failed to send message.')
+      toast.error('Failed to send messages.')
     } finally {
       setSending(false)
     }
   }
 
-  if (!prospect) return null
+  if (allProspects.length === 0) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Send Message</DialogTitle>
-          <DialogDescription>
-            Sending to <span className="font-medium">{prospect.company || prospect.name}</span>
-            {prospect.stage === 'New' && ' — stage will move to Contacted after sending.'}
+          <DialogTitle>
+            {isBulk ? `Send Bulk Message (${allProspects.length})` : 'Send Message'}
+          </DialogTitle>
+          <DialogDescription asChild>
+            <div>
+              {isBulk ? (
+                <span className="flex flex-wrap gap-2 mt-1">
+                  <Badge variant="default"><Mail className="size-3 mr-1" />{withEmail.length} with email</Badge>
+                  {withoutEmail.length > 0 && (
+                    <Badge variant="secondary">
+                      <AlertTriangle className="size-3 mr-1" />
+                      {withoutEmail.length} missing email — will be skipped
+                    </Badge>
+                  )}
+                </span>
+              ) : (
+                <span>Sending to <span className="font-medium">{prospect?.company || prospect?.name}</span></span>
+              )}
+            </div>
           </DialogDescription>
         </DialogHeader>
 
@@ -134,13 +180,11 @@ export function ProspectSendMessageDialog({
               <SelectContent>
                 <SelectItem value="none">None – write from scratch</SelectItem>
                 {templates.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.name} ({CHANNEL_LABELS[t.channel]})
-                  </SelectItem>
+                  <SelectItem key={t.id} value={t.id}>{t.name} ({CHANNEL_LABELS[t.channel]})</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <FieldDescription>Picks channel, subject and body — you can edit after.</FieldDescription>
+            <FieldDescription>Use {`{{contact_name}}`} — replaced with each prospect's name.</FieldDescription>
           </Field>
 
           <Field>
@@ -148,24 +192,18 @@ export function ProspectSendMessageDialog({
             <Select value={channel} onValueChange={(v) => setChannel(v as CommunicationChannel)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="email">{CHANNEL_LABELS.email}</SelectItem>
-                <SelectItem value="sms">{CHANNEL_LABELS.sms}</SelectItem>
+                <SelectItem value="email"><span className="flex items-center gap-2"><Mail className="size-4" />{CHANNEL_LABELS.email}</span></SelectItem>
+                <SelectItem value="sms"><span className="flex items-center gap-2"><MessageSquare className="size-4" />{CHANNEL_LABELS.sms}</span></SelectItem>
               </SelectContent>
             </Select>
           </Field>
 
-          <Field>
-            <FieldLabel>To</FieldLabel>
-            <Input
-              value={
-                channel === 'email'
-                  ? prospect.email || 'No email on file'
-                  : prospect.phone || 'No phone on file'
-              }
-              disabled
-              className="bg-muted"
-            />
-          </Field>
+          {!isBulk && channel === 'email' && (
+            <Field>
+              <FieldLabel>To</FieldLabel>
+              <Input value={prospect?.email || 'No email on file'} disabled className="bg-muted" />
+            </Field>
+          )}
 
           {channel === 'email' && (
             <Field>
@@ -179,17 +217,29 @@ export function ProspectSendMessageDialog({
             <Textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Type your message..."
+              placeholder={isBulk ? "Use {{contact_name}} to personalise..." : "Type your message..."}
               rows={5}
               className="resize-none"
             />
           </Field>
+
+          {channel === 'email' && (
+            <p className="text-xs text-muted-foreground">
+              Emails sent via your SMTP config in Settings → Email configuration.
+            </p>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSend} disabled={sending}>
-            {sending ? 'Sending…' : 'Send'}
+          <Button onClick={handleSend} disabled={sending || (channel === 'email' && withEmail.length === 0)}>
+            {sending ? (
+              <><Loader2 className="size-4 mr-2 animate-spin" />Sending...</>
+            ) : channel === 'email' ? (
+              `Send ${withEmail.length} email${withEmail.length !== 1 ? 's' : ''}`
+            ) : (
+              `Send ${allProspects.length} SMS`
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

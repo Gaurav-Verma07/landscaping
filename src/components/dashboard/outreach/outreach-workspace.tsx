@@ -18,6 +18,7 @@ import { ProspectFormDialog } from './prospect-form-dialog'
 import { ProspectViewDialog } from './prospect-view-dialog'
 import { ProspectSendMessageDialog } from './prospect-send-message-dialog'
 import { FindLeadsDialog } from './find-leads-dialog'
+import { ConvertProspectDialog } from './convert-prospect-dialog'
 
 let initialized = false
 
@@ -45,7 +46,14 @@ export function OutreachWorkspace() {
   const [messagingProspect, setMessagingProspect] = useState<OutreachProspect | null>(null)
   const [messageOpen, setMessageOpen] = useState(false)
   const [findLeadsOpen, setFindLeadsOpen] = useState(false)
-
+  const [messagingProspects, setMessagingProspects] = useState<OutreachProspect[]>([])
+  const [convertingProspect, setConvertingProspect] = useState<OutreachProspect | null>(null)
+  const [convertOpen, setConvertOpen] = useState(false)
+  
+  const handleConvert = (p: OutreachProspect) => {
+    setConvertingProspect(p)
+    setConvertOpen(true)
+  }
   // Lazy load
   useEffect(() => {
     if (initialized) return
@@ -125,11 +133,10 @@ export function OutreachWorkspace() {
   }
 
   const handleBulkSendMessage = () => {
-    const first = prospects.find((p) => selectedIds.has(p.id))
-    if (first) {
-      setMessagingProspect(first)
-      setMessageOpen(true)
-    }
+    const selected = prospects.filter((p) => selectedIds.has(p.id))
+    setMessagingProspects(selected)
+    setMessagingProspect(null)
+    setMessageOpen(true)
   }
 
   const handleSendMessage = (p: OutreachProspect) => {
@@ -195,6 +202,7 @@ export function OutreachWorkspace() {
 
           <OutreachTable
             paged={paged}
+            onConvert={handleConvert}
             filtered={filtered}
             selectedIds={selectedIds}
             pageIndex={pageIndex}
@@ -218,14 +226,24 @@ export function OutreachWorkspace() {
       <ProspectViewDialog open={viewOpen} onOpenChange={setViewOpen} prospect={viewing} />
       <ProspectSendMessageDialog
         open={messageOpen}
-        onOpenChange={setMessageOpen}
-        prospect={messagingProspect}
+        onOpenChange={(open)=>{
+          setMessageOpen(open);
+          if (!open) setMessagingProspects([])}
+        }
+        prospect={messagingProspects.length === 0 ? messagingProspect : null}
+        prospects={messagingProspects.length > 0 ? messagingProspects : undefined}
         onSent={() => {
           setSelectedIds(new Set())
+          setMessagingProspects([])
           refresh()
         }}
       />
       <FindLeadsDialog open={findLeadsOpen} onOpenChange={setFindLeadsOpen} />
+      <ConvertProspectDialog
+        open={convertOpen}
+        onOpenChange={setConvertOpen}
+        prospect={convertingProspect}
+      />
     </div>
   )
 }

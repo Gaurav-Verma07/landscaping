@@ -1,4 +1,5 @@
 export type CommunicationChannel = "email" | "sms" | "call"
+export type CommunicationContactType = "customer" | "prospect"
 
 export interface Communication {
   id: string
@@ -6,7 +7,9 @@ export interface Communication {
   subject: string
   body: string
   contactName: string
-  contactId: string | null
+  contactId: string | null       // customerId when contact_type = 'customer'
+  prospectId?: string | null     // prospectId when contact_type = 'prospect'
+  contactType?: CommunicationContactType
   contactEmail?: string
   contactPhone?: string
   direction: "inbound" | "outbound"

@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Save } from "lucide-react"
 import { toast } from "sonner"
 
-import { getProfile,uploadTeamLogo, upsertProfile } from "@/app/actions/profile"
+import { getProfile, uploadTeamLogo, upsertProfile } from "@/app/actions/profile"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,8 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { EmailConfigCard } from "./email-config-card"
 
-// Matches the DB schema exactly (snake_case)
 type ProfileRow = {
   id: string
   email: string | null
@@ -57,7 +57,6 @@ export function ManagementSettingsWorkspace() {
   const [teamLogoFile, setTeamLogoFile] = useState<File | null>(null)
   const [teamLogoPreview, setTeamLogoPreview] = useState<string | null>(null)
   const [removeTeamLogo, setRemoveTeamLogo] = useState(false)
-
   const [companyPhone, setCompanyPhone] = useState("")
   const [companyEmail, setCompanyEmail] = useState("")
   const [companyAddress, setCompanyAddress] = useState("")
@@ -71,7 +70,6 @@ export function ManagementSettingsWorkspace() {
   const [theme, setTheme] = useState<"system" | "light" | "dark">("system")
   const [brandColor, setBrandColor] = useState("")
 
-  // Revoke object URL on cleanup
   React.useEffect(() => {
     if (!teamLogoFile) { setTeamLogoPreview(null); return }
     const url = URL.createObjectURL(teamLogoFile)
@@ -102,7 +100,6 @@ export function ManagementSettingsWorkspace() {
   const loadProfile = React.useCallback(async () => {
     setLoading(true)
     try {
-      // New action handles auth internally — no userId needed
       const data = await getProfile()
       if (data) applyProfile(data as ProfileRow)
     } catch (e: unknown) {
@@ -131,18 +128,13 @@ export function ManagementSettingsWorkspace() {
     setLoading(true)
     try {
       let teamLogoUrl = removeTeamLogo ? null : (profile?.team_logo_url ?? null)
-
       if (teamLogoFile) {
         const fd = new FormData()
         fd.append('file', teamLogoFile)
         const uploadResult = await uploadTeamLogo(fd)
-        if (uploadResult?.error) {
-          toast.error(uploadResult.error)
-          return
-        }
+        if (uploadResult?.error) { toast.error(uploadResult.error); return }
         teamLogoUrl = uploadResult.url ?? null
       }
-
       const result = await upsertProfile({
         team_name: teamName.trim() || null,
         team_logo_url: teamLogoUrl,
@@ -159,13 +151,7 @@ export function ManagementSettingsWorkspace() {
         theme: theme,
         brand_color: brandColor.trim() || null,
       })
-
-      if (result?.error) {
-        toast.error(result.error)
-        return
-      }
-
-      // Refresh from DB so local state is in sync
+      if (result?.error) { toast.error(result.error); return }
       await loadProfile()
       window.dispatchEvent(new CustomEvent("settings-updated"))
       toast.success("Settings saved.")
@@ -191,6 +177,8 @@ export function ManagementSettingsWorkspace() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Company profile */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Company profile</CardTitle>
@@ -214,16 +202,11 @@ export function ManagementSettingsWorkspace() {
                       <span className="text-xs font-medium">Change logo</span>
                     </div>
                   </button>
-                  <input
-                    ref={teamLogoInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
+                  <input ref={teamLogoInputRef} type="file" accept="image/*" className="hidden"
                     onChange={(e) => onPickTeamLogoFile(e.target.files?.[0] ?? null)}
                     disabled={loading || !canEdit}
                   />
                 </div>
-
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="truncate text-base font-medium">{teamName || "Your team"}</div>
@@ -236,17 +219,14 @@ export function ManagementSettingsWorkspace() {
                     <Button type="button" variant="outline" size="sm" onClick={() => teamLogoInputRef.current?.click()} disabled={loading || !canEdit}>
                       Upload logo
                     </Button>
-                    <Button
-                      type="button" variant="outline" size="sm"
+                    <Button type="button" variant="outline" size="sm"
                       onClick={() => { setTeamLogoFile(null); setTeamLogoPreview(null); setRemoveTeamLogo(true) }}
-                      disabled={loading || !canEdit || !teamLogoSrc}
-                    >
+                      disabled={loading || !canEdit || !teamLogoSrc}>
                       Remove
                     </Button>
                   </div>
                 </div>
               </div>
-
               <div className="grid gap-2">
                 <Label htmlFor="c-name">Company name</Label>
                 <Input id="c-name" value={teamName} onChange={(e) => setTeamName(e.target.value)} disabled={loading || !canEdit} />
@@ -268,6 +248,7 @@ export function ManagementSettingsWorkspace() {
             </CardContent>
           </Card>
 
+          {/* Invoice defaults */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Invoice defaults</CardTitle>
@@ -291,6 +272,10 @@ export function ManagementSettingsWorkspace() {
             </CardContent>
           </Card>
 
+          {/* Email config — self-contained, has its own Save button */}
+          <EmailConfigCard canEdit={canEdit} />
+
+          {/* Notifications */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Notifications</CardTitle>
@@ -316,6 +301,7 @@ export function ManagementSettingsWorkspace() {
         </div>
 
         <div className="space-y-6">
+          {/* Voice assistant */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Voice assistant</CardTitle>
@@ -336,6 +322,7 @@ export function ManagementSettingsWorkspace() {
             </CardContent>
           </Card>
 
+          {/* Appearance */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Appearance</CardTitle>

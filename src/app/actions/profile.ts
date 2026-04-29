@@ -58,6 +58,12 @@ export async function upsertProfile(d: Partial<{
   voice_wake_word: string | null
   theme: string | null
   brand_color: string | null
+  // SMTP email config
+  smtp_host: string | null
+  smtp_port: number | null
+  smtp_email: string | null
+  smtp_password: string | null
+  smtp_from_name: string | null
 }>) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

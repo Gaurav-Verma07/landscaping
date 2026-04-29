@@ -48,6 +48,8 @@ export async function addCommunication(comm: Omit<Communication, 'id'>) {
     .insert({
       profile_id: user.id,
       customer_id: comm.contactId,
+      prospect_id: comm.prospectId ?? null,
+      contact_type: comm.contactType ?? 'customer',
       channel: comm.channel,
       subject: comm.subject,
       body: comm.body,
@@ -358,6 +360,8 @@ function mapCommunication(row: Record<string, unknown>): Communication {
     body: (row.body as string) ?? '',
     contactName: (row.contact_name as string) ?? '',
     contactId: (row.customer_id as string) ?? null,
+    prospectId: (row.prospect_id as string) ?? null,
+    contactType: ((row.contact_type as string) ?? (row.prospect_id ? 'prospect' : 'customer')) as Communication['contactType'],
     contactEmail: (row.contact_email as string) ?? undefined,
     contactPhone: (row.contact_phone as string) ?? undefined,
     direction: row.direction as Communication['direction'],

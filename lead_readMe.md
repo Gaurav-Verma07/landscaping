@@ -1,10 +1,12 @@
-# Lead Generation — API Setup Guide
+# Lead Generation & Outreach — Setup Guide
 
-This project supports 3 lead generation sources. Follow the steps below to set up each one.
+This project supports 3 lead generation sources, a full outreach pipeline, and SMTP-based email sending. Follow the steps below to set up each part.
 
 ---
 
-## 1. Companies House API (UK Registered Companies)
+## Lead Generation APIs
+
+### 1. Companies House API (UK Registered Companies)
 
 **What it does:** Search UK registered companies by keyword. Returns company name, address, type, status, and registration number.
 
@@ -28,7 +30,7 @@ COMPANIES_HOUSE_API_KEY=your-api-key-here
 
 ---
 
-## 2. Geoapify Places API (Local Business Search)
+### 2. Geoapify Places API (Local Business Search)
 
 **What it does:** Search businesses by keyword and city. Returns name, address, phone, website, email, and business category. Uses a 10km radius around the specified city.
 
@@ -49,7 +51,7 @@ GEOAPIFY_API_KEY=your-api-key-here
 
 ---
 
-## 3. Overpass API (OpenStreetMap)
+### 3. Overpass API (OpenStreetMap)
 
 **What it does:** Search businesses and places from OpenStreetMap by keyword and city. Returns name, address, phone, website, and business type.
 
@@ -69,7 +71,7 @@ https://overpass-api.de/api/interpreter
 
 ---
 
-## Final `.env.local` setup
+### Final `.env.local` setup
 
 ```env
 # Companies House (UK registered companies)
@@ -83,7 +85,7 @@ GEOAPIFY_API_KEY=your-key-here
 
 ---
 
-## How it works in the app
+### How lead import works in the app
 
 1. Go to **Dashboard → Outreach**
 2. Click **Find Leads**
@@ -97,6 +99,112 @@ GEOAPIFY_API_KEY=your-key-here
 
 ---
 
+## Email Configuration (SMTP)
+
+Email sending uses each user's own SMTP credentials — no shared platform email or domain required.
+
+**Setup (per user):**
+
+1. Go to **Dashboard → Settings → Email configuration**
+2. Select your email provider (Gmail, Outlook, Yahoo, or Custom)
+3. Enter your email address, display name, and password
+4. For Gmail specifically, use an **App Password** — not your regular Gmail password:
+   - Go to Google Account → Security → 2-Step Verification → App Passwords
+   - Generate a password for "Mail"
+   - Use that 16-character password in the app
+5. Click **Test connection** — this must pass before Save is enabled
+6. Click **Save email settings**
+
+Once configured, outreach emails are sent from your own address and replies go directly to your inbox.
+
+**SMTP settings reference:**
+
+| Provider | Host | Port |
+|---|---|---|
+| Gmail | `smtp.gmail.com` | 587 |
+| Outlook / Hotmail | `smtp.office365.com` | 587 |
+| Yahoo | `smtp.mail.yahoo.com` | 587 |
+| Custom domain | your mail server | 587 or 465 |
+
+---
+
+## Outreach Pipeline
+
+### Stage reference
+
+| Stage | Description |
+|---|---|
+| New | Freshly imported or manually created |
+| Contacted | Email or SMS sent |
+| Responded | Prospect replied (manually logged) |
+| Qualified | Vetted and worth pursuing |
+| Partner | Converted to customer or active partner |
+| Archived | No longer active |
+
+---
+
+### Sending emails
+
+**Single prospect:**
+1. Find the prospect in the table
+2. Open the row dropdown → **Send Message**
+3. Choose Email or SMS channel
+4. Optionally select a message template
+5. Write subject and message body
+6. Click **Send**
+
+**Bulk send:**
+1. Select multiple prospects using the checkboxes
+2. Click **Send Message** in the bulk toolbar
+3. Prospects without an email are shown as skipped
+4. Use `{{contact_name}}` in the body — it is replaced with each prospect's name
+5. Click **Send X emails**
+
+All sent emails are logged in Communications automatically. `New` prospects move to `Contacted` after sending.
+
+> SMTP must be configured and tested before sending. See Email Configuration above.
+
+---
+
+### Tracking replies
+
+Replies go to your own email inbox. To log a reply in the app:
+
+1. Go to **Dashboard → Communications**
+2. Click the **Prospects** tab to filter prospect messages
+3. Find the outbound email card for the prospect
+4. Click **Log Reply**
+5. Paste the reply content from your inbox
+6. Click **Log reply**
+
+The reply is saved as an inbound message and the prospect automatically moves to `Responded`.
+
+---
+
+### Viewing a prospect's communications thread
+
+From the Outreach table, click the **inbox icon** (📥) next to the stage badge on any `Contacted`, `Responded`, `Qualified`, or `Partner` prospect. This opens the Communications page filtered to that prospect's full thread, with a back button to return to Outreach.
+
+---
+
+### Converting a prospect to a customer
+
+When a prospect is ready to become a CRM customer:
+
+1. Click the **UserPlus icon** next to the stage badge in the table, or open the row dropdown → **Convert to Customer**, or open **View** → **Convert to Customer**
+2. Review the preview showing what will be created
+3. Click **Convert to Customer**
+
+This will:
+- Create a new **Customer** record in the CRM with the prospect's name, company, email, phone, and location
+- Link all prior communications to the new customer
+- Move the prospect stage to **Partner**
+- Redirect to the new customer profile
+
+> Convert is available for all prospect stages.
+
+---
+
 ## Troubleshooting
 
 | Error | Cause | Fix |
@@ -106,3 +214,7 @@ GEOAPIFY_API_KEY=your-key-here
 | `Overpass API error: 504` | Server overloaded | Try again — fallback servers will be attempted |
 | `City not found` | City name not recognized by Geoapify | Try a more common city name spelling |
 | `API key not configured` | Missing env var | Add the key to `.env.local` and restart dev server |
+| `SMTP not configured` | No email settings saved | Go to Settings → Email configuration |
+| `Connection timed out` | Wrong host or port | Gmail uses `smtp.gmail.com` port `587` |
+| `Authentication failed` | Wrong password | For Gmail use App Password, not your account password |
+| `Send button disabled` | Test connection not passed | Run Test connection first, then Save |
