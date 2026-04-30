@@ -1,0 +1,337 @@
+.
+├── app
+│   ├── actions
+│   │   └── profile.ts
+│   ├── api
+│   │   ├── elevenlabs
+│   │   │   ├── conversation-token
+│   │   │   │   └── route.ts
+│   │   │   └── signed-url
+│   │   │       └── route.ts
+│   │   └── internal
+│   │       └── telemetry
+│   │           └── route.ts
+│   ├── auth
+│   │   ├── actions.ts
+│   │   ├── callback
+│   │   │   └── route.ts
+│   │   ├── login
+│   │   │   └── page.tsx
+│   │   ├── pending
+│   │   │   └── page.tsx
+│   │   └── signup
+│   │       └── page.tsx
+│   ├── dashboard
+│   │   ├── admin
+│   │   │   └── page.tsx
+│   │   ├── appointments
+│   │   │   └── page.tsx
+│   │   ├── communications
+│   │   │   ├── page.tsx
+│   │   │   └── settings
+│   │   │       └── page.tsx
+│   │   ├── contracts
+│   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── crew
+│   │   │   └── page.tsx
+│   │   ├── customers
+│   │   │   ├── [id]
+│   │   │   │   ├── edit
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── new
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── design
+│   │   │   └── page.tsx
+│   │   ├── documents
+│   │   │   └── page.tsx
+│   │   ├── equipment
+│   │   │   └── page.tsx
+│   │   ├── invoices
+│   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── management
+│   │   │   ├── integrations
+│   │   │   │   └── page.tsx
+│   │   │   └── settings
+│   │   │       └── page.tsx
+│   │   ├── marketing
+│   │   │   └── page.tsx
+│   │   ├── materials
+│   │   │   └── page.tsx
+│   │   ├── outreach
+│   │   │   └── page.tsx
+│   │   ├── page.tsx
+│   │   ├── projects
+│   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   ├── job-board
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── quotes
+│   │   │   └── page.tsx
+│   │   ├── [...slug]
+│   │   │   └── page.tsx
+│   │   └── suppliers
+│   │       └── page.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components
+│   ├── auth
+│   │   ├── login-form.tsx
+│   │   ├── pending-form.tsx
+│   │   └── signup-form.tsx
+│   ├── dashboard
+│   │   ├── admin
+│   │   │   └── admin-workspace.tsx
+│   │   ├── appointments
+│   │   │   ├── appointment-form-dialog.tsx
+│   │   │   └── appointments-workspace.tsx
+│   │   ├── billing
+│   │   │   ├── accept-quote-dialog.tsx
+│   │   │   ├── contracts-workspace.tsx
+│   │   │   ├── invoice-form-dialog.tsx
+│   │   │   ├── invoices-workspace.tsx
+│   │   │   ├── material-form-dialog.tsx
+│   │   │   ├── materials-workspace.tsx
+│   │   │   ├── payment-schedule-dialog.tsx
+│   │   │   ├── quote-form-dialog.tsx
+│   │   │   ├── quote-invoices-dialog.tsx
+│   │   │   ├── quotes-workspace.tsx
+│   │   │   ├── record-payment-dialog.tsx
+│   │   │   ├── sign-contract-dialog.tsx
+│   │   │   ├── supplier-form-dialog.tsx
+│   │   │   └── suppliers-workspace.tsx
+│   │   ├── communications
+│   │   │   ├── automation-rule-form-dialog.tsx
+│   │   │   ├── communication-details-dialog.tsx
+│   │   │   ├── communications-cards.tsx
+│   │   │   ├── communication-settings-workspace.tsx
+│   │   │   ├── create-message-dialog.tsx
+│   │   │   ├── follow-up-sequence-form-dialog.tsx
+│   │   │   ├── log-reply-dialog.tsx
+│   │   │   ├── schedule-message-dialog.tsx
+│   │   │   └── template-form-dialog.tsx
+│   │   ├── crew
+│   │   │   ├── crew-workspace.tsx
+│   │   │   └── employee-form-dialog.tsx
+│   │   ├── customers
+│   │   │   ├── customer-actions-dropdown.tsx
+│   │   │   ├── customer-details-dialog.tsx
+│   │   │   ├── customer-form
+│   │   │   │   ├── attachments-section.tsx
+│   │   │   │   ├── basic-info-section.tsx
+│   │   │   │   ├── contact-section.tsx
+│   │   │   │   ├── index.tsx
+│   │   │   │   ├── lead-status-section.tsx
+│   │   │   │   └── tags-section.tsx
+│   │   │   ├── customer-form.tsx
+│   │   │   ├── customers-cards.tsx
+│   │   │   ├── delete-customer-modal.tsx
+│   │   │   ├── import-customers-csv-dialog.tsx
+│   │   │   ├── merge-customer-modal.tsx
+│   │   │   └── new-customer-dialog.tsx
+│   │   ├── documents
+│   │   │   ├── document-form-dialog.tsx
+│   │   │   └── documents-workspace.tsx
+│   │   ├── equipment
+│   │   │   └── equipment-workspace.tsx
+│   │   ├── layout
+│   │   │   ├── app-sidebar.tsx
+│   │   │   ├── command-menu
+│   │   │   │   ├── command-menu.tsx
+│   │   │   │   └── search-button.tsx
+│   │   │   ├── customer-store-wrapper.tsx
+│   │   │   ├── dashboard-header.tsx
+│   │   │   ├── team-switcher.tsx
+│   │   │   ├── theme-toggle.tsx
+│   │   │   └── voice-assistant
+│   │   │       ├── ai-assistant-logo.tsx
+│   │   │       ├── voice-assistant-button.tsx
+│   │   │       ├── voice-assistant-dock.tsx
+│   │   │       ├── voice-assistant-provider.tsx
+│   │   │       └── voice-navigator.tsx
+│   │   ├── management
+│   │   │   ├── email-config-card.tsx
+│   │   │   ├── integrations-workspace.tsx
+│   │   │   └── settings-workspace.tsx
+│   │   ├── outreach
+│   │   │   ├── companies-house-search.tsx
+│   │   │   ├── convert-prospect-dialog.tsx
+│   │   │   ├── find-leads-dialog.tsx
+│   │   │   ├── geoapify-search.tsx
+│   │   │   ├── lead-import-preview.tsx
+│   │   │   ├── outreach-bulk-toolbar.tsx
+│   │   │   ├── outreach-filters.tsx
+│   │   │   ├── outreach-stats.tsx
+│   │   │   ├── outreach-table.tsx
+│   │   │   ├── outreach-workspace.tsx
+│   │   │   ├── overpass-search.tsx
+│   │   │   ├── prospect-form-dialog.tsx
+│   │   │   ├── prospect-send-message-dialog.tsx
+│   │   │   └── prospect-view-dialog.tsx
+│   │   ├── overview
+│   │   │   ├── activity-feed.tsx
+│   │   │   ├── metrics-cards.tsx
+│   │   │   ├── stats-cards.tsx
+│   │   │   └── weather-map.tsx
+│   │   ├── projects
+│   │   │   ├── delete-project-dialog.tsx
+│   │   │   ├── project-form-dialog.tsx
+│   │   │   ├── project-supervisor-reports-section.tsx
+│   │   │   ├── projects-workspace.tsx
+│   │   │   └── project-timeline-section.tsx
+│   │   └── ui
+│   │       ├── coming-soon.tsx
+│   │       ├── module-placeholder.tsx
+│   │       └── sidebar
+│   │           ├── account-settings-dialog.tsx
+│   │           ├── nav-main.tsx
+│   │           ├── nav-management.tsx
+│   │           └── nav-user.tsx
+│   ├── landing
+│   │   ├── cta-footer.tsx
+│   │   ├── features-grid.tsx
+│   │   ├── hero-section.tsx
+│   │   ├── hero.tsx
+│   │   ├── navbar.tsx
+│   │   ├── product-preview.tsx
+│   │   ├── stormchaser.tsx
+│   │   ├── theme-enforcer.tsx
+│   │   ├── trust.tsx
+│   │   └── value-props.tsx
+│   ├── store-initializer.tsx
+│   ├── theme-provider.tsx
+│   └── ui
+│       ├── accordion.tsx
+│       ├── alert-dialog.tsx
+│       ├── alert.tsx
+│       ├── aspect-ratio.tsx
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── breadcrumb.tsx
+│       ├── button-group.tsx
+│       ├── button.tsx
+│       ├── calendar.tsx
+│       ├── card.tsx
+│       ├── carousel.tsx
+│       ├── chart.tsx
+│       ├── checkbox.tsx
+│       ├── collapsible.tsx
+│       ├── command.tsx
+│       ├── context-menu.tsx
+│       ├── dialog.tsx
+│       ├── drawer.tsx
+│       ├── dropdown-menu.tsx
+│       ├── empty.tsx
+│       ├── field.tsx
+│       ├── form.tsx
+│       ├── hover-card.tsx
+│       ├── infinite-slider.tsx
+│       ├── input-group.tsx
+│       ├── input-otp.tsx
+│       ├── input.tsx
+│       ├── item.tsx
+│       ├── kbd.tsx
+│       ├── label.tsx
+│       ├── menubar.tsx
+│       ├── navigation-menu.tsx
+│       ├── pagination.tsx
+│       ├── popover.tsx
+│       ├── progressive-blur.tsx
+│       ├── progress.tsx
+│       ├── radio-group.tsx
+│       ├── resizable.tsx
+│       ├── scroll-area.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── sidebar.tsx
+│       ├── skeleton.tsx
+│       ├── slider.tsx
+│       ├── sonner.tsx
+│       ├── spinner.tsx
+│       ├── switch.tsx
+│       ├── table.tsx
+│       ├── tabs.tsx
+│       ├── textarea.tsx
+│       ├── toggle-group.tsx
+│       ├── toggle.tsx
+│       ├── tooltip.tsx
+│       └── voice-assistant-button.tsx
+├── hooks
+│   ├── use-mobile.ts
+│   └── use-voice-agent.ts
+├── instrumentation.ts
+├── lib
+│   ├── actions
+│   │   ├── appointments.ts
+│   │   ├── audit.ts
+│   │   ├── billing.ts
+│   │   ├── communications.ts
+│   │   ├── customers.ts
+│   │   ├── documents.ts
+│   │   ├── email.ts
+│   │   ├── equipment.ts
+│   │   ├── labor.ts
+│   │   ├── lead-generation-mappers.ts
+│   │   ├── lead-generation.ts
+│   │   ├── outreach.ts
+│   │   └── projects.ts
+│   ├── appointment-store.tsx
+│   ├── appointment-types.ts
+│   ├── audit-store.tsx
+│   ├── audit-types.ts
+│   ├── billing-store.tsx
+│   ├── communication-store.tsx
+│   ├── communication-templates-seed.ts
+│   ├── communication-types.ts
+│   ├── customer-form-utils.ts
+│   ├── customer-store.tsx
+│   ├── customer-types.ts
+│   ├── db
+│   │   ├── index.ts
+│   │   ├── schema.ts
+│   │   └── types.ts
+│   ├── document-store.tsx
+│   ├── document-types.ts
+│   ├── elevenlabs
+│   │   ├── client.ts
+│   │   ├── config.ts
+│   │   ├── index.ts
+│   │   └── server.ts
+│   ├── equipment-store.tsx
+│   ├── equipment-types.ts
+│   ├── labor-store.tsx
+│   ├── labor-types.ts
+│   ├── logger
+│   │   ├── serverLogger.ts
+│   │   └── telemetryClient.ts
+│   ├── navigation
+│   │   └── routes.ts
+│   ├── outreach-store.tsx
+│   ├── outreach-types.ts
+│   ├── project-store.tsx
+│   ├── project-types.ts
+│   ├── quote-types.ts
+│   ├── supabase
+│   │   ├── client.ts
+│   │   ├── middleware.ts
+│   │   └── server.ts
+│   └── utils.ts
+├── store
+│   ├── use-ui-store.ts
+│   └── use-user-store.ts
+├── tree.txt
+└── types
+    ├── user.ts
+    └── validations.types.ts
+
+75 directories, 259 files
