@@ -9,6 +9,7 @@ import { VoiceAssistantDock } from "@/components/dashboard/layout/voice-assistan
 import { OutreachStoreProvider } from "@/lib/outreach-store"
 import { EquipmentStoreProvider } from "@/lib/equipment-store"
 import { AuditStoreProvider } from "@/lib/audit-store"
+import { MarketingStoreProvider } from "@/lib/marketing-store"
 
 export default async function DashboardLayout({
   children,
@@ -30,9 +31,11 @@ export default async function DashboardLayout({
             <OutreachStoreProvider>
               <EquipmentStoreProvider>
                 <AuditStoreProvider>
+                  <MarketingStoreProvider>
                   <DashboardHeader />
                   <div className="flex flex-1 flex-col p-4 pt-0">{children}</div>
                   <VoiceAssistantDock />
+                  </MarketingStoreProvider>
                 </AuditStoreProvider>
               </EquipmentStoreProvider>
             </OutreachStoreProvider>

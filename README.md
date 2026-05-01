@@ -45,12 +45,13 @@ AI-powered landscaping business management software. CRM, project management, qu
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    COMPANIES_HOUSE_API_KEY=companies-house-api-key
    GEOAPIFY_API_KEY=geoapify-api-key
+   CRON_SECRET=a-random-strong-password
 
    # ElevenLabs (optional, for voice/agent features)
    NEXT_PUBLIC_ELEVENLABS_AGENT_ID=your-agent-id
    ```
 
-   > For lead generation API setup instructions, see [lead_readMe.md](./lead_readMe.md)
+   > For lead generation API setup instructions, see [lead_readMe.md](./docs/lead_readMe.md)
 
 
 4. **Install Supabase CLI**
