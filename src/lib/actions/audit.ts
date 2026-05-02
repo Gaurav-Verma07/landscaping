@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import type { AuditEntry, AuditAction } from '@/lib/audit-types'
+import type { AuditEntry, AuditAction } from '@/types/audit-types'
 
 const MAX_ENTRIES = 500
 

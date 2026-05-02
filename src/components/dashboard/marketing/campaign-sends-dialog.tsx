@@ -11,7 +11,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { getCampaignSends } from '@/lib/actions/marketing'
-import type { Campaign, CampaignSend } from '@/lib/marketing-types'
+import type { Campaign, CampaignSend } from '@/types/marketing-types'
 
 interface CampaignSendsDialogProps {
   open: boolean

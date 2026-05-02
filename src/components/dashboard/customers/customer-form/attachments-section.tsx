@@ -8,7 +8,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Upload, X } from "lucide-react"
-import { formatBytes } from "@/lib/utils"
+import { formatBytes } from "../../../../../utils/utils"
 
 type Props = {
   selectedFiles: File[]

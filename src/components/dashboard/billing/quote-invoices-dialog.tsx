@@ -17,10 +17,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { useBillingStore } from "@/lib/billing-store"
-import { INVOICE_STATUS_LABELS, INVOICE_TYPE_LABELS } from "@/lib/quote-types"
-import type { Quote } from "@/lib/quote-types"
-import type { Invoice } from "@/lib/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import { INVOICE_STATUS_LABELS, INVOICE_TYPE_LABELS } from "@/types/quote-types"
+import type { Quote } from "@/types/quote-types"
+import type { Invoice } from "@/types/quote-types"
 
 interface QuoteInvoicesDialogProps {
   open: boolean

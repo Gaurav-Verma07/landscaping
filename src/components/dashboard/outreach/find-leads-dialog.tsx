@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useOutreachStore } from '@/lib/outreach-store'
+import { useOutreachStore } from '@/lib/stores'
 import { CompaniesHouseSearch } from './companies-house-search'
 import { OverpassSearch } from './overpass-search'
 import { GeoapifySearch } from './geoapify-search'
@@ -29,7 +29,7 @@ import {
   OUTREACH_TARGET_TYPE_LABELS,
   STAGES,
   type OutreachTargetType,
-} from '@/lib/outreach-types'
+} from '@/types/outreach-types'
 
 type Source = 'companies_house' | 'openstreetmap' | 'geoapify'
 

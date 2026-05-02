@@ -1,4 +1,4 @@
-import type { AudienceType } from '@/lib/marketing-types'
+import type { AudienceType } from '@/types/marketing-types'
 
 export interface SeasonalTemplate {
   id: string

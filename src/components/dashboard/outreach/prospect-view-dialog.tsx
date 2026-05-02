@@ -10,7 +10,7 @@ import {
 import {
   OUTREACH_STAGE_LABELS, OUTREACH_TARGET_TYPE_LABELS,
   type OutreachProspect,
-} from '@/lib/outreach-types'
+} from '@/types/outreach-types'
 import { ConvertProspectDialog } from './convert-prospect-dialog'
 
 const CONVERTIBLE_STAGES = ['New', 'Contacted', 'Responded', 'Qualified', 'Partner']

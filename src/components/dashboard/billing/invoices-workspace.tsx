@@ -21,12 +21,12 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { useBillingStore } from "@/lib/billing-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, INVOICE_TYPES, INVOICE_TYPE_LABELS } from "@/lib/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, INVOICE_TYPES, INVOICE_TYPE_LABELS } from "@/types/quote-types"
 import { InvoiceFormDialog } from "./invoice-form-dialog"
 import { RecordPaymentDialog } from "./record-payment-dialog"
-import type { Invoice } from "@/lib/quote-types"
+import type { Invoice } from "@/types/quote-types"
 
 export function InvoicesWorkspace() {
   const { invoices, getInvoice, deleteInvoice } = useBillingStore()

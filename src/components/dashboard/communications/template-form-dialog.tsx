@@ -20,9 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { FieldGroup, FieldLabel } from "@/components/ui/field"
-import type { MessageTemplate } from "@/lib/communication-types"
-import type { CommunicationChannel } from "@/lib/communication-types"
-import { CHANNEL_LABELS } from "@/lib/communication-types"
+import type { MessageTemplate } from "@/types/communication-types"
+import type { CommunicationChannel } from "@/types/communication-types"
+import { CHANNEL_LABELS } from "@/types/communication-types"
 
 interface TemplateFormDialogProps {
   open: boolean

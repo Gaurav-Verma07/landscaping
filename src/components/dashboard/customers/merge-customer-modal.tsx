@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { useCustomerStore } from "@/lib/customer-store"
+import { useCustomerStore } from "@/lib/stores"
 
 type MergeCustomerModalProps = {
   open: boolean

@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { cn } from '@/lib/utils';
+import { cn } from '../../../utils/utils';
 import { signOut } from '@/app/auth/actions';
 import { useRouter } from 'next/navigation';
 

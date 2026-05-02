@@ -21,16 +21,16 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { useBillingStore } from "@/lib/billing-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { QUOTE_STATUSES, QUOTE_STATUS_LABELS } from "@/lib/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { QUOTE_STATUSES, QUOTE_STATUS_LABELS } from "@/types/quote-types"
 import { QuoteFormDialog } from "./quote-form-dialog"
 import { AcceptQuoteDialog } from "./accept-quote-dialog"
 import { PaymentScheduleDialog } from "./payment-schedule-dialog"
 import { QuoteInvoicesDialog } from "./quote-invoices-dialog"
 import { InvoiceFormDialog } from "./invoice-form-dialog"
-import type { Quote } from "@/lib/quote-types"
-import type { Invoice } from "@/lib/quote-types"
+import type { Quote } from "@/types/quote-types"
+import type { Invoice } from "@/types/quote-types"
 
 export function QuotesWorkspace() {
   const { quotes, getQuote, deleteQuote, getInvoicesByQuoteId } = useBillingStore()

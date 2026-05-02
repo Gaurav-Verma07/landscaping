@@ -26,8 +26,8 @@ import {
   MILESTONE_TYPE_LABELS,
   type Project,
   type TimelineMilestoneType,
-} from "@/lib/project-types"
-import { useProjectStore } from "@/lib/project-store"
+} from "@/types/project-types"
+import { useProjectStore } from "@/lib/stores"
 import { format } from "date-fns"
 import { toast } from "sonner"
 

@@ -11,11 +11,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { Field, FieldLabel } from '@/components/ui/field'
-import { useOutreachStore } from '@/lib/outreach-store'
+import { useOutreachStore } from '@/lib/stores'
 import {
   OUTREACH_STAGE_LABELS, OUTREACH_TARGET_TYPE_LABELS,
   type OutreachProspect, type OutreachStage, type OutreachTargetType,
-} from '@/lib/outreach-types'
+} from '@/types/outreach-types'
 
 const STAGES: OutreachStage[] = ['New', 'Contacted', 'Responded', 'Qualified', 'Partner', 'Archived']
 const FORM_ID = 'outreach-prospect-form'

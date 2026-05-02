@@ -57,16 +57,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { MessageTemplate } from "@/lib/communication-types";
+import type { MessageTemplate } from "@/types/communication-types";
 import {
   CHANNEL_LABELS,
   AUTOMATION_TRIGGER_LABELS,
-} from "@/lib/communication-types";
+} from "@/types/communication-types";
 import {
   useCommunicationStore,
-  applyTemplatePlaceholders,
-} from "@/lib/communication-store";
-import { useCustomerStore } from "@/lib/customer-store";
+} from "@/lib/stores";
+import { useCustomerStore } from "@/lib/stores";
+import { applyTemplatePlaceholders } from "../../../../utils/utils";
 
 export function CommunicationSettingsWorkspace() {
   const { customers, addTimelineEvent } = useCustomerStore();

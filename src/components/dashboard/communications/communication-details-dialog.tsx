@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Communication } from "@/lib/communication-types";
-import { CHANNEL_LABELS } from "@/lib/communication-types";
+import type { Communication } from "@/types/communication-types";
+import { CHANNEL_LABELS } from "@/types/communication-types";
 import { formatDistanceToNow } from "date-fns";
 
 export function CommunicationDetailsDialog({

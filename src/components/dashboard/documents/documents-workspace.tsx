@@ -27,10 +27,10 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { useDocumentStore } from "@/lib/document-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useProjectStore } from "@/lib/project-store"
-import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, type DocumentRecord, type DocumentType } from "@/lib/document-types"
+import { useDocumentStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { useProjectStore } from "@/lib/stores"
+import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, type DocumentRecord, type DocumentType } from "@/types/document-types"
 import { DocumentFormDialog } from "./document-form-dialog"
 
 export function DocumentsWorkspace() {

@@ -19,8 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FieldGroup, FieldLabel } from "@/components/ui/field";
-import type { FollowUpSequenceStep } from "@/lib/communication-types";
-import type { MessageTemplate } from "@/lib/communication-types";
+import type { FollowUpSequenceStep } from "@/types/communication-types";
+import type { MessageTemplate } from "@/types/communication-types";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 
 interface FollowUpSequenceFormDialogProps {

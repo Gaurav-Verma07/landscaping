@@ -10,10 +10,10 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useOutreachStore } from '@/lib/outreach-store'
-import { useCustomerStore } from '@/lib/customer-store'
+import { useOutreachStore } from '@/lib/stores'
+import { useCustomerStore } from '@/lib/stores'
 import { createClient } from '@/lib/supabase/client'
-import type { OutreachProspect } from '@/lib/outreach-types'
+import type { OutreachProspect } from '@/types/outreach-types'
 import { createCustomer as createCustomerAction } from '@/lib/actions/customers'
 
 interface ConvertProspectDialogProps {

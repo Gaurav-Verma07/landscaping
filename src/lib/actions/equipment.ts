@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { EquipmentAsset, EquipmentBooking } from '@/lib/equipment-types'
+import type { EquipmentAsset, EquipmentBooking } from '@/types/equipment-types'
 
 async function getUser() {
   const supabase = await createClient()

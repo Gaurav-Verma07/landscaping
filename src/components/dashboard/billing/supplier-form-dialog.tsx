@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldLabel } from "@/components/ui/field"
-import type { Supplier } from "@/lib/quote-types"
-import { useBillingStore } from "@/lib/billing-store"
+import type { Supplier } from "@/types/quote-types"
+import { useBillingStore } from "@/lib/stores"
 
 interface SupplierFormDialogProps {
   open: boolean

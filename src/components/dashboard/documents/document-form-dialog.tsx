@@ -20,10 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Field, FieldLabel } from "@/components/ui/field"
-import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, type DocumentRecord, type CreateDocumentData, type DocumentType } from "@/lib/document-types"
-import { useDocumentStore } from "@/lib/document-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useProjectStore } from "@/lib/project-store"
+import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, type DocumentRecord, type CreateDocumentData, type DocumentType } from "@/types/document-types"
+import { useDocumentStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { useProjectStore } from "@/lib/stores"
 
 function parseTags(s: string): string[] {
   return s.split(",").map((x) => x.trim()).filter(Boolean)

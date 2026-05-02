@@ -22,11 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Field, FieldLabel } from "@/components/ui/field"
-import type { Appointment, CreateAppointmentData } from "@/lib/appointment-types"
-import { useAppointmentStore } from "@/lib/appointment-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useProjectStore } from "@/lib/project-store"
-import { useCommunicationStore } from "@/lib/communication-store"
+import type { Appointment, CreateAppointmentData } from "@/types/appointment-types"
+import { useAppointmentStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { useProjectStore } from "@/lib/stores"
+import { useCommunicationStore } from "@/lib/stores"
 
 interface AppointmentFormDialogProps {
   open: boolean

@@ -6,7 +6,7 @@ import { Loader2, Mic, MicOff, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { cn } from "../../../../../utils/utils"
 import { AiAssistantLogo } from "@/components/dashboard/layout/voice-assistant/ai-assistant-logo"
 import { useVoiceAssistant } from "@/components/dashboard/layout/voice-assistant/voice-assistant-provider"
 

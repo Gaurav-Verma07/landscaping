@@ -1,4 +1,4 @@
-import type { Customer, CustomerFormData } from "@/lib/customer-types"
+import type { Customer, CustomerFormData } from "@/types/customer-types"
 
 export function customerToFormData(customer: Customer | null): CustomerFormData {
   if (!customer)

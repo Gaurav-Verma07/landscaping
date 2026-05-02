@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Appointment, CreateAppointmentData } from '@/lib/appointment-types'
+import type { Appointment, CreateAppointmentData } from '@/types/appointment-types'
 
 async function getUser() {
   const supabase = await createClient()

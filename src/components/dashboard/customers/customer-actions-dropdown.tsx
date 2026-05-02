@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type { Customer } from "@/lib/customer-types"
+import type { Customer } from "@/types/customer-types"
 
 type CustomerActionsDropdownProps = {
   customer: Customer

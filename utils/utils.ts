@@ -36,3 +36,19 @@ export function updateAt(arr: string[], index: number, value: string): string[] 
 export function removeAt(arr: string[], index: number): string[] {
   return arr.filter((_, i) => i !== index)
 }
+
+// Keep this as a pure util — no server dependency
+export function applyTemplatePlaceholders(
+  body: string,
+  subject: string,
+  contactName: string,
+  extras?: { invoice_number?: string; due_date?: string; date?: string; time?: string }
+): { body: string; subject: string } {
+  const replace = (s: string) =>
+    s.replace(/\{\{contact_name\}\}/gi, contactName)
+     .replace(/\{\{invoice_number\}\}/g, extras?.invoice_number ?? '—')
+     .replace(/\{\{due_date\}\}/g, extras?.due_date ?? '—')
+     .replace(/\{\{date\}\}/g, extras?.date ?? '—')
+     .replace(/\{\{time\}\}/g, extras?.time ?? '—')
+  return { body: replace(body), subject: replace(subject) }
+}

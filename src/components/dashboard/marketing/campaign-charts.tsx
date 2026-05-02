@@ -9,8 +9,8 @@ import {
 } from 'chart.js'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { format, parseISO, subDays } from 'date-fns'
-import type { Campaign } from '@/lib/marketing-types'
-import { AUDIENCE_TYPE_LABELS } from '@/lib/marketing-types'
+import type { Campaign } from '@/types/marketing-types'
+import { AUDIENCE_TYPE_LABELS } from '@/types/marketing-types'
 
 ChartJS.register(
   CategoryScale, LinearScale, BarElement, LineElement,

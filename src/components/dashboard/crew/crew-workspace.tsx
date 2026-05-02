@@ -35,9 +35,9 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useLaborStore } from "@/lib/labor-store";
-import { useProjectStore } from "@/lib/project-store";
-import type { Employee, TimeEntry } from "@/lib/labor-types";
+import { useLaborStore } from "@/lib/stores";
+import { useProjectStore } from "@/lib/stores";
+import type { Employee, TimeEntry } from "@/types/labor-types";
 import { EmployeeFormDialog } from "./employee-form-dialog";
 import { toast } from "sonner";
 

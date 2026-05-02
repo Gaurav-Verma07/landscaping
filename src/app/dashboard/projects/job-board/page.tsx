@@ -18,17 +18,18 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, LayoutGrid, Calendar } from "lucide-react"
-import { useProjectStore } from "@/lib/project-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { applyTemplatePlaceholders, useCommunicationStore } from "@/lib/communication-store"
-import { useBillingStore } from "@/lib/billing-store"
+import { useProjectStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import {  useCommunicationStore } from "@/lib/stores"
+import { useBillingStore } from "@/lib/stores"
 import {
   PROJECT_STATUSES,
   PROJECT_STATUS_LABELS,
   type Project,
   type ProjectStatus,
-} from "@/lib/project-types"
+} from "@/types/project-types"
 import { toast } from "sonner"
+import { applyTemplatePlaceholders } from "../../../../../utils/utils"
 
 type JobBoardView = "kanban" | "timeline"
 

@@ -11,7 +11,7 @@ import {
 import {
   OUTREACH_STAGE_LABELS,
   type OutreachStage,
-} from '@/lib/outreach-types'
+} from '@/types/outreach-types'
 
 const STAGES: OutreachStage[] = ['New', 'Contacted', 'Responded', 'Qualified', 'Partner', 'Archived']
 

@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import type { Project } from "@/lib/project-types"
+import type { Project } from "@/types/project-types"
 
 interface DeleteProjectDialogProps {
   project: Project | null

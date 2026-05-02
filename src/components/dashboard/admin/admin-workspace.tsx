@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useAuditStore } from "@/lib/audit-store"
-import { AUDIT_ACTION_LABELS, type AuditAction } from "@/lib/audit-types"
+import { useAuditStore } from "@/lib/stores"
+import { AUDIT_ACTION_LABELS, type AuditAction } from "@/types/audit-types"
 import { toast } from "sonner"
 
 const PAGE_SIZE = 25

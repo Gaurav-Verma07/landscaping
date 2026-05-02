@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import type { Customer } from "@/lib/customer-types"
+import type { Customer } from "@/types/customer-types"
 import {
   CUSTOMER_STATUS_LABELS,
   LEAD_SOURCE_LABELS,
-} from "@/lib/customer-types"
+} from "@/types/customer-types"
 
 function CustomerStatusBadge({ status }: { status: string }) {
   return (

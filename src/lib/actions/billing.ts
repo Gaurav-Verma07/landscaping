@@ -13,7 +13,7 @@ import type {
   MaterialCatalogItem,
   PredefinedItem,
   ContractTemplate,
-} from '@/lib/quote-types'
+} from '@/types/quote-types'
 
 async function getUser() {
   const supabase = await createClient()

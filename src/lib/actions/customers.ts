@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Customer, CustomerNote, CustomerTimelineEvent } from '@/lib/customer-types'
+import type { Customer, CustomerNote, CustomerTimelineEvent } from '@/types/customer-types'
 
 async function getUser() {
   const supabase = await createClient()

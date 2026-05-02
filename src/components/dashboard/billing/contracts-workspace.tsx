@@ -22,11 +22,11 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { useBillingStore } from "@/lib/billing-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { CONTRACT_STATUSES, CONTRACT_STATUS_LABELS } from "@/lib/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { CONTRACT_STATUSES, CONTRACT_STATUS_LABELS } from "@/types/quote-types"
 import { SignContractDialog } from "./sign-contract-dialog"
-import type { Contract } from "@/lib/quote-types"
+import type { Contract } from "@/types/quote-types"
 
 export function ContractsWorkspace() {
   const searchParams = useSearchParams()

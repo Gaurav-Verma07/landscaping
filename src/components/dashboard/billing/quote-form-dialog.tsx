@@ -30,12 +30,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { Quote, QuoteLineItem, QuoteStatus } from "@/lib/quote-types"
-import { QUOTE_STATUSES, QUOTE_STATUS_LABELS } from "@/lib/quote-types"
-import { useBillingStore } from "@/lib/billing-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useCommunicationStore } from "@/lib/communication-store"
-import { useAuditStore } from "@/lib/audit-store"
+import type { Quote, QuoteLineItem, QuoteStatus } from "@/types/quote-types"
+import { QUOTE_STATUSES, QUOTE_STATUS_LABELS } from "@/types/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { useCommunicationStore } from "@/lib/stores"
+import { useAuditStore } from "@/lib/stores"
 
 const FORM_ID = "quote-form"
 

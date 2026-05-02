@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Field, FieldLabel } from "@/components/ui/field"
-import { EMPLOYEE_ROLES, SKILL_LEVELS, type Employee, type CreateEmployeeData } from "@/lib/labor-types"
-import { useLaborStore } from "@/lib/labor-store"
+import { EMPLOYEE_ROLES, SKILL_LEVELS, type Employee, type CreateEmployeeData } from "@/types/labor-types"
+import { useLaborStore } from "@/lib/stores"
 
 function parseList(s: string): string[] {
   return s.split(",").map((x) => x.trim()).filter(Boolean)

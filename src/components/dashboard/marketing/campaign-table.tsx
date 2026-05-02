@@ -18,10 +18,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { useMarketingStore } from '@/lib/marketing-store'
+import { useMarketingStore } from '@/lib/stores'
 import {
   AUDIENCE_TYPE_LABELS, CAMPAIGN_STATUS_LABELS, type Campaign,
-} from '@/lib/marketing-types'
+} from '@/types/marketing-types'
 
 interface CampaignTableProps {
   campaigns: Campaign[]

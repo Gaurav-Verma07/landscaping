@@ -8,7 +8,7 @@ import type {
   TimelineMilestone,
   SupervisorReport,
   TimelineMilestoneType,
-} from '@/lib/project-types'
+} from '@/types/project-types'
 
 async function getUser() {
   const supabase = await createClient()

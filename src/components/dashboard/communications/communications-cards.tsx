@@ -30,9 +30,9 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import type { Communication, CommunicationChannel } from "@/lib/communication-types";
-import { CHANNEL_LABELS } from "@/lib/communication-types";
-import { useCommunicationStore } from "@/lib/communication-store";
+import type { Communication, CommunicationChannel } from "@/types/communication-types";
+import { CHANNEL_LABELS } from "@/types/communication-types";
+import { useCommunicationStore } from "@/lib/stores";
 
 type CommunicationsFilters = {
   channel: string;

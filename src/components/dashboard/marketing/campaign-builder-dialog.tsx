@@ -20,11 +20,11 @@ import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Badge } from '@/components/ui/badge'
-import { useMarketingStore } from '@/lib/marketing-store'
+import { useMarketingStore } from '@/lib/stores'
 import {
   AUDIENCE_TYPE_LABELS, type Campaign, type AudienceType, type AudienceFilters,
-} from '@/lib/marketing-types'
-import { SEASONAL_TEMPLATES, type SeasonalTemplate } from '@/lib/marketing-templates'
+} from '@/types/marketing-types'
+import { SEASONAL_TEMPLATES, type SeasonalTemplate } from '../../../../utils/marketing-templates'
 
 interface CampaignBuilderDialogProps {
   open: boolean

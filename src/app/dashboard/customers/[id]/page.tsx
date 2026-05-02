@@ -25,19 +25,19 @@ import {
   FieldDescription,
   FieldLabel,
 } from "@/components/ui/field"
-import { useCommunicationStore } from "@/lib/communication-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useProjectStore } from "@/lib/project-store"
-import { useAppointmentStore } from "@/lib/appointment-store"
-import { useDocumentStore } from "@/lib/document-store"
-import { DOCUMENT_TYPE_LABELS } from "@/lib/document-types"
-import { PROJECT_STATUS_LABELS } from "@/lib/project-types"
+import { useCommunicationStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { useProjectStore } from "@/lib/stores"
+import { useAppointmentStore } from "@/lib/stores"
+import { useDocumentStore } from "@/lib/stores"
+import { DOCUMENT_TYPE_LABELS } from "@/types/document-types"
+import { PROJECT_STATUS_LABELS } from "@/types/project-types"
 import {
   CUSTOMER_STATUS_LABELS,
   LEAD_SOURCE_LABELS,
-} from "@/lib/customer-types"
-import { CHANNEL_LABELS } from "@/lib/communication-types"
-import { formatDate, formatBytes } from "@/lib/utils"
+} from "@/types/customer-types"
+import { CHANNEL_LABELS } from "@/types/communication-types"
+import { formatDate, formatBytes } from "../../../../../utils/utils"
 import { MergeCustomerModal } from "@/components/dashboard/customers/merge-customer-modal"
 
 export default function CustomerDetailPage() {

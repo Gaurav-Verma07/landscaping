@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { OutreachProspect, OutreachStage } from '@/lib/outreach-types'
+import type { OutreachProspect, OutreachStage } from '@/types/outreach-types'
 
 async function getUser() {
   const supabase = await createClient()

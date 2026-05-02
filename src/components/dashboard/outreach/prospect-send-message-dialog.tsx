@@ -15,11 +15,12 @@ import {
 } from '@/components/ui/select'
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
-import { useOutreachStore } from '@/lib/outreach-store'
-import { useCommunicationStore, applyTemplatePlaceholders } from '@/lib/communication-store'
+import { useOutreachStore } from '@/lib/stores'
+import { useCommunicationStore } from '@/lib/stores'
 import { sendBulkEmails } from '@/lib/actions/email'
-import { CHANNEL_LABELS, type CommunicationChannel } from '@/lib/communication-types'
-import type { OutreachProspect } from '@/lib/outreach-types'
+import { CHANNEL_LABELS, type CommunicationChannel } from '@/types/communication-types'
+import type { OutreachProspect } from '@/types/outreach-types'
+import { applyTemplatePlaceholders } from '../../../../utils/utils'
 
 interface ProspectSendMessageDialogProps {
   open: boolean

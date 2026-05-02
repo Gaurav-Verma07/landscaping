@@ -19,8 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FieldGroup, FieldLabel } from "@/components/ui/field";
-import type { MessageTemplate } from "@/lib/communication-types";
-import type { Customer } from "@/lib/customer-types";
+import type { MessageTemplate } from "@/types/communication-types";
+import type { Customer } from "@/types/customer-types";
 
 interface ScheduleMessageDialogProps {
   open: boolean;

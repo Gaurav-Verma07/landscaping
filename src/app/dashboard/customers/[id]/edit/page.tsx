@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { ArrowLeft } from "lucide-react"
 import { CustomerForm } from "@/components/dashboard/customers/customer-form"
 import { Button } from "@/components/ui/button"
-import { useCustomerStore } from "@/lib/customer-store"
+import { useCustomerStore } from "@/lib/stores"
 
 export default function EditCustomerPage() {
   const params = useParams()

@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Field, FieldLabel } from "@/components/ui/field"
-import type { MaterialCatalogItem } from "@/lib/quote-types"
-import { useBillingStore } from "@/lib/billing-store"
+import type { MaterialCatalogItem } from "@/types/quote-types"
+import { useBillingStore } from "@/lib/stores"
 
 interface MaterialFormDialogProps {
   open: boolean

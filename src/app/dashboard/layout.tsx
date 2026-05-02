@@ -1,47 +1,37 @@
 import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase/server"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/dashboard/layout/app-sidebar"
-import { CustomerStoreWrapper } from "@/components/dashboard/layout/customer-store-wrapper"
 import StoreInitializer from "@/components/store-initializer"
 import { DashboardHeader } from "@/components/dashboard/layout/dashboard-header"
 import { VoiceAssistantProvider } from "@/components/dashboard/layout/voice-assistant/voice-assistant-provider"
 import { VoiceAssistantDock } from "@/components/dashboard/layout/voice-assistant/voice-assistant-dock"
-import { OutreachStoreProvider } from "@/lib/outreach-store"
-import { EquipmentStoreProvider } from "@/lib/equipment-store"
-import { AuditStoreProvider } from "@/lib/audit-store"
-import { MarketingStoreProvider } from "@/lib/marketing-store"
+import { QueryProvider } from "@/components/query-provider"
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const user = null
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const cookieStore = await cookies()
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
 
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
-      <StoreInitializer user={user} />
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <CustomerStoreWrapper>
+    <QueryProvider>
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <StoreInitializer user={user} />
+        <AppSidebar user={user} />
+        <SidebarInset>
           <VoiceAssistantProvider>
-            <OutreachStoreProvider>
-              <EquipmentStoreProvider>
-                <AuditStoreProvider>
-                  <MarketingStoreProvider>
-                  <DashboardHeader />
-                  <div className="flex flex-1 flex-col p-4 pt-0">{children}</div>
-                  <VoiceAssistantDock />
-                  </MarketingStoreProvider>
-                </AuditStoreProvider>
-              </EquipmentStoreProvider>
-            </OutreachStoreProvider>
+            <DashboardHeader />
+            <div className="flex flex-1 flex-col p-4 pt-0">{children}</div>
+            <VoiceAssistantDock />
           </VoiceAssistantProvider>
-        </CustomerStoreWrapper>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </QueryProvider>
   )
 }

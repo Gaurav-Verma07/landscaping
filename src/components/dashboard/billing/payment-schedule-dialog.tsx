@@ -28,9 +28,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Field, FieldLabel } from "@/components/ui/field"
-import type { Quote } from "@/lib/quote-types"
-import { INVOICE_TYPES, type InvoiceType } from "@/lib/quote-types"
-import { useBillingStore } from "@/lib/billing-store"
+import type { Quote } from "@/types/quote-types"
+import { INVOICE_TYPES, type InvoiceType } from "@/types/quote-types"
+import { useBillingStore } from "@/lib/stores"
 
 const DEFAULT_ENTRIES = [
   { percent: 30, type: "deposit" as InvoiceType, dueOffsetDays: 0 },

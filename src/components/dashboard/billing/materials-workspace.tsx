@@ -27,8 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { useBillingStore } from "@/lib/billing-store"
-import type { MaterialCatalogItem } from "@/lib/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import type { MaterialCatalogItem } from "@/types/quote-types"
 import { MaterialFormDialog } from "./material-form-dialog"
 
 export function MaterialsWorkspace() {

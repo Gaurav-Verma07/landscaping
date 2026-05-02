@@ -22,9 +22,9 @@ import { FieldGroup, FieldLabel } from "@/components/ui/field";
 import type {
   AutomationRule,
   AutomationTrigger,
-} from "@/lib/communication-types";
-import { AUTOMATION_TRIGGER_LABELS } from "@/lib/communication-types";
-import type { MessageTemplate } from "@/lib/communication-types";
+} from "@/types/communication-types";
+import { AUTOMATION_TRIGGER_LABELS } from "@/types/communication-types";
+import type { MessageTemplate } from "@/types/communication-types";
 
 interface AutomationRuleFormDialogProps {
   open: boolean;

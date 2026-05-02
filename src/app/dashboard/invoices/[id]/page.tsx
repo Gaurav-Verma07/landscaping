@@ -15,9 +15,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useBillingStore } from "@/lib/billing-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { INVOICE_STATUS_LABELS, INVOICE_TYPE_LABELS } from "@/lib/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { INVOICE_STATUS_LABELS, INVOICE_TYPE_LABELS } from "@/types/quote-types"
 import { RecordPaymentDialog } from "@/components/dashboard/billing/record-payment-dialog"
 
 export default function InvoiceDetailPage() {

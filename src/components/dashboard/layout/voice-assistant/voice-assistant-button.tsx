@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../../../../utils/utils"
 import { AiAssistantLogo } from "@/components/dashboard/layout/voice-assistant/ai-assistant-logo"
 import { useVoiceAssistant } from "@/components/dashboard/layout/voice-assistant/voice-assistant-provider"
 

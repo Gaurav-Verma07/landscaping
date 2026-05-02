@@ -26,8 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { useBillingStore } from "@/lib/billing-store"
-import type { Supplier } from "@/lib/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import type { Supplier } from "@/types/quote-types"
 import { SupplierFormDialog } from "./supplier-form-dialog"
 
 export function SuppliersWorkspace() {

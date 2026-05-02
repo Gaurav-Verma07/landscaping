@@ -52,12 +52,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useCustomerStore } from "@/lib/customer-store"
-import type { Customer } from "@/lib/customer-types"
+import { useCustomerStore } from "@/lib/stores"
+import type { Customer } from "@/types/customer-types"
 import {
   CUSTOMER_STATUS_LABELS,
   LEAD_SOURCE_LABELS,
-} from "@/lib/customer-types"
+} from "@/types/customer-types"
 import { toast } from "sonner"
 
 type CustomersFilters = {

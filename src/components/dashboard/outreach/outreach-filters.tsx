@@ -13,7 +13,7 @@ import {
   OUTREACH_TARGET_TYPE_LABELS,
   STAGES,
   type OutreachStage,
-} from '@/lib/outreach-types'
+} from '@/types/outreach-types'
 
 interface OutreachFiltersProps {
   search: string

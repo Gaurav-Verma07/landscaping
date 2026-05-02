@@ -5,11 +5,11 @@ import { Field, FieldLabel } from "@/components/ui/field"
 import type {
   CustomerFormData,
   CustomerStatus,
-} from "@/lib/customer-types"
+} from "@/types/customer-types"
 import {
   CUSTOMER_STATUS_LABELS,
   LEAD_SOURCE_LABELS,
-} from "@/lib/customer-types"
+} from "@/types/customer-types"
 
 type Props = {
   form: CustomerFormData

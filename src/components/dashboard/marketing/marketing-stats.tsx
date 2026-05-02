@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Send, FileText, CheckCircle2, Users } from 'lucide-react'
-import type { Campaign } from '@/lib/marketing-types'
+import type { Campaign } from '@/types/marketing-types'
 
 interface MarketingStatsProps {
   campaigns: Campaign[]

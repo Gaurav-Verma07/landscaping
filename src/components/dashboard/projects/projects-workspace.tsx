@@ -29,13 +29,13 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useProjectStore } from "@/lib/project-store";
-import { useCustomerStore } from "@/lib/customer-store";
+import { useProjectStore } from "@/lib/stores";
+import { useCustomerStore } from "@/lib/stores";
 import {
   PROJECT_STATUSES,
   PROJECT_TYPES,
   PROJECT_STATUS_LABELS,
-} from "@/lib/project-types";
+} from "@/types/project-types";
 import { ProjectFormDialog } from "./project-form-dialog";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { toast } from "sonner";

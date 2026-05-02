@@ -1,4 +1,4 @@
-import type { MessageTemplate } from "@/lib/communication-types"
+import type { MessageTemplate } from "@/types/communication-types"
 
 const now = new Date().toISOString()
 

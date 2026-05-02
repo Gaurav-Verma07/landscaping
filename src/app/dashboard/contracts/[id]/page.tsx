@@ -7,11 +7,11 @@ import { ArrowLeft, Pencil, FileSignature } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useBillingStore } from "@/lib/billing-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { CONTRACT_STATUS_LABELS } from "@/lib/quote-types"
+import { useBillingStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { CONTRACT_STATUS_LABELS } from "@/types/quote-types"
 import { SignContractDialog } from "@/components/dashboard/billing/sign-contract-dialog"
-import type { Contract } from "@/lib/quote-types"
+import type { Contract } from "@/types/quote-types"
 
 export default function ContractDetailPage() {
   const params = useParams()

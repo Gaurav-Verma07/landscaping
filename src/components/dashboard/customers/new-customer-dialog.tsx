@@ -11,8 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useAuditStore } from "@/lib/audit-store"
+import { useCustomerStore } from "@/lib/stores"
+import { useAuditStore } from "@/lib/stores"
 import { addAttachment ,createCustomer as createCustomerAction } from "@/lib/actions/customers"
 
 const NEW_CUSTOMER_FORM_ID = "new-customer-form"

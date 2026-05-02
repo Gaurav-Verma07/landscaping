@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { DocumentRecord, CreateDocumentData } from '@/lib/document-types'
+import type { DocumentRecord, CreateDocumentData } from '@/types/document-types'
 
 async function getUser() {
   const supabase = await createClient()

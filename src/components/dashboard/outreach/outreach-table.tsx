@@ -24,7 +24,7 @@ import {
 import {
   OUTREACH_STAGE_LABELS, OUTREACH_TARGET_TYPE_LABELS,
   type OutreachProspect, type OutreachStage,
-} from '@/lib/outreach-types'
+} from '@/types/outreach-types'
 import { MessageSquare, Inbox, UserPlus } from 'lucide-react'
 
 const STAGES: OutreachStage[] = ['New', 'Contacted', 'Responded', 'Qualified', 'Partner', 'Archived']

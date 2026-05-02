@@ -13,9 +13,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldLabel } from "@/components/ui/field"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useAuditStore } from "@/lib/audit-store"
-import type { CustomerStatus } from "@/lib/customer-types"
+import { useCustomerStore } from "@/lib/stores"
+import { useAuditStore } from "@/lib/stores"
+import type { CustomerStatus } from "@/types/customer-types"
 
 const CSV_HEADER = "name,companyName,email,phone,address,status"
 const STATUSES: CustomerStatus[] = ["Lead", "Active", "Past", "Maintenance"]

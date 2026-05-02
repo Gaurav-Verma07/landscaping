@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import type {
   Communication, MessageTemplate, AutomationRule,
   FollowUpSequence, ScheduledMessage, AutomationTrigger,
-} from '@/lib/communication-types'
+} from '@/types/communication-types'
 
 async function getUser() {
   const supabase = await createClient()

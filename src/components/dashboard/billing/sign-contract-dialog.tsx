@@ -13,8 +13,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Field, FieldLabel } from "@/components/ui/field"
-import type { Contract } from "@/lib/quote-types"
-import { useBillingStore } from "@/lib/billing-store"
+import type { Contract } from "@/types/quote-types"
+import { useBillingStore } from "@/lib/stores"
 
 interface SignContractDialogProps {
   open: boolean

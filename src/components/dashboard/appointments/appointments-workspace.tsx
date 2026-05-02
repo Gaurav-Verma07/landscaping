@@ -34,10 +34,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { useAppointmentStore } from "@/lib/appointment-store"
-import { useCustomerStore } from "@/lib/customer-store"
-import { useProjectStore } from "@/lib/project-store"
-import type { Appointment } from "@/lib/appointment-types"
+import { useAppointmentStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
+import { useProjectStore } from "@/lib/stores"
+import type { Appointment } from "@/types/appointment-types"
 import { AppointmentFormDialog } from "./appointment-form-dialog"
 
 export function AppointmentsWorkspace() {

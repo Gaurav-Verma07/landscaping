@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Campaign, CampaignSend, AudienceType, AudienceFilters } from '@/lib/marketing-types'
+import type { Campaign, CampaignSend, AudienceType, AudienceFilters } from '@/types/marketing-types'
 import { sendBulkEmails } from '@/lib/actions/email'
 
 async function getUser() {

@@ -28,9 +28,9 @@ import {
   PROJECT_PRIORITIES,
   type Project,
   type CreateProjectData,
-} from "@/lib/project-types"
-import { useProjectStore } from "@/lib/project-store"
-import { useCustomerStore } from "@/lib/customer-store"
+} from "@/types/project-types"
+import { useProjectStore } from "@/lib/stores"
+import { useCustomerStore } from "@/lib/stores"
 
 const FORM_ID = "project-form-dialog"
 

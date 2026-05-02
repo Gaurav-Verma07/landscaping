@@ -42,8 +42,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Field, FieldLabel } from "@/components/ui/field"
-import { useEquipmentStore } from "@/lib/equipment-store"
-import { useProjectStore } from "@/lib/project-store"
+import { useEquipmentStore } from "@/lib/stores"
+import { useProjectStore } from "@/lib/stores"
 import {
   EQUIPMENT_STATUS_LABELS,
   BOOKING_STATUS_LABELS,
@@ -51,7 +51,7 @@ import {
   type EquipmentBooking,
   type EquipmentStatus,
   type BookingStatus,
-} from "@/lib/equipment-types"
+} from "@/types/equipment-types"
 import { toast } from "sonner"
 
 const ASSET_STATUSES: EquipmentStatus[] = ["available", "in_use", "maintenance", "out_of_service"]

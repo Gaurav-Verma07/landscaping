@@ -25,14 +25,14 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import type { CommunicationChannel } from "@/lib/communication-types";
-import { CHANNEL_LABELS } from "@/lib/communication-types";
-import { useCustomerStore } from "@/lib/customer-store";
+import type { CommunicationChannel } from "@/types/communication-types";
+import { CHANNEL_LABELS } from "@/types/communication-types";
+import { useCustomerStore } from "@/lib/stores";
 import {
   useCommunicationStore,
-  applyTemplatePlaceholders,
-} from "@/lib/communication-store";
+} from "@/lib/stores";
 import { toast } from "sonner";
+import { applyTemplatePlaceholders } from "../../../../utils/utils";
 
 interface CreateMessageDialogProps {
   open: boolean;

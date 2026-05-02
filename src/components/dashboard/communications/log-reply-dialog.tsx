@@ -10,9 +10,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/field'
-import { useCommunicationStore } from '@/lib/communication-store'
-import { useOutreachStore } from '@/lib/outreach-store'
-import type { Communication } from '@/lib/communication-types'
+import { useCommunicationStore } from '@/lib/stores'
+import { useOutreachStore } from '@/lib/stores'
+import type { Communication } from '@/types/communication-types'
 
 interface LogReplyDialogProps {
   open: boolean

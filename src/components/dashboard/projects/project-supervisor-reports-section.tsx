@@ -14,9 +14,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import type { Project } from "@/lib/project-types"
-import type { SupervisorReport } from "@/lib/project-types"
-import { useProjectStore } from "@/lib/project-store"
+import type { Project } from "@/types/project-types"
+import type { SupervisorReport } from "@/types/project-types"
+import { useProjectStore } from "@/lib/stores"
 import { format } from "date-fns"
 import { toast } from "sonner"
 
