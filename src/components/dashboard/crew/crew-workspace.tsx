@@ -64,6 +64,7 @@ export function CrewWorkspace() {
     clockIn,
     clockOut,
     deleteEmployee,
+    loading: laborLoading
   } = useLaborStore();
   const { projects } = useProjectStore();
   const [formOpen, setFormOpen] = useState(false);
@@ -212,11 +213,11 @@ export function CrewWorkspace() {
           <CardTitle className="text-base">Crew / employees</CardTitle>
         </CardHeader>
         <CardContent>
-          {employees.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              No employees yet.
-            </p>
-          ) : (
+          {laborLoading?
+          <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+            Loading Labors...
+          </div>
+          :employees.length !== 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -317,7 +318,12 @@ export function CrewWorkspace() {
                 })}
               </TableBody>
             </Table>
-          )}
+          )
+          : (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              No employees yet.
+            </p>
+          ) }
         </CardContent>
       </Card>
 

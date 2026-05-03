@@ -27,7 +27,7 @@ const PAGE_SIZE = 25
 const ACTION_FILTER_ALL = "all"
 
 export function AdminWorkspace() {
-  const { entries, clear } = useAuditStore()
+  const { entries, clear, loading: auditLoading } = useAuditStore()
   const [actionFilter, setActionFilter] = useState<string>(ACTION_FILTER_ALL)
   const [page, setPage] = useState(0)
 
@@ -100,9 +100,11 @@ export function AdminWorkspace() {
           <CardTitle className="text-base">Audit log</CardTitle>
         </CardHeader>
         <CardContent>
-          {filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">No audit entries yet.</p>
-          ) : (
+          {auditLoading?
+            <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+            Loading audits...
+          </div>
+          : filtered.length !== 0 ? (
             <>
               <Table>
                 <TableHeader>
@@ -147,6 +149,9 @@ export function AdminWorkspace() {
                 </div>
               </div>
             </>
+          )
+          : (
+            <p className="text-sm text-muted-foreground py-6 text-center">No audit entries yet.</p>
           )}
         </CardContent>
       </Card>

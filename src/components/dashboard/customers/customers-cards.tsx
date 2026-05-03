@@ -182,7 +182,7 @@ function CustomerCard({
 
 export function CustomersCards() {
   const router = useRouter()
-  const { customers, searchCustomers, getCustomer, deleteCustomer } =
+  const { customers, searchCustomers, getCustomer, deleteCustomer, loading: customersLoading } =
     useCustomerStore()
 
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -347,7 +347,11 @@ export function CustomersCards() {
         </div>
       </div>
 
-      {pagedData.length ? (
+      {customersLoading?
+      (  <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+        Loading customers...
+      </div>)
+      : pagedData.length ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {pagedData.map((customer) => (
             <CustomerCard

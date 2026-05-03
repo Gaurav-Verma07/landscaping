@@ -29,7 +29,7 @@ import { RecordPaymentDialog } from "./record-payment-dialog"
 import type { Invoice } from "@/types/quote-types"
 
 export function InvoicesWorkspace() {
-  const { invoices, getInvoice, deleteInvoice } = useBillingStore()
+  const { invoices, deleteInvoice, loading: billsLoading } = useBillingStore()
   const { getCustomer } = useCustomerStore()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -121,7 +121,11 @@ export function InvoicesWorkspace() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((inv) => {
+        {billsLoading ?
+          <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+            Loading invoices...
+          </div>
+        : filtered.length!==0 ? filtered.map((inv) => {
           const customer = getCustomer(inv.customerId)
           const remaining = inv.total - inv.paidAmount
           return (
@@ -175,24 +179,23 @@ export function InvoicesWorkspace() {
               </CardContent>
             </Card>
           )
-        })}
+        }):
+        (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-muted-foreground">
+                {invoices.length === 0 ? "No invoices yet." : "No invoices match your filters."}
+              </p>
+              {invoices.length === 0 && (
+                <Button className="mt-4" onClick={() => setFormOpen(true)}>
+                  <IconPlus className="mr-2 size-4" />
+                  New invoice
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
-
-      {filtered.length === 0 && (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-muted-foreground">
-              {invoices.length === 0 ? "No invoices yet." : "No invoices match your filters."}
-            </p>
-            {invoices.length === 0 && (
-              <Button className="mt-4" onClick={() => setFormOpen(true)}>
-                <IconPlus className="mr-2 size-4" />
-                New invoice
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       <InvoiceFormDialog open={formOpen} onOpenChange={setFormOpen} invoice={editingInvoice} onSaved={() => setEditingInvoice(null)} />
       <RecordPaymentDialog open={!!paymentInvoice} onOpenChange={(open) => !open && setPaymentInvoice(null)} invoice={paymentInvoice} onRecorded={() => setPaymentInvoice(null)} />

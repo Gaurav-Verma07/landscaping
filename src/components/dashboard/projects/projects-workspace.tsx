@@ -43,7 +43,7 @@ import { toast } from "sonner";
 export function ProjectsWorkspace() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { projects, getProject, deleteProject } = useProjectStore();
+  const { projects, getProject, deleteProject, loading: projectsLoading } = useProjectStore();
   const { getCustomer } = useCustomerStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -166,7 +166,11 @@ export function ProjectsWorkspace() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {paged.map((project) => {
+        {projectsLoading?
+          <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+            Loading projects...
+          </div>
+          :paged.map((project) => {
           const customer = getCustomer(project.customerId);
           return (
             <Card key={project.id} className="flex flex-col">
@@ -250,7 +254,7 @@ export function ProjectsWorkspace() {
         })}
       </div>
 
-      {filtered.length > 0 && (
+      {filtered.length > 0 && !projectsLoading && (
         <div className="flex items-center justify-between gap-4 py-4 border-t">
           <div className="text-sm text-muted-foreground">
             Showing{" "}
@@ -350,7 +354,7 @@ export function ProjectsWorkspace() {
         </div>
       )}
 
-      {filtered.length === 0 && (
+      {filtered.length === 0 && !projectsLoading && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <p className="text-muted-foreground">

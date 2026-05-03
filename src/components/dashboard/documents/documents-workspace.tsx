@@ -34,7 +34,7 @@ import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, type DocumentRecord, type Documen
 import { DocumentFormDialog } from "./document-form-dialog"
 
 export function DocumentsWorkspace() {
-  const { documents, deleteDocument } = useDocumentStore()
+  const { documents, deleteDocument, loading: documentLoading } = useDocumentStore()
   const { getCustomer } = useCustomerStore()
   const { getProject } = useProjectStore()
   const [customerFilter, setCustomerFilter] = useState<string>("all")
@@ -137,11 +137,11 @@ export function DocumentsWorkspace() {
           <CardTitle className="text-base">File vault</CardTitle>
         </CardHeader>
         <CardContent>
-          {paged.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              {documents.length === 0 ? "No documents yet." : "No documents match your filters."}
-            </p>
-          ) : (
+          {documentLoading?
+          <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+          Loading documents...
+        </div>
+          :paged.length !== 0 ?(
             <>
             <ul className="space-y-2">
               {paged.map((doc) => {
@@ -231,7 +231,12 @@ export function DocumentsWorkspace() {
                 </div>
               </div>
             </>
-          )}
+          )
+        : (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            {documents.length === 0 ? "No documents yet." : "No documents match your filters."}
+          </p>
+        ) }
         </CardContent>
       </Card>
 

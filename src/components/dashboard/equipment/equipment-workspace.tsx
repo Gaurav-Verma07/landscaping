@@ -350,6 +350,7 @@ export function EquipmentWorkspace() {
     deleteAsset,
     deleteBooking,
     updateBooking,
+    loading: equipmentLoading
   } = useEquipmentStore()
   const { getProject } = useProjectStore()
   const [assetFormOpen, setAssetFormOpen] = useState(false)
@@ -433,9 +434,11 @@ export function EquipmentWorkspace() {
           <CardTitle className="text-base">Equipment registry</CardTitle>
         </CardHeader>
         <CardContent>
-          {assets.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">No equipment yet. Add an asset to get started.</p>
-          ) : (
+          {equipmentLoading?
+          <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+          Loading equipments...
+        </div>
+           :assets.length !== 0 ?(
             <Table>
               <TableHeader>
                 <TableRow>
@@ -484,6 +487,9 @@ export function EquipmentWorkspace() {
                 ))}
               </TableBody>
             </Table>
+          )
+          : (
+            <p className="text-sm text-muted-foreground py-6 text-center">No equipment yet. Add an asset to get started.</p>
           )}
         </CardContent>
       </Card>

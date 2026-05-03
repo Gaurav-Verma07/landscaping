@@ -23,7 +23,7 @@ import { ConvertProspectDialog } from './convert-prospect-dialog'
 let initialized = false
 
 export function OutreachWorkspace() {
-  const { prospects, moveProspectStage, deleteProspect, refresh, bulkDelete, bulkUpdate } = useOutreachStore()
+  const { prospects, moveProspectStage, deleteProspect, refresh, bulkDelete, bulkUpdate, loading:outreachLoading } = useOutreachStore()
   const { refresh: refreshCustomers } = useCustomerStore()
   const { refresh: refreshComms } = useCommunicationStore()
 
@@ -208,6 +208,7 @@ export function OutreachWorkspace() {
             pageIndex={pageIndex}
             pageCount={pageCount}
             pageSize={pagination.pageSize}
+            outreachLoading= {outreachLoading}
             onToggleSelect={handleToggleSelect}
             onToggleSelectAll={handleToggleSelectAll}
             onView={(p) => { setViewing(p); setViewOpen(true) }}

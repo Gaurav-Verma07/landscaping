@@ -38,6 +38,7 @@ interface OutreachTableProps {
   pageIndex: number
   pageCount: number
   pageSize: number
+  outreachLoading: boolean
   onToggleSelect: (id: string) => void
   onToggleSelectAll: () => void
   onView: (p: OutreachProspect) => void
@@ -54,6 +55,7 @@ export function OutreachTable({
   paged, filtered, selectedIds, pageIndex, pageCount, pageSize,
   onToggleSelect, onToggleSelectAll, onView, onEdit, onSendMessage,
   onConvert, onMoveStage, onDelete, onPageChange, onPageSizeChange,
+  outreachLoading
 }: OutreachTableProps) {
   const router = useRouter()
   const allSelected = paged.length > 0 && paged.every((p) => selectedIds.has(p.id))
@@ -70,6 +72,14 @@ export function OutreachTable({
     if (stage === 'Responded') return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
     if (stage === 'Contacted') return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
     return ''
+  }
+
+  if(outreachLoading){
+    return(
+      <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+      Loading outreachs...
+    </div>
+    )
   }
 
   if (paged.length === 0) {

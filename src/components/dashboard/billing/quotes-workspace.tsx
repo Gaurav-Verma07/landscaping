@@ -33,7 +33,7 @@ import type { Quote } from "@/types/quote-types"
 import type { Invoice } from "@/types/quote-types"
 
 export function QuotesWorkspace() {
-  const { quotes, getQuote, deleteQuote, getInvoicesByQuoteId } = useBillingStore()
+  const { quotes, getQuote, deleteQuote, getInvoicesByQuoteId, loading: billsLoading } = useBillingStore()
   const { getCustomer } = useCustomerStore()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -96,7 +96,12 @@ export function QuotesWorkspace() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((quote) => {
+        {
+        billsLoading?
+        <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+          Loading quotes...
+        </div>
+        : filtered.map((quote) => {
           const customer = getCustomer(quote.customerId)
           return (
             <Card key={quote.id}>
@@ -170,7 +175,7 @@ export function QuotesWorkspace() {
         })}
       </div>
 
-      {filtered.length === 0 && (
+      {filtered.length === 0  && !billsLoading && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <p className="text-muted-foreground">

@@ -31,7 +31,7 @@ import type { Supplier } from "@/types/quote-types"
 import { SupplierFormDialog } from "./supplier-form-dialog"
 
 export function SuppliersWorkspace() {
-  const { suppliers, deleteSupplier } = useBillingStore()
+  const { suppliers, deleteSupplier, loading: billsLoading } = useBillingStore()
   const [search, setSearch] = useState("")
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [supplierFormOpen, setSupplierFormOpen] = useState(false)
@@ -90,11 +90,11 @@ export function SuppliersWorkspace() {
           <CardTitle className="text-base">Supplier directory</CardTitle>
         </CardHeader>
         <CardContent>
-          {paged.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              {filtered.length === 0 ? (search ? "No suppliers match your search." : "No suppliers yet.") : "No results on this page."}
-            </p>
-          ) : (
+          {billsLoading?
+          <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+            Loading suppliers...
+          </div>  
+          :paged.length !== 0 ?(
             <>
               <Table>
                 <TableHeader>
@@ -200,7 +200,12 @@ export function SuppliersWorkspace() {
                 </div>
               </div>
             </>
-          )}
+          )
+          :(
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              {filtered.length === 0 ? (search ? "No suppliers match your search." : "No suppliers yet.") : "No results on this page."}
+            </p>
+          ) }
         </CardContent>
       </Card>
 

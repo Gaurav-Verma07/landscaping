@@ -141,7 +141,7 @@ function CommunicationCard({
 export function CommunicationsCards() {
   const router = useRouter()
   const searchParams = useSearchParams();
-  const { communications } = useCommunicationStore();
+  const { communications, loading: commsLoading } = useCommunicationStore();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
   const [isCreateMessageOpen, setIsCreateMessageOpen] = React.useState(false);
@@ -313,7 +313,11 @@ export function CommunicationsCards() {
         </div>
       )}
 
-      {pagedData.length ? (
+      {commsLoading?
+        <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+        Loading communications...
+      </div>
+      : pagedData.length ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {pagedData.map((comm) => (
             <CommunicationCard

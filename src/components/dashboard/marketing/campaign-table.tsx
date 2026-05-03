@@ -38,7 +38,7 @@ function statusVariant(status: Campaign['status']) {
 }
 
 export function CampaignTable({ campaigns, onEdit, onViewSends }: CampaignTableProps) {
-  const { deleteCampaign, sendCampaign } = useMarketingStore()
+  const { deleteCampaign, sendCampaign, loading: marketLoading } = useMarketingStore()
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
@@ -63,6 +63,14 @@ export function CampaignTable({ campaigns, onEdit, onViewSends }: CampaignTableP
     await deleteCampaign(deleteId)
     toast.success('Campaign deleted.')
     setDeleteId(null)
+  }
+
+  if(marketLoading){
+    return (
+      <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+      Loading campaigns...
+    </div>
+    )
   }
 
   if (campaigns.length === 0) {

@@ -32,7 +32,7 @@ import type { MaterialCatalogItem } from "@/types/quote-types"
 import { MaterialFormDialog } from "./material-form-dialog"
 
 export function MaterialsWorkspace() {
-  const { materials, suppliers, deleteMaterial } = useBillingStore()
+  const { materials, suppliers, deleteMaterial, loading: billsLoading } = useBillingStore()
   const getSupplier = (id: string) => suppliers.find((s) => s.id === id)
   const [search, setSearch] = useState("")
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
@@ -91,11 +91,11 @@ export function MaterialsWorkspace() {
           <CardTitle className="text-base">Material catalog</CardTitle>
         </CardHeader>
         <CardContent>
-          {paged.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              {filtered.length === 0 ? (search ? "No materials match your search." : "No materials in catalog.") : "No results on this page."}
-            </p>
-          ) : (
+          {billsLoading?
+            <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
+            Loading materials...
+          </div>  
+            : paged.length !== 0 ?(
             <>
               <Table>
                 <TableHeader>
@@ -213,7 +213,12 @@ export function MaterialsWorkspace() {
                 </div>
               </div>
             </>
-          )}
+          )
+        : (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            {filtered.length === 0 ? (search ? "No materials match your search." : "No materials in catalog.") : "No results on this page."}
+          </p>
+        )}
         </CardContent>
       </Card>
 
