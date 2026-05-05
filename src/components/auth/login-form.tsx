@@ -69,7 +69,7 @@ export function LoginForm({
                     href="#"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                   >
-                    Forgot your password?
+                    Forgot password?
                   </a>
                 </div>
                 <Input id="password" name="password" type="password" required />
@@ -77,13 +77,7 @@ export function LoginForm({
               {state?.error && (
                 <p className="text-sm text-red-500">{state.error}</p>
               )}
-              <Field>
-                <Link href="/dashboard" className="block w-full">
-                  <Button type="button" variant="outline" className="w-full">
-                    Continue to dashboard without signing in
-                  </Button>
-                </Link>
-              </Field>
+    
               <Field>
                 <Button type="submit" disabled={isPending}>
                   {isPending ? "Logging in..." : "Login"}

@@ -1,9 +1,4 @@
 'use client'
-
-// stores.tsx — unified re-export shim for all stores.
-// All real implementations live in lib/hooks/use-*.ts
-// This file exists so existing imports continue to work unchanged.
-
 import React from 'react'
 
 export { useCustomerStore } from '@/lib/hooks/use-customers'

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { getProfile, upsertProfile } from '@/app/actions/profile'
+import { getProfile, upsertProfile } from '@/lib/actions/profile'
 import { testSmtpConnection } from '@/lib/actions/email'
 
 const SMTP_PRESETS = [
@@ -115,7 +115,7 @@ export function EmailConfigCard({ canEdit }: EmailConfigCardProps) {
   }
 
   return (
-    <Card>
+    <Card id="email_config">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

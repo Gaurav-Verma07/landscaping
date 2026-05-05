@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useEffect, useState, useRef } from 'react';
-import { BookOpenIcon, InfoIcon, LifeBuoyIcon, Building2, User, LogOut, LayoutDashboard, Settings } from 'lucide-react';
+import { BookOpenIcon, InfoIcon, LifeBuoyIcon, LogOut, LayoutDashboard, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
@@ -411,14 +411,6 @@ export const Navbar02 = React.forwardRef<HTMLElement, Navbar02Props>(
               </DropdownMenu>
             ) : (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => router.push('/dashboard')}
-                >
-                  Dashboard
-                </Button>
                 <Button
                   variant="ghost"
                   size="sm"

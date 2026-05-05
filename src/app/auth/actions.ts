@@ -20,7 +20,7 @@ export async function signup(s: unknown, fd: FormData) {
     password: fd.get('password') as string,
   })
   if (error) return { error: error.message }
-  redirect('/auth/pending')
+  redirect('/auth/onboarding')
 }
 
 export async function signOut() {

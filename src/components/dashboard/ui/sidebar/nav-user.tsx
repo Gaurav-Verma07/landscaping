@@ -37,7 +37,7 @@ import {
 
 import { useUserStore } from "@/store/use-user-store"
 import { signOut } from "@/app/auth/actions"
-import { getProfile } from "@/app/actions/profile"
+import { getProfile } from "@/lib/actions/profile"
 import { AccountSettingsDialog } from "@/components/dashboard/ui/sidebar/account-settings-dialog"
 import { useTheme } from "next-themes"
 

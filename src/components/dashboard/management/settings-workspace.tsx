@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Save } from "lucide-react"
 import { toast } from "sonner"
 
-import { getProfile, uploadTeamLogo, upsertProfile } from "@/app/actions/profile"
+import { getProfile, uploadTeamLogo, upsertProfile } from "@/lib/actions/profile"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

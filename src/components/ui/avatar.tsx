@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import { User } from "lucide-react"
 
 import { cn } from "../../../utils/utils"
 
@@ -34,19 +35,36 @@ function AvatarImage({
   )
 }
 
+function getInitials(name?: string | null): string | null {
+  if (!name?.trim()) return null
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0][0].toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+type AvatarFallbackProps = React.ComponentProps<typeof AvatarPrimitive.Fallback> & {
+  name?: string | null
+}
+
 function AvatarFallback({
   className,
+  name,
+  children,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: AvatarFallbackProps) {
+  const initials = getInitials(name)
+
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "bg-muted flex size-full items-center justify-center rounded-full",
+        "bg-muted flex size-full items-center justify-center rounded-full text-xs font-medium text-muted-foreground",
         className
       )}
       {...props}
-    />
+    >
+      {children ?? initials ?? <User className="size-4 text-muted-foreground" />}
+    </AvatarPrimitive.Fallback>
   )
 }
 

@@ -29,7 +29,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { getProfile } from "@/app/actions/profile"
+import { getProfile } from "@/lib/actions/profile"
 
 const nav = {
   navMain: [
