@@ -12,7 +12,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import React, { useState, useEffect } from "react"
-import { VoiceAssistantButton } from "@/components/dashboard/layout/voice-assistant/voice-assistant-button"
 import { SearchButton } from "@/components/dashboard/layout/command-menu/search-button"
 
 export function DashboardHeader() {
@@ -82,7 +81,6 @@ export function DashboardHeader() {
           <span className="font-mono tabular-nums">{timeString}</span>
         </span>
         <SearchButton />
-        <VoiceAssistantButton />
       </div>
     </header>
   )

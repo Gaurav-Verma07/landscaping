@@ -7,6 +7,7 @@ import { DashboardHeader } from "@/components/dashboard/layout/dashboard-header"
 import { VoiceAssistantProvider } from "@/components/dashboard/layout/voice-assistant/voice-assistant-provider"
 import { VoiceAssistantDock } from "@/components/dashboard/layout/voice-assistant/voice-assistant-dock"
 import { QueryProvider } from "@/components/query-provider"
+import { AIPanelProvider } from "./ai/ai-panel-provider"
 
 export default async function DashboardLayout({
   children,
@@ -21,6 +22,7 @@ export default async function DashboardLayout({
 
   return (
     <QueryProvider>
+      <AIPanelProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
         <StoreInitializer user={user} />
         <AppSidebar user={user} />
@@ -32,6 +34,7 @@ export default async function DashboardLayout({
           </VoiceAssistantProvider>
         </SidebarInset>
       </SidebarProvider>
+      </AIPanelProvider>
     </QueryProvider>
   )
 }
