@@ -134,6 +134,7 @@ export function SignupForm({
               src="/hero-image.png"
               alt="Hero image"
               fill
+              loading="eager"
               sizes="(min-width: 768px) 50vw, 100vw"
               className="object-cover dark:brightness-[0.2] dark:grayscale"
             />
