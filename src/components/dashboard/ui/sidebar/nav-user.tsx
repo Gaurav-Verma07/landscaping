@@ -88,7 +88,7 @@ export function NavUser({
   // Profile DB data takes priority over auth metadata
   const name = profile?.full_name  || user?.email?.split("@")[0] || "User"
   const email = user?.email || ""
-  const avatar = profile?.team_logo_url || profile?.avatar_url  || ""
+  const avatar =  profile?.avatar_url  || ""
   const initials = name.charAt(0).toUpperCase()
 
   const handleSignOut = async () => {

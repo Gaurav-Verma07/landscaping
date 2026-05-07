@@ -1,8 +1,13 @@
 .
 ├── app
 │   ├── actions
-│   │   └── profile.ts
 │   ├── api
+│   │   ├── ai
+│   │   │   └── chat
+│   │   │       └── route.ts
+│   │   ├── cron
+│   │   │   └── campaign
+│   │   │       └── route.ts
 │   │   ├── elevenlabs
 │   │   │   ├── conversation-token
 │   │   │   │   └── route.ts
@@ -15,15 +20,26 @@
 │   │   ├── actions.ts
 │   │   ├── callback
 │   │   │   └── route.ts
+│   │   ├── google
+│   │   │   └── route.ts
 │   │   ├── login
 │   │   │   └── page.tsx
+│   │   ├── onboarding
+│   │   │   └── page.tsx
 │   │   ├── pending
+│   │   │   └── page.tsx
+│   │   ├── reset-password
 │   │   │   └── page.tsx
 │   │   └── signup
 │   │       └── page.tsx
 │   ├── dashboard
 │   │   ├── admin
 │   │   │   └── page.tsx
+│   │   ├── ai
+│   │   │   ├── ai-chat-input.tsx
+│   │   │   ├── ai-chat-message.tsx
+│   │   │   ├── ai-panel-provider.tsx
+│   │   │   └── ai-panel.tsx
 │   │   ├── appointments
 │   │   │   └── page.tsx
 │   │   ├── communications
@@ -86,7 +102,9 @@
 ├── components
 │   ├── auth
 │   │   ├── login-form.tsx
+│   │   ├── onboarding-form.tsx
 │   │   ├── pending-form.tsx
+│   │   ├── reset-password.tsx
 │   │   └── signup-form.tsx
 │   ├── dashboard
 │   │   ├── admin
@@ -154,7 +172,6 @@
 │   │   │   ├── theme-toggle.tsx
 │   │   │   └── voice-assistant
 │   │   │       ├── ai-assistant-logo.tsx
-│   │   │       ├── voice-assistant-button.tsx
 │   │   │       ├── voice-assistant-dock.tsx
 │   │   │       ├── voice-assistant-provider.tsx
 │   │   │       └── voice-navigator.tsx
@@ -162,6 +179,15 @@
 │   │   │   ├── email-config-card.tsx
 │   │   │   ├── integrations-workspace.tsx
 │   │   │   └── settings-workspace.tsx
+│   │   ├── marketing
+│   │   │   ├── campaign-builder-dialog.tsx
+│   │   │   ├── campaign-charts.tsx
+│   │   │   ├── campaign-sends-dialog.tsx
+│   │   │   ├── campaign-table.tsx
+│   │   │   ├── content-calender.tsx
+│   │   │   ├── marketing-stats.tsx
+│   │   │   ├── marketing-workspace.tsx
+│   │   │   └── social-post-generator.tsx
 │   │   ├── outreach
 │   │   │   ├── companies-house-search.tsx
 │   │   │   ├── convert-prospect-dialog.tsx
@@ -207,6 +233,7 @@
 │   │   ├── theme-enforcer.tsx
 │   │   ├── trust.tsx
 │   │   └── value-props.tsx
+│   ├── query-provider.tsx
 │   ├── store-initializer.tsx
 │   ├── theme-provider.tsx
 │   └── ui
@@ -283,55 +310,78 @@
 │   │   ├── labor.ts
 │   │   ├── lead-generation-mappers.ts
 │   │   ├── lead-generation.ts
+│   │   ├── marketing.ts
 │   │   ├── outreach.ts
-│   │   └── projects.ts
-│   ├── appointment-store.tsx
-│   ├── appointment-types.ts
-│   ├── audit-store.tsx
-│   ├── audit-types.ts
-│   ├── billing-store.tsx
-│   ├── communication-store.tsx
-│   ├── communication-templates-seed.ts
-│   ├── communication-types.ts
-│   ├── customer-form-utils.ts
-│   ├── customer-store.tsx
-│   ├── customer-types.ts
+│   │   ├── profile.ts
+│   │   ├── projects.ts
+│   │   └── social-posts.ts
+│   ├── ai
+│   │   ├── ai-index.ts
+│   │   ├── provider.factory.ts
+│   │   ├── provider.interface.ts
+│   │   ├── providers
+│   │   │   ├── anthropic.ts
+│   │   │   ├── gemini.ts
+│   │   │   └── openai.ts
+│   │   ├── system-prompt.ts
+│   │   ├── tool-executor.ts
+│   │   └── tools
+│   │       ├── campaigns-tools.ts
+│   │       ├── communications-tools.ts
+│   │       ├── customers-tools.ts
+│   │       ├── index.ts
+│   │       ├── navigation-tools.ts
+│   │       └── projects-tools.ts
 │   ├── db
 │   │   ├── index.ts
 │   │   ├── schema.ts
 │   │   └── types.ts
-│   ├── document-store.tsx
-│   ├── document-types.ts
 │   ├── elevenlabs
 │   │   ├── client.ts
 │   │   ├── config.ts
 │   │   ├── index.ts
 │   │   └── server.ts
-│   ├── equipment-store.tsx
-│   ├── equipment-types.ts
-│   ├── labor-store.tsx
-│   ├── labor-types.ts
+│   ├── hooks
+│   │   ├── use-ai-chat.ts
+│   │   ├── use-appointments.ts
+│   │   ├── use-audit.ts
+│   │   ├── use-billing.ts
+│   │   ├── use-communications.ts
+│   │   ├── use-customers.ts
+│   │   ├── use-document.ts
+│   │   ├── use-equipment.ts
+│   │   ├── use-labor.ts
+│   │   ├── use-marketing.ts
+│   │   ├── use-outreach.ts
+│   │   └── use-projects.ts
 │   ├── logger
 │   │   ├── serverLogger.ts
 │   │   └── telemetryClient.ts
 │   ├── navigation
 │   │   └── routes.ts
-│   ├── outreach-store.tsx
-│   ├── outreach-types.ts
-│   ├── project-store.tsx
-│   ├── project-types.ts
-│   ├── quote-types.ts
-│   ├── supabase
-│   │   ├── client.ts
-│   │   ├── middleware.ts
-│   │   └── server.ts
-│   └── utils.ts
+│   ├── query-client.ts
+│   ├── stores.tsx
+│   └── supabase
+│       ├── client.ts
+│       ├── middleware.ts
+│       └── server.ts
 ├── store
 │   ├── use-ui-store.ts
 │   └── use-user-store.ts
 ├── tree.txt
 └── types
+    ├── appointment-types.ts
+    ├── audit-types.ts
+    ├── communication-types.ts
+    ├── customer-types.ts
+    ├── document-types.ts
+    ├── equipment-types.ts
+    ├── labor-types.ts
+    ├── marketing-types.ts
+    ├── outreach-types.ts
+    ├── project-types.ts
+    ├── quote-types.ts
     ├── user.ts
     └── validations.types.ts
 
-75 directories, 259 files
+88 directories, 296 files
