@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
 import { useState, useEffect } from "react"
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import {
   PROJECT_TYPES,
   PROJECT_STATUSES,
@@ -31,6 +31,7 @@ import {
 } from "@/types/project-types"
 import { useProjectStore } from "@/lib/stores"
 import { useCustomerStore } from "@/lib/stores"
+import { Loader2, MapPin, Navigation } from "lucide-react"
 
 const FORM_ID = "project-form-dialog"
 
@@ -76,7 +77,10 @@ export function ProjectFormDialog({
   const [equipmentStr, setEquipmentStr] = useState("")
   const [assignedCrew, setAssignedCrew] = useState("")
   const [dependencyProjectIds, setDependencyProjectIds] = useState<string[]>([])
-
+  const [siteLat, setSiteLat] = useState<string>(project?.siteLat?.toString() ?? '')
+  const [siteLng, setSiteLng] = useState<string>(project?.siteLng?.toString() ?? '')
+  const [gpsRadius, setGpsRadius] = useState<string>(project?.gpsRadiusMeters?.toString() ?? '200')
+  const [locatingMe, setLocatingMe] = useState(false)
   useEffect(() => {
     if (project) {
       setName(project.name)
@@ -95,6 +99,9 @@ export function ProjectFormDialog({
       setEquipmentStr(project.equipment.join(", "))
       setAssignedCrew(project.assignedCrew)
       setDependencyProjectIds(project.dependencyProjectIds)
+      setSiteLat(project?.siteLat?.toString() ?? '')
+      setSiteLng(project?.siteLng?.toString() ?? '')
+      setGpsRadius(project?.gpsRadiusMeters?.toString() ?? '200')
     } else {
       setName("")
       setCustomerId(defaultCustomerId ?? "")
@@ -112,6 +119,10 @@ export function ProjectFormDialog({
       setEquipmentStr("")
       setAssignedCrew("")
       setDependencyProjectIds([])
+      setSiteLat(project?.siteLat?.toString() ?? '')
+      setSiteLng(project?.siteLng?.toString() ?? '')
+      setGpsRadius(project?.gpsRadiusMeters?.toString() ?? '200')
+      setLocatingMe(false)
     }
   }, [project, defaultCustomerId, open])
 
@@ -148,6 +159,9 @@ export function ProjectFormDialog({
         equipment: parseList(equipmentStr),
         assignedCrew: assignedCrew.trim(),
         dependencyProjectIds,
+        siteLat: siteLat ? parseFloat(siteLat) : null,
+        siteLng: siteLng ? parseFloat(siteLng) : null,
+        gpsRadiusMeters: gpsRadius ? parseInt(gpsRadius) : 200,
       })
       toast.success("Project updated.")
     } else {
@@ -168,6 +182,9 @@ export function ProjectFormDialog({
         equipment: parseList(equipmentStr),
         assignedCrew: assignedCrew.trim(),
         dependencyProjectIds,
+        siteLat: siteLat ? parseFloat(siteLat) : null,
+        siteLng: siteLng ? parseFloat(siteLng) : null,
+        gpsRadiusMeters: gpsRadius ? parseInt(gpsRadius) : 200,
       })
       toast.success("Project created.")
     }
@@ -352,6 +369,84 @@ export function ProjectFormDialog({
                 </Field>
               </div>
             </div>
+
+          {/* Site Location */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin className="size-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Site Location (GPS)</span>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (!navigator.geolocation) return toast.error('Geolocation not supported')
+                  setLocatingMe(true)
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      setSiteLat(pos.coords.latitude.toFixed(6))
+                      setSiteLng(pos.coords.longitude.toFixed(6))
+                      setLocatingMe(false)
+                      toast.success('Location captured')
+                    },
+                    (err) => {
+                      setLocatingMe(false)
+                      const msgs: Record<number, string> = {
+                        1: 'Location permission denied',
+                        2: 'Location unavailable',
+                        3: 'Request timed out',
+                      }
+                      toast.error(msgs[err.code] ?? 'Could not get location')
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                  )
+                }}
+                disabled={locatingMe}
+              >
+                {locatingMe
+                  ? <><Loader2 className="size-3 mr-1.5 animate-spin" />Locating…</>
+                  : <><Navigation className="size-3 mr-1.5" />Use my location</>}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Leave blank to auto-geocode from the customer address on first clock-in.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Field>
+                <FieldLabel>Latitude</FieldLabel>
+                <Input
+                  type="number"
+                  step="any"
+                  placeholder="e.g. 37.7749"
+                  value={siteLat}
+                  onChange={(e) => setSiteLat(e.target.value)}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Longitude</FieldLabel>
+                <Input
+                  type="number"
+                  step="any"
+                  placeholder="e.g. -122.4194"
+                  value={siteLng}
+                  onChange={(e) => setSiteLng(e.target.value)}
+                />
+              </Field>
+            </div>
+            <Field>
+              <FieldLabel>On-site radius (metres)</FieldLabel>
+              <Input
+                type="number"
+                min="50"
+                max="2000"
+                value={gpsRadius}
+                onChange={(e) => setGpsRadius(e.target.value)}
+              />
+              <FieldDescription>Default 200m. Increase for large properties.</FieldDescription>
+            </Field>
+          </div>
           </div>
           <DialogFooter className="px-6 py-4 border-t">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

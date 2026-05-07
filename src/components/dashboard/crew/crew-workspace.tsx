@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   IconPlus,
@@ -35,11 +35,15 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useLaborStore } from "@/lib/stores";
-import { useProjectStore } from "@/lib/stores";
-import type { Employee, TimeEntry } from "@/types/labor-types";
+import { getGpsStatus, type Employee, type TimeEntry } from "@/types/labor-types";
 import { EmployeeFormDialog } from "./employee-form-dialog";
 import { toast } from "sonner";
+import { Loader2, MapPin, ShieldAlert, ShieldCheck, ShieldOff } from "lucide-react";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useActiveTimeEntries, useClockOut, useDeleteEmployee, useEmployees, useTimeEntriesByEmployee } from "@/lib/hooks/use-labor";
+import { useProjects } from "@/lib/hooks/use-projects";
+import { ClockInDialog } from "./clock-in-dialog";
+import { SupervisorOverrideDialog } from "./supervisor-override-dialog";
 
 function formatDuration(ms: number): string {
   const hours = Math.floor(ms / (1000 * 60 * 60));
@@ -48,117 +52,228 @@ function formatDuration(ms: number): string {
   return `${minutes}m`;
 }
 
-function getEntryDuration(entry: TimeEntry): number | null {
-  if (!entry.clockOutAt) return null;
-  return (
-    new Date(entry.clockOutAt).getTime() - new Date(entry.clockInAt).getTime()
-  );
+function entryDurationMs(entry: TimeEntry): number | null {
+  if (!entry.clockOutAt) return null
+  return new Date(entry.clockOutAt).getTime() - new Date(entry.clockInAt).getTime()
+}
+
+
+// GPS badge
+
+function GpsBadge({
+  entry,
+  onOverride,
+}:{
+  entry: TimeEntry
+  onOverride?: ()=>void
+}){
+  const status= getGpsStatus(entry)
+
+  if(status=== 'no_gps'){
+    return(
+      <Badge variant="outline" className="text-xs text-muted-foreground gap-1">
+        <MapPin className="size-3"/>
+        No GPS
+      </Badge>
+    )
+  }
+
+  if(status==='verified'){
+    return(
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+            variant="outline"
+            className="text-xs gap-1 border-green-300 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/30"
+            >
+              <ShieldCheck className="size-3"/>
+              On site
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            {entry.distanceMeters!= null
+            ? `${entry.distanceMeters}m from site · ±${Math.round(entry.accuracyMeters ?? 0)}m accuracy` 
+              : 'GPS verified'}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  if(status==='overridden'){
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant="outline"
+              className="text-xs gap-1 border-blue-300 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30"
+            >
+              <ShieldCheck className="size-3" />
+              Overridden
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>{entry.overrideReason ?? 'Supervisor approved'}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  //unverified
+  return(
+    <div className="flex items-center gap-1.5">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+            variant="outline"
+            className="text-xs gap-1 border-red-300 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30"
+            >
+              <ShieldAlert className="size-3"/>
+              Off site
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            {entry.distanceMeters!= null
+              ? `${entry.distanceMeters}m from site`
+              : 'GPS check failed'}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      {onOverride &&(
+        <Button
+        size="sm"
+        variant="ghost"
+        className="h-5 text-xs px-1.5 text-muted-foreground hover:text-foreground"
+        onClick={onOverride}
+        >
+          <ShieldOff className="size-3 mr-1"/>
+          Override
+        </Button>
+      )}
+    </div>
+  )
 }
 
 export function CrewWorkspace() {
-  const {
-    employees,
-    timeEntries,
-    getActiveTimeEntry,
-    getTimeEntriesByEmployeeId,
-    clockIn,
-    clockOut,
-    deleteEmployee,
-    loading: laborLoading
-  } = useLaborStore();
-  const { projects } = useProjectStore();
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<Employee | null>(null);
-  const [clockInEmployeeId, setClockInEmployeeId] = useState("");
-  const [clockInProjectId, setClockInProjectId] = useState("");
-  const [logsEmployeeId, setLogsEmployeeId] = useState<string | null>(null);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  // ── Queries ──────────────────────────────────────────────────────────────────
+  const { data: employees = [], isLoading: laborLoading } = useEmployees()
+  const { data: activeEntries = [] } = useActiveTimeEntries()
+  const { data: projects = [] } = useProjects()
 
-  useEffect(() => {
-    if (logsEmployeeId) setPagination((p) => ({ ...p, pageIndex: 0 }));
-  }, [logsEmployeeId, dateFrom, dateTo]);
+  const clockOutMutation = useClockOut()
+  const deleteEmployeeMutation = useDeleteEmployee()
 
-  const handleClockIn = () => {
-    if (!clockInEmployeeId || !clockInProjectId) {
-      toast.error("Select employee and project.");
-      return;
+  // ── UI state ─────────────────────────────────────────────────────────────────
+  const [formOpen, setFormOpen] = useState(false)
+  const [editing, setEditing] = useState<Employee | null>(null)
+
+  // Clock-in dialog
+  const [clockInEmployee, setClockInEmployee] = useState<Employee | null>(null)
+
+  // Override dialog
+  const [overrideEntry, setOverrideEntry] = useState<TimeEntry | null>(null)
+  const [overrideEmployeeName, setOverrideEmployeeName] = useState('')
+
+  // Time-log panel
+  const [logsEmployeeId, setLogsEmployeeId] = useState<string | null>(null)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
+
+  // ── Helpers to set filters and reset page ────────────────────────────────────
+  const selectEmployee = (id: string) => {
+    setLogsEmployeeId(id)
+    setPagination((p) => ({ ...p, pageIndex: 0 }))
+  }
+
+  const handleDateFromChange = (value: string) => {
+    setDateFrom(value)
+    setPagination((p) => ({ ...p, pageIndex: 0 }))
+  }
+
+  const handleDateToChange = (value: string) => {
+    setDateTo(value)
+    setPagination((p) => ({ ...p, pageIndex: 0 }))
+  }
+
+  // ── Time-log query (per selected employee) ───────────────────────────────────
+  const { data: rawLogs = [], isLoading: logsLoading } = useTimeEntriesByEmployee(logsEmployeeId)
+
+  const logsEmployee = useMemo(
+    () => employees.find((e) => e.id === logsEmployeeId) ?? null,
+    [employees, logsEmployeeId],
+  )
+
+  // ── Active entry lookup ───────────────────────────────────────────────────────
+  const getActiveEntry = useCallback(
+    (employeeId: string) => activeEntries.find((e) => e.employeeId === employeeId) ?? null,
+    [activeEntries],
+  )
+
+  // ── Clock-out handler ────────────────────────────────────────────────────────
+  const handleClockOut = async (entryId: string) => {
+    const result = await clockOutMutation.mutateAsync(entryId)
+    if ('error' in result && result.error) {
+      toast.error(result.error as string)
+    } else {
+      toast.success('Clocked out')
     }
-    const active = getActiveTimeEntry(clockInEmployeeId);
-    if (active) {
-      const project = projects.find((p) => p.id === active.projectId);
-      toast.error(
-        `This employee is already clocked in on "${
-          project?.name ?? "another project"
-        }". Clock them out before starting a new entry.`,
-      );
-      return;
-    }
-    clockIn(clockInEmployeeId, clockInProjectId, false);
-    toast.success("Clocked in.");
-    setClockInEmployeeId("");
-    setClockInProjectId("");
-  };
+  }
 
-  const logsEmployee = logsEmployeeId
-    ? employees.find((e) => e.id === logsEmployeeId)
-    : null;
-  const allEntriesForEmployee = useMemo(() => {
-    if (!logsEmployeeId) return [];
-    return getTimeEntriesByEmployeeId(logsEmployeeId);
-  }, [logsEmployeeId, getTimeEntriesByEmployeeId]);
+  // ── Delete employee ──────────────────────────────────────────────────────────
+  const handleDelete = async (emp: Employee) => {
+    await deleteEmployeeMutation.mutateAsync(emp.id)
+    toast.success('Employee removed')
+    if (logsEmployeeId === emp.id) setLogsEmployeeId(null)
+  }
 
+  // ── Filtered + paginated time logs ───────────────────────────────────────────
   const filteredLogs = useMemo(() => {
-    let list = allEntriesForEmployee;
+    let list = rawLogs
     if (dateFrom) {
-      const from = new Date(dateFrom).getTime();
-      list = list.filter((e) => new Date(e.clockInAt).getTime() >= from);
+      const from = new Date(dateFrom).getTime()
+      list = list.filter((e) => new Date(e.clockInAt).getTime() >= from)
     }
     if (dateTo) {
-      const to = new Date(dateTo);
-      to.setHours(23, 59, 59, 999);
-      const toMs = to.getTime();
-      list = list.filter((e) => new Date(e.clockInAt).getTime() <= toMs);
+      const to = new Date(dateTo)
+      to.setHours(23, 59, 59, 999)
+      list = list.filter((e) => new Date(e.clockInAt).getTime() <= to.getTime())
     }
     return list.sort(
-      (a, b) =>
-        new Date(b.clockInAt).getTime() - new Date(a.clockInAt).getTime(),
-    );
-  }, [allEntriesForEmployee, dateFrom, dateTo]);
+      (a, b) => new Date(b.clockInAt).getTime() - new Date(a.clockInAt).getTime(),
+    )
+  }, [rawLogs, dateFrom, dateTo])
 
-  const totalMs = useMemo(() => {
-    return filteredLogs.reduce((sum, e) => {
-      const d = getEntryDuration(e);
-      return sum + (d ?? 0);
-    }, 0);
-  }, [filteredLogs]);
+  const totalMs = useMemo(
+    () => filteredLogs.reduce((sum, e) => sum + (entryDurationMs(e) ?? 0), 0),
+    [filteredLogs],
+  )
 
-  const pageCount = Math.max(
-    1,
-    Math.ceil(filteredLogs.length / pagination.pageSize),
-  );
-  const pageIndex = Math.min(pagination.pageIndex, pageCount - 1);
+  const pageCount = Math.max(1, Math.ceil(filteredLogs.length / pagination.pageSize))
+  const pageIndex = Math.min(pagination.pageIndex, pageCount - 1)
   const pagedLogs = useMemo(() => {
-    const start = pageIndex * pagination.pageSize;
-    return filteredLogs.slice(start, start + pagination.pageSize);
-  }, [filteredLogs, pageIndex, pagination.pageSize]);
+    const start = pageIndex * pagination.pageSize
+    return filteredLogs.slice(start, start + pagination.pageSize)
+  }, [filteredLogs, pageIndex, pagination.pageSize])
 
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-1 flex-col gap-6">
+      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Crew & Labor</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Crew &amp; Labor</h1>
           <p className="text-muted-foreground text-sm">
-            Employees, time tracking (clock in/out by project). View logs per
-            employee with date filter and totals.
+            Manage employees, track time with GPS verification, and review clock-in logs.
           </p>
         </div>
         <Button
           size="sm"
           onClick={() => {
-            setEditing(null);
-            setFormOpen(true);
+            setEditing(null)
+            setFormOpen(true)
           }}
         >
           <IconPlus className="size-4 mr-2" />
@@ -166,58 +281,22 @@ export function CrewWorkspace() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Time tracking</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-end gap-2">
-          <Select
-            value={clockInEmployeeId}
-            onValueChange={setClockInEmployeeId}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Employee" />
-            </SelectTrigger>
-            <SelectContent>
-              {employees.map((e) => (
-                <SelectItem key={e.id} value={e.id}>
-                  {e.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={clockInProjectId} onValueChange={setClockInProjectId}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Project" />
-            </SelectTrigger>
-            <SelectContent>
-              {projects.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            onClick={handleClockIn}
-            disabled={!clockInEmployeeId || !clockInProjectId}
-          >
-            Clock in
-          </Button>
-        </CardContent>
-      </Card>
-
+      {/* Employees table */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Crew / employees</CardTitle>
         </CardHeader>
         <CardContent>
-          {laborLoading?
-          <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
-            Loading Labors...
-          </div>
-          :employees.length !== 0 ? (
+          {laborLoading ? (
+            <div className="flex items-center justify-center py-16 text-sm text-muted-foreground gap-2">
+              <Loader2 className="size-4 animate-spin" />
+              Loading employees…
+            </div>
+          ) : employees.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              No employees yet. Add one to get started.
+            </p>
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -230,83 +309,106 @@ export function CrewWorkspace() {
               </TableHeader>
               <TableBody>
                 {employees.map((emp) => {
-                  const active = getActiveTimeEntry(emp.id);
+                  const active = getActiveEntry(emp.id)
+                  const activeProject = active
+                    ? projects.find((p) => p.id === active.projectId)
+                    : null
+
                   return (
                     <TableRow key={emp.id}>
+                      {/* Name */}
                       <TableCell className="font-medium">
                         <button
                           type="button"
                           className="hover:underline text-left"
-                          onClick={() => setLogsEmployeeId(emp.id)}
+                          onClick={() => selectEmployee(emp.id)}
                         >
                           {emp.name}
                         </button>
                       </TableCell>
+
+                      {/* Role */}
                       <TableCell>{emp.role}</TableCell>
+
+                      {/* Skill */}
                       <TableCell>{emp.skillLevel}</TableCell>
+
+                      {/* Clock-in status */}
                       <TableCell>
                         {active ? (
-                          <span className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="default">Clocked in</Badge>
-                            <Link
-                              href={`/dashboard/projects/${active.projectId}`}
-                              className="text-xs text-primary hover:underline"
-                            >
-                              {projects.find((p) => p.id === active.projectId)
-                                ?.name ?? "Project"}
-                            </Link>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="default" className="text-xs">Clocked in</Badge>
+
+                            {/* GPS badge */}
+                            <GpsBadge
+                              entry={active}
+                              onOverride={
+                                getGpsStatus(active) === 'unverified'
+                                  ? () => {
+                                      setOverrideEntry(active)
+                                      setOverrideEmployeeName(emp.name)
+                                    }
+                                  : undefined
+                              }
+                            />
+
+                            {/* Project link */}
+                            {activeProject && (
+                              <Link
+                                href={`/dashboard/projects/${activeProject.id}`}
+                                className="text-xs text-primary hover:underline"
+                              >
+                                {activeProject.name}
+                              </Link>
+                            )}
+
+                            {/* Clock out */}
                             <Button
                               size="sm"
                               variant="outline"
                               className="h-6 text-xs"
-                              onClick={() => {
-                                clockOut(active.id);
-                                toast.success("Clocked out.");
-                              }}
+                              disabled={clockOutMutation.isPending}
+                              onClick={() => handleClockOut(active.id)}
                             >
                               Clock out
                             </Button>
-                          </span>
+                          </div>
                         ) : (
-                          <span className="text-muted-foreground text-sm">
-                            —
-                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => setClockInEmployee(emp)}
+                          >
+                            <MapPin className="size-3" />
+                            Clock in
+                          </Button>
                         )}
                       </TableCell>
+
+                      {/* Row menu */}
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
                               <IconDotsVertical className="size-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => setLogsEmployeeId(emp.id)}
-                            >
+                            <DropdownMenuItem onClick={() => selectEmployee(emp.id)}>
                               View time logs
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => {
-                                setEditing(emp);
-                                setFormOpen(true);
+                                setEditing(emp)
+                                setFormOpen(true)
                               }}
                             >
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
-                              onClick={() => {
-                                deleteEmployee(emp.id);
-                                toast.success("Employee removed.");
-                                setLogsEmployeeId((id) =>
-                                  id === emp.id ? null : id,
-                                );
-                              }}
+                              onClick={() => handleDelete(emp)}
                             >
                               Delete
                             </DropdownMenuItem>
@@ -314,53 +416,53 @@ export function CrewWorkspace() {
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  );
+                  )
                 })}
               </TableBody>
             </Table>
-          )
-          : (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              No employees yet.
-            </p>
-          ) }
+          )}
         </CardContent>
       </Card>
 
+      {/* Time log panel */}
       {logsEmployee && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-4">
             <CardTitle className="text-base">
               Time logs — {logsEmployee.name}
             </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLogsEmployeeId(null)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setLogsEmployeeId(null)}>
               Close
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Date filter row */}
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 type="date"
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+                onChange={(e) => handleDateFromChange(e.target.value)}
                 className="w-[140px] h-9"
               />
+              <span className="text-muted-foreground text-sm">to</span>
               <Input
                 type="date"
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+                onChange={(e) => handleDateToChange(e.target.value)}
                 className="w-[140px] h-9"
               />
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium ml-auto">
                 Total: {formatDuration(totalMs)}
               </span>
             </div>
-            {filteredLogs.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4">
+
+            {logsLoading ? (
+              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground gap-2">
+                <Loader2 className="size-4 animate-spin" />
+                Loading logs…
+              </div>
+            ) : filteredLogs.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">
                 No time entries in this range.
               </p>
             ) : (
@@ -372,15 +474,14 @@ export function CrewWorkspace() {
                       <TableHead>Clock in</TableHead>
                       <TableHead>Clock out</TableHead>
                       <TableHead>Project</TableHead>
+                      <TableHead>GPS</TableHead>
                       <TableHead className="text-right">Duration</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {pagedLogs.map((entry) => {
-                      const duration = getEntryDuration(entry);
-                      const project = projects.find(
-                        (p) => p.id === entry.projectId,
-                      );
+                      const duration = entryDurationMs(entry)
+                      const project = projects.find((p) => p.id === entry.projectId)
                       return (
                         <TableRow key={entry.id}>
                           <TableCell>
@@ -392,48 +493,57 @@ export function CrewWorkspace() {
                           <TableCell>
                             {entry.clockOutAt
                               ? new Date(entry.clockOutAt).toLocaleTimeString()
-                              : "—"}
+                              : <span className="text-muted-foreground">—</span>}
                           </TableCell>
                           <TableCell>
-                            <Link
-                              href={`/dashboard/projects/${entry.projectId}`}
-                              className="text-primary hover:underline text-sm"
-                            >
-                              {project?.name ?? entry.projectId}
-                            </Link>
+                            {project ? (
+                              <Link
+                                href={`/dashboard/projects/${entry.projectId}`}
+                                className="text-primary hover:underline text-sm"
+                              >
+                                {project.name}
+                              </Link>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <GpsBadge
+                              entry={entry}
+                              onOverride={
+                                getGpsStatus(entry) === 'unverified'
+                                  ? () => {
+                                      setOverrideEntry(entry)
+                                      setOverrideEmployeeName(logsEmployee.name)
+                                    }
+                                  : undefined
+                              }
+                            />
                           </TableCell>
                           <TableCell className="text-right">
-                            {duration != null
-                              ? formatDuration(duration)
-                              : "In progress"}
+                            {duration != null ? formatDuration(duration) : (
+                              <span className="text-muted-foreground">In progress</span>
+                            )}
                           </TableCell>
                         </TableRow>
-                      );
+                      )
                     })}
                   </TableBody>
                 </Table>
+
+                {/* Pagination */}
                 <div className="flex items-center justify-between gap-4 pt-4 border-t">
                   <div className="text-sm text-muted-foreground">
-                    Showing{" "}
-                    {filteredLogs.length === 0
-                      ? 0
-                      : pageIndex * pagination.pageSize + 1}
-                    –
-                    {Math.min(
-                      (pageIndex + 1) * pagination.pageSize,
-                      filteredLogs.length,
-                    )}{" "}
+                    Showing{' '}
+                    {filteredLogs.length === 0 ? 0 : pageIndex * pagination.pageSize + 1}–
+                    {Math.min((pageIndex + 1) * pagination.pageSize, filteredLogs.length)}{' '}
                     of {filteredLogs.length}
                   </div>
                   <div className="flex items-center gap-2">
                     <Select
                       value={String(pagination.pageSize)}
                       onValueChange={(v) =>
-                        setPagination((prev) => ({
-                          ...prev,
-                          pageSize: Number(v),
-                          pageIndex: 0,
-                        }))
+                        setPagination((prev) => ({ ...prev, pageSize: Number(v), pageIndex: 0 }))
                       }
                     >
                       <SelectTrigger className="h-8 w-[90px]">
@@ -451,61 +561,24 @@ export function CrewWorkspace() {
                       Page {pageIndex + 1} of {pageCount}
                     </span>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          setPagination((p) => ({ ...p, pageIndex: 0 }))
-                        }
-                        disabled={pageIndex === 0}
-                        aria-label="First page"
-                      >
+                      <Button variant="outline" size="icon" className="h-8 w-8"
+                        onClick={() => setPagination((p) => ({ ...p, pageIndex: 0 }))}
+                        disabled={pageIndex === 0} aria-label="First page">
                         <IconChevronsLeft className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          setPagination((p) => ({
-                            ...p,
-                            pageIndex: Math.max(0, pageIndex - 1),
-                          }))
-                        }
-                        disabled={pageIndex === 0}
-                        aria-label="Previous page"
-                      >
+                      <Button variant="outline" size="icon" className="h-8 w-8"
+                        onClick={() => setPagination((p) => ({ ...p, pageIndex: Math.max(0, pageIndex - 1) }))}
+                        disabled={pageIndex === 0} aria-label="Previous page">
                         <IconChevronLeft className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          setPagination((p) => ({
-                            ...p,
-                            pageIndex: Math.min(pageCount - 1, pageIndex + 1),
-                          }))
-                        }
-                        disabled={pageIndex >= pageCount - 1}
-                        aria-label="Next page"
-                      >
+                      <Button variant="outline" size="icon" className="h-8 w-8"
+                        onClick={() => setPagination((p) => ({ ...p, pageIndex: Math.min(pageCount - 1, pageIndex + 1) }))}
+                        disabled={pageIndex >= pageCount - 1} aria-label="Next page">
                         <IconChevronRight className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          setPagination((p) => ({
-                            ...p,
-                            pageIndex: pageCount - 1,
-                          }))
-                        }
-                        disabled={pageIndex >= pageCount - 1}
-                        aria-label="Last page"
-                      >
+                      <Button variant="outline" size="icon" className="h-8 w-8"
+                        onClick={() => setPagination((p) => ({ ...p, pageIndex: pageCount - 1 }))}
+                        disabled={pageIndex >= pageCount - 1} aria-label="Last page">
                         <IconChevronsRight className="h-4 w-4" />
                       </Button>
                     </div>
@@ -517,12 +590,28 @@ export function CrewWorkspace() {
         </Card>
       )}
 
+      {/* ── Dialogs ── */}
       <EmployeeFormDialog
         open={formOpen}
         onOpenChange={setFormOpen}
         employee={editing}
         onSaved={() => setEditing(null)}
       />
+
+      <ClockInDialog
+        open={!!clockInEmployee}
+        onOpenChange={(v) => { if (!v) setClockInEmployee(null) }}
+        employeeId={clockInEmployee?.id ?? ''}
+        employeeName={clockInEmployee?.name ?? ''}
+        onSuccess={() => setClockInEmployee(null)}
+      />
+
+      <SupervisorOverrideDialog
+        open={!!overrideEntry}
+        onOpenChange={(v) => { if (!v) setOverrideEntry(null) }}
+        entry={overrideEntry}
+        employeeName={overrideEmployeeName}
+      />
     </div>
-  );
+  )
 }

@@ -83,6 +83,9 @@ export async function createProject(data: CreateProjectData) {
       equipment: data.equipment,
       assigned_crew: data.assignedCrew,
       dependency_project_ids: data.dependencyProjectIds,
+      site_lat: data.siteLat ?? null,
+      site_lng: data.siteLng ?? null,
+      gps_radius_meters: data.gpsRadiusMeters ?? 200,
     })
     .select()
     .single()
@@ -133,6 +136,9 @@ export async function updateProject(
       equipment: data.equipment,
       assigned_crew: data.assignedCrew,
       dependency_project_ids: data.dependencyProjectIds,
+      site_lat: data.siteLat,
+      site_lng: data.siteLng,
+      gps_radius_meters: data.gpsRadiusMeters,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
@@ -144,6 +150,28 @@ export async function updateProject(
 
 export async function updateProjectStatus(id: string, status: Project['status']) {
   return updateProject(id, { status })
+}
+
+//manually set or correct the GPS site location for a project
+
+export async function updateProjectSiteCoords(
+  projectId: string,
+  coords: { siteLat: number; siteLng: number; gpsRadiusMeters?: number },
+) {
+  const { supabase } = await getUser()
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      site_lat: coords.siteLat,
+      site_lng: coords.siteLng,
+      ...(coords.gpsRadiusMeters != null && { gps_radius_meters: coords.gpsRadiusMeters }),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', projectId)
+  if (error) return { error: error.message }
+  revalidatePath('/dashboard/projects')
+  revalidatePath('/dashboard/crew')
+  return { success: true }
 }
 
 export async function deleteProject(id: string) {
@@ -353,7 +381,9 @@ async function shiftTimelineDueDates(report: Omit<SupervisorReport, 'id' | 'subm
 // ============================================
 
 function mapProject(row: Record<string, unknown>): Project {
-  const milestones = (row.project_timeline_milestones as Record<string, unknown>[] ?? [])
+  const milestones = (
+    (row.project_timeline_milestones as Record<string, unknown>[]) ?? []
+  )
     .map(mapMilestone)
     .sort((a, b) => a.order - b.order)
 
@@ -376,6 +406,9 @@ function mapProject(row: Record<string, unknown>): Project {
     assignedCrew: (row.assigned_crew as string) ?? '',
     dependencyProjectIds: (row.dependency_project_ids as string[]) ?? [],
     timeline: milestones,
+    siteLat: (row.site_lat as number) ?? null,
+    siteLng: (row.site_lng as number) ?? null,
+    gpsRadiusMeters: (row.gps_radius_meters as number) ?? 200,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }

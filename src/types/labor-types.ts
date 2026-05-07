@@ -23,11 +23,36 @@ export interface TimeEntry {
   projectId: string
   clockInAt: string
   clockOutAt: string | null
+
+  //GPS fields
+  lat: number | null
+  lng: number | null
+  accuracyMeters: number | null
+  distanceMeters: number | null
   gpsVerified: boolean
+
+  //supervisor override
   supervisorOverride: boolean
+  overrideBy: string | null
+  overrideReason: string | null
+
   notes: string
   createdAt: string
   updatedAt: string
+}
+
+export type GpsStatus= 
+  | 'verified'
+  | 'unverified'
+  | 'overridden'
+  | 'no_coords'
+  | 'no_gps'
+
+export function getGpsStatus(entry: TimeEntry): GpsStatus{
+  if(entry.lat===null)return 'no_gps'
+  if(entry.gpsVerified)return 'verified'
+  if(entry.supervisorOverride) return 'overridden'
+  return 'unverified'
 }
 
 export type CreateEmployeeData = Omit<Employee, "id" | "createdAt" | "updatedAt">

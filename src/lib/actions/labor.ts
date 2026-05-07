@@ -97,6 +97,8 @@ export async function getTimeEntries(): Promise<TimeEntry[]> {
   return (data ?? []).map(mapTimeEntry)
 }
 
+
+
 export async function getTimeEntriesByEmployeeId(employeeId: string): Promise<TimeEntry[]> {
   const { supabase } = await getUser()
   const { data } = await supabase
@@ -117,6 +119,19 @@ export async function getTimeEntriesByProjectId(projectId: string): Promise<Time
   return (data ?? []).map(mapTimeEntry)
 }
 
+/** Returns all currently-clocked-in entries for the authenticated user's org. */
+export async function getActiveTimeEntries(): Promise<TimeEntry[]> {
+  const { supabase, user } = await getUser()
+  if (!user) return []
+  const { data } = await supabase
+    .from('time_entries')
+    .select('*, employees!inner(profile_id)')
+    .eq('employees.profile_id', user.id)
+    .is('clock_out_at', null)
+    .order('clock_in_at', { ascending: false })
+  return (data ?? []).map(mapTimeEntry)
+}
+
 export async function getActiveTimeEntry(employeeId: string): Promise<TimeEntry | null> {
   const { supabase } = await getUser()
   const { data } = await supabase
@@ -129,7 +144,18 @@ export async function getActiveTimeEntry(employeeId: string): Promise<TimeEntry 
   return data ? mapTimeEntry(data) : null
 }
 
-export async function clockIn(employeeId: string, projectId: string, gpsVerified = false) {
+export async function clockIn(
+  employeeId: string,
+  projectId: string,
+  gpsVerified = false,
+  gpsData?: {
+    lat: number
+    lng: number
+    accuracyMeters: number
+    distanceMeters: number | null
+  },
+  notes = '',
+) {
   const { supabase } = await getUser()
   const { data, error } = await supabase
     .from('time_entries')
@@ -140,7 +166,12 @@ export async function clockIn(employeeId: string, projectId: string, gpsVerified
       clock_out_at: null,
       gps_verified: gpsVerified,
       supervisor_override: false,
-      notes: '',
+      notes,
+      // GPS columns (nullable if no location captured)
+      lat: gpsData?.lat ?? null,
+      lng: gpsData?.lng ?? null,
+      accuracy_meters: gpsData?.accuracyMeters ?? null,
+      distance_meters: gpsData?.distanceMeters ?? null,
     })
     .select()
     .single()
@@ -163,6 +194,25 @@ export async function clockOut(timeEntryId: string) {
   return { success: true }
 }
 
+export async function supervisorOverride(timeEntryId: string, reason: string) {
+  const { supabase, user } = await getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('time_entries')
+    .update({
+      supervisor_override: true,
+      override_by: user.id,
+      override_reason: reason,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', timeEntryId)
+
+  if (error) return { error: error.message }
+  revalidatePath('/dashboard/crew')
+  return { success: true }
+}
+
 export async function createTimeEntry(data: CreateTimeEntryData) {
   const { supabase } = await getUser()
   const { data: created, error } = await supabase
@@ -174,6 +224,12 @@ export async function createTimeEntry(data: CreateTimeEntryData) {
       clock_out_at: data.clockOutAt,
       gps_verified: data.gpsVerified,
       supervisor_override: data.supervisorOverride,
+      lat: data.lat,
+      lng: data.lng,
+      accuracy_meters: data.accuracyMeters,
+      distance_meters: data.distanceMeters,
+      override_by: data.overrideBy,
+      override_reason: data.overrideReason,
       notes: data.notes,
     })
     .select()
@@ -193,6 +249,12 @@ export async function updateTimeEntry(id: string, data: Partial<CreateTimeEntryD
       clock_out_at: data.clockOutAt,
       gps_verified: data.gpsVerified,
       supervisor_override: data.supervisorOverride,
+      lat: data.lat,
+      lng: data.lng,
+      accuracy_meters: data.accuracyMeters,
+      distance_meters: data.distanceMeters,
+      override_by: data.overrideBy,
+      override_reason: data.overrideReason,
       notes: data.notes,
       updated_at: new Date().toISOString(),
     })
@@ -236,8 +298,17 @@ function mapTimeEntry(row: Record<string, unknown>): TimeEntry {
     projectId: row.project_id as string,
     clockInAt: row.clock_in_at as string,
     clockOutAt: (row.clock_out_at as string) ?? null,
+
+    lat: (row.lat as number) ?? null,
+    lng: (row.lng as number) ?? null,
+    accuracyMeters: (row.accuracy_meters as number) ?? null,
+    distanceMeters: (row.distance_meters as number) ?? null,
     gpsVerified: (row.gps_verified as boolean) ?? false,
+
     supervisorOverride: (row.supervisor_override as boolean) ?? false,
+    overrideBy: (row.override_by as string) ?? null,
+    overrideReason: (row.override_reason as string) ?? null,
+
     notes: (row.notes as string) ?? '',
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,

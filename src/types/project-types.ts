@@ -1,3 +1,4 @@
+
 export const PROJECT_TYPES = [
   "New Construction",
   "Remodel",
@@ -85,6 +86,14 @@ export interface Project {
   assignedCrew: string
   dependencyProjectIds: string[]
   timeline: TimelineMilestone[]
+
+  // GPS site location — auto-populated from customer address on first crew clock-in,
+  // or manually set via updateProjectSiteCoords()
+  siteLat: number | null
+  siteLng: number | null
+  /** Radius in metres within which GPS is considered "on site". Default 200. */
+  gpsRadiusMeters: number
+
   createdAt: string
   updatedAt: string
 }
@@ -92,7 +101,12 @@ export interface Project {
 export type CreateProjectData = Omit<
   Project,
   "id" | "createdAt" | "updatedAt" | "timeline"
-> & { timeline?: TimelineMilestone[] }
+> & { timeline?: TimelineMilestone[]
+  //site coords
+  siteLat?: number | null
+  siteLng?: number | null
+  gpsRadiusMeters?: number
+ }
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   Planned: "Planned",

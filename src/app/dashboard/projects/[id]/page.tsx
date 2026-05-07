@@ -1,9 +1,9 @@
 "use client"
 
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { ArrowLeft, Pencil } from "lucide-react"
+import { ArrowLeft, CheckCircle2, MapPin, Pencil, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -26,7 +26,6 @@ const SUPERVISOR_PHOTO_REMINDER_TEMPLATE_ID = "tpl-supervisor-photos-missing"
 
 export default function ProjectDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const id = params.id as string
   const { getProject, getSupervisorReports } = useProjectStore()
   const { getCustomer, addTimelineEvent } = useCustomerStore()
@@ -36,8 +35,17 @@ export default function ProjectDetailPage() {
   const [reports, setReports] = useState([])
   const project = getProject(id)
   const [editOpen, setEditOpen] = useState(false)
-  const projectAppointments = project ? getAppointmentsByProjectId(project.id) : []
-  const projectDocuments = project ? getDocumentsByProjectId(project.id) : []
+
+  useEffect(() => {
+    async function loadReports() {
+      const data = await getSupervisorReports(project.id)
+      setReports(data)
+    }
+  
+    if (project?.id) {
+      loadReports()
+    }
+  }, [project?.id])
 
   if (!project) {
     return (
@@ -51,17 +59,9 @@ export default function ProjectDetailPage() {
   }
 
   const customer = getCustomer(project.customerId)
-  useEffect(() => {
-    async function loadReports() {
-      const data = await getSupervisorReports(project.id)
-      setReports(data)
-    }
-  
-    if (project?.id) {
-      loadReports()
-    }
-  }, [project?.id])
-  
+  const projectAppointments = project ? getAppointmentsByProjectId(project.id) : []
+  const projectDocuments = project ? getDocumentsByProjectId(project.id) : []
+
   const today = new Date().toISOString().slice(0, 10)
   const todayReport = reports.find((r) => r.date === today)
   const missingPhotosToday = !todayReport || todayReport.photoUrls.length === 0
@@ -170,6 +170,7 @@ export default function ProjectDetailPage() {
           <TabsTrigger value="reports">Supervisor reports</TabsTrigger>
           <TabsTrigger value="appointments">Appointments ({projectAppointments.length})</TabsTrigger>
           <TabsTrigger value="documents">Documents ({projectDocuments.length})</TabsTrigger>
+          <TabsTrigger value="location">Location</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="flex-1 space-y-4 mt-4">
@@ -284,6 +285,77 @@ export default function ProjectDetailPage() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="location" className="flex-1 mt-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MapPin className="size-4" />
+                  Site coordinates
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                {project.siteLat != null && project.siteLng != null ? (
+                  <>
+                    <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                      <CheckCircle2 className="size-4 shrink-0" />
+                      <span className="font-medium">GPS location saved</span>
+                    </div>
+                    <div className="rounded-md border bg-muted/40 p-3 space-y-1 font-mono text-xs">
+                      <p>Lat: {project.siteLat}</p>
+                      <p>Lng: {project.siteLng}</p>
+                      <p>Radius: {project.gpsRadiusMeters}m</p>
+                    </div>
+                    <a
+                      href={`https://www.google.com/maps?q=${project.siteLat},${project.siteLng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                    >
+                      <MapPin className="size-3" />
+                      Open in Google Maps
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <XCircle className="size-4 shrink-0" />
+                      <span>No site coordinates saved yet</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Coordinates will be auto-geocoded from the customer address on the first crew clock-in, or you can set them manually via Edit.
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">GPS verification</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <p>
+                  <span className="text-muted-foreground">On-site radius:</span>{" "}
+                  {project.gpsRadiusMeters}m
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Crew members within {project.gpsRadiusMeters}m of the site coordinates are marked as on-site when clocking in. Those outside are flagged for supervisor review.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-1"
+                  onClick={() => setEditOpen(true)}
+                >
+                  <Pencil className="size-3 mr-1.5" />
+                  Edit location
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="documents" className="flex-1 mt-4">

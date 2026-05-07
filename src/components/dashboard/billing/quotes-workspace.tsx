@@ -33,7 +33,7 @@ import type { Quote } from "@/types/quote-types"
 import type { Invoice } from "@/types/quote-types"
 
 export function QuotesWorkspace() {
-  const { quotes, getQuote, deleteQuote, getInvoicesByQuoteId, loading: billsLoading } = useBillingStore()
+  const { quotes, deleteQuote, getInvoicesByQuoteId, loading: billsLoading } = useBillingStore()
   const { getCustomer } = useCustomerStore()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")

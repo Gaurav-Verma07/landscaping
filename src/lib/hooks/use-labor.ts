@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getEmployees,
+  getActiveTimeEntries,
+  getTimeEntriesByEmployeeId,
   createEmployee as createEmployeeAction,
   updateEmployee as updateEmployeeAction,
   deleteEmployee as deleteEmployeeAction,
@@ -11,12 +13,15 @@ import {
   createTimeEntry as createTimeEntryAction,
   updateTimeEntry as updateTimeEntryAction,
   deleteTimeEntry as deleteTimeEntryAction,
+  supervisorOverride as supervisorOverrideAction,
 } from '@/lib/actions/labor'
 import type { Employee, TimeEntry, CreateEmployeeData, CreateTimeEntryData } from '@/types/labor-types'
 
 export const laborKeys = {
   employees: ['employees'] as const,
   timeEntries: ['time-entries'] as const,
+  activeEntries: ['time-entries', 'active'] as const,
+  timeEntriesByEmployee: (id: string) => ['time-entries', 'employee', id] as const,
 }
 
 export function useEmployees() {
@@ -62,6 +67,34 @@ export function useDeleteEmployee() {
   })
 }
 
+//Time Entry Queries
+
+/**
+ * All currently-clocked-in entries for the org.
+ * Refreshes every 30 s so clock-in badges stay accurate without a manual reload.
+ */
+export function useActiveTimeEntries() {
+  return useQuery({
+    queryKey: laborKeys.activeEntries,
+    queryFn: getActiveTimeEntries,
+    refetchInterval: 30_000,
+  })
+}
+
+/**
+ * Full time-entry history for one employee.
+ * Only fetches when an employeeId is provided (drives the log panel in CrewWorkspace).
+ */
+export function useTimeEntriesByEmployee(employeeId: string | null) {
+  return useQuery({
+    queryKey: laborKeys.timeEntriesByEmployee(employeeId ?? ''),
+    queryFn: () => getTimeEntriesByEmployeeId(employeeId!),
+    enabled: !!employeeId,
+  })
+}
+
+//Time entry mutations
+
 export function useClockIn() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -69,12 +102,24 @@ export function useClockIn() {
       employeeId,
       projectId,
       gpsVerified = false,
+      gpsData,
+      notes,
     }: {
       employeeId: string
       projectId: string
       gpsVerified?: boolean
-    }) => clockInAction(employeeId, projectId, gpsVerified),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries }),
+      gpsData?: {
+        lat: number
+        lng: number
+        accuracyMeters: number
+        distanceMeters: number | null
+      }
+      notes?: string
+    }) => clockInAction(employeeId, projectId, gpsVerified, gpsData, notes),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries })
+      void queryClient.invalidateQueries({ queryKey: laborKeys.activeEntries })
+    },
   })
 }
 
@@ -82,7 +127,22 @@ export function useClockOut() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (timeEntryId: string) => clockOutAction(timeEntryId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries })
+      void queryClient.invalidateQueries({ queryKey: laborKeys.activeEntries })
+    },
+  })
+}
+
+export function useSupervisorOverride() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ timeEntryId, reason }: { timeEntryId: string; reason: string }) =>
+      supervisorOverrideAction(timeEntryId, reason),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: laborKeys.activeEntries })
+      void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries })
+    },
   })
 }
 
@@ -90,7 +150,10 @@ export function useCreateTimeEntry() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: CreateTimeEntryData) => createTimeEntryAction(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries })
+      void queryClient.invalidateQueries({ queryKey: laborKeys.activeEntries })
+    },
   })
 }
 
@@ -111,7 +174,7 @@ export function useDeleteTimeEntry() {
       await queryClient.cancelQueries({ queryKey: laborKeys.timeEntries })
       const previous = queryClient.getQueryData<TimeEntry[]>(laborKeys.timeEntries)
       queryClient.setQueryData<TimeEntry[]>(laborKeys.timeEntries, (old) =>
-        old?.filter((t) => t.id !== id) ?? []
+        old?.filter((t) => t.id !== id) ?? [],
       )
       return { previous }
     },
@@ -129,10 +192,7 @@ export function useDeleteTimeEntry() {
 export function useLaborStore() {
   const queryClient = useQueryClient()
   const { data: employees = [], isLoading: loading } = useEmployees()
-
-  // Time entries are loaded on-demand per employee/project in the original store
-  // Keep as empty array here — components that need them fetch via actions directly
-  const timeEntries: TimeEntry[] = []
+  const { data: activeEntries = [] } = useActiveTimeEntries()
 
   const createEmployeeMutation = useCreateEmployee()
   const updateEmployeeMutation = useUpdateEmployee()
@@ -145,29 +205,23 @@ export function useLaborStore() {
 
   return {
     employees,
-    timeEntries,
+    // timeEntries are loaded per-employee on demand — always empty here
+    timeEntries: [] as TimeEntry[],
     loading,
 
     getEmployee: (id: string) => employees.find((e) => e.id === id),
 
-    getTimeEntriesByEmployeeId: (employeeId: string) =>
-      timeEntries
-        .filter((t) => t.employeeId === employeeId)
-        .sort((a, b) => new Date(b.clockInAt).getTime() - new Date(a.clockInAt).getTime()),
-
-    getTimeEntriesByProjectId: (projectId: string) =>
-      timeEntries
-        .filter((t) => t.projectId === projectId)
-        .sort((a, b) => new Date(b.clockInAt).getTime() - new Date(a.clockInAt).getTime()),
-
+    /** Now backed by real data from useActiveTimeEntries */
     getActiveTimeEntry: (employeeId: string) =>
-      timeEntries.find((t) => t.employeeId === employeeId && !t.clockOutAt),
+      activeEntries.find((t) => t.employeeId === employeeId) ?? null,
+
+    getTimeEntriesByEmployeeId: (_employeeId: string) => [] as TimeEntry[],
 
     createEmployee: async (data: CreateEmployeeData) => {
       const result = await createEmployeeMutation.mutateAsync(data)
       if ('error' in result) return undefined
       const updated = queryClient.getQueryData<Employee[]>(laborKeys.employees)
-      return updated?.find((e) => e.id === (result as any).data?.id)
+      return updated?.find((e) => e.id === (result as { data?: { id: string } }).data?.id)
     },
 
     updateEmployee: (id: string, data: Partial<CreateEmployeeData>) =>
@@ -178,7 +232,7 @@ export function useLaborStore() {
     clockIn: async (employeeId: string, projectId: string, gpsVerified = false) => {
       const result = await clockInMutation.mutateAsync({ employeeId, projectId, gpsVerified })
       if ('error' in result) return undefined
-      return (result as any).data as TimeEntry | undefined
+      return (result as { data?: TimeEntry }).data
     },
 
     clockOut: (timeEntryId: string) => clockOutMutation.mutateAsync(timeEntryId).then(() => {}),
@@ -186,7 +240,7 @@ export function useLaborStore() {
     createTimeEntry: async (data: CreateTimeEntryData) => {
       const result = await createTimeEntryMutation.mutateAsync(data)
       if ('error' in result) return undefined
-      return (result as any).data as TimeEntry | undefined
+      return (result as { data?: TimeEntry }).data
     },
 
     updateTimeEntry: (id: string, data: Partial<CreateTimeEntryData>) =>
@@ -198,6 +252,7 @@ export function useLaborStore() {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: laborKeys.employees }),
         queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries }),
+        queryClient.invalidateQueries({ queryKey: laborKeys.activeEntries }),
       ]).then(() => {}),
   }
 }

@@ -156,6 +156,9 @@ export function AcceptQuoteDialog({
         equipment: [],
         assignedCrew: "",
         dependencyProjectIds: [],
+        siteLat: null,
+        siteLng: null,
+        gpsRadiusMeters: 200,
         timeline: defaultTimeline,
       })
       if (project) {

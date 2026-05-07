@@ -43,7 +43,9 @@ import { toast } from "sonner";
 export function ProjectsWorkspace() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { projects, getProject, deleteProject, loading: projectsLoading } = useProjectStore();
+  const { projects, deleteProject, loading: projectsLoading } = useProjectStore();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {getProject}= useProjectStore()
   const { getCustomer } = useCustomerStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
