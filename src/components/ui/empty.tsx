@@ -2,7 +2,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "../../../utils/utils"
 
-function Empty({ className, ...props }: React.ComponentProps<"div">) {
+interface EmptyProps extends Omit<React.ComponentProps<"div">, "title"> {
+  icon?: React.ReactNode
+  title?: React.ReactNode
+  description?: React.ReactNode
+  action?: React.ReactNode
+}
+
+function Empty({ className, icon, title, description, action, children, ...props }: EmptyProps) {
+  const isComposed = icon !== undefined || title !== undefined || description !== undefined || action !== undefined
+
   return (
     <div
       data-slot="empty"
@@ -11,7 +20,22 @@ function Empty({ className, ...props }: React.ComponentProps<"div">) {
         className
       )}
       {...props}
-    />
+    >
+      {isComposed ? (
+        <>
+          {icon && <EmptyMedia>{icon}</EmptyMedia>}
+          {(title || description) && (
+            <EmptyHeader>
+              {title && <EmptyTitle>{title}</EmptyTitle>}
+              {description && <EmptyDescription>{description}</EmptyDescription>}
+            </EmptyHeader>
+          )}
+          {action && <EmptyContent>{action}</EmptyContent>}
+        </>
+      ) : (
+        children
+      )}
+    </div>
   )
 }
 

@@ -9,6 +9,7 @@ import { campaignTools } from './campaigns-tools'
 import { communicationTools } from './communications-tools'
 import { projectTools } from './projects-tools'
 import { navigationTools } from './navigation-tools'
+import { designTools } from './design-tools'
 
 export const allTools = [
   ...customerTools,
@@ -16,4 +17,5 @@ export const allTools = [
   ...communicationTools,
   ...projectTools,
   ...navigationTools,
+  ...designTools
 ]

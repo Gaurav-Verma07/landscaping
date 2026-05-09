@@ -4,7 +4,7 @@ import { getCommunications, addCommunication } from '@/lib/actions/communication
 import { getProjects } from '@/lib/actions/projects'
 import { getInvoices } from '@/lib/actions/billing'
 import { getAppointments } from '@/lib/actions/appointments'
-
+import { getDesigns, getDesign, getPlantCatalog, computeMaterialsList, createDesign, designToQuoteDraft } from '@/lib/actions/design'
 export type ToolResult =
   | { type: 'data'; data: unknown }
   | { type: 'requires_approval'; action: PendingAction }
@@ -281,6 +281,123 @@ export async function executeTool(
         }
       }
 
+      case 'get_designs': {
+        const designs = await getDesigns()
+        const customerId = input.customer_id as string | undefined
+        const projectId = input.project_id as string | undefined
+        const limit = (input.limit as number) ?? 10
+        let filtered = designs
+        if (customerId) filtered = filtered.filter((d) => d.customerId === customerId)
+        if (projectId) filtered = filtered.filter((d) => d.projectId === projectId)
+        return {
+          type: 'data',
+          data: filtered.slice(0, limit).map((d) => ({
+            id: d.id,
+            name: d.name,
+            status: d.status,
+            customerId: d.customerId,
+            projectId: d.projectId,
+            totalAreaSqft: d.totalAreaSqft,
+            zoneCount: d.zones.length,
+            plantCount: d.plants.length,
+            thumbnailUrl: d.thumbnailUrl,
+            updatedAt: d.updatedAt,
+          })),
+        }
+      }
+    
+      case 'get_design': {
+        const design = await getDesign(input.design_id as string)
+        if (!design) return { type: 'error', message: 'Design not found' }
+        return {
+          type: 'data',
+          data: {
+            id: design.id,
+            name: design.name,
+            status: design.status,
+            customerId: design.customerId,
+            projectId: design.projectId,
+            totalAreaSqft: design.totalAreaSqft,
+            zones: design.zones.map((z) => ({
+              id: z.id,
+              name: z.name,
+              zoneType: z.zoneType,
+              fillMaterial: z.fillMaterial,
+              areaSqft: z.areaSqft,
+            })),
+            plantCount: design.plants.length,
+            notes: design.notes,
+          },
+        }
+      }
+    
+      case 'suggest_plants': {
+        const catalog = await getPlantCatalog()
+        const plantType = input.plant_type as string | undefined
+        const sunReq = input.sun_requirement as string | undefined
+        const waterNeed = input.water_need as string | undefined
+        const limit = (input.limit as number) ?? 8
+    
+        // Parse zone_description for hints
+        const desc = (input.zone_description as string).toLowerCase()
+        const sunHint = desc.includes('full sun') ? 'full_sun'
+          : desc.includes('shade') ? (desc.includes('part') ? 'part_shade' : 'full_shade')
+          : undefined
+        const waterHint = desc.includes('low water') || desc.includes('drought') ? 'low'
+          : desc.includes('high water') || desc.includes('wet') ? 'high'
+          : undefined
+    
+        let results = catalog
+        if (plantType) results = results.filter((p) => p.plantType === plantType)
+        const effectiveSun = sunReq ?? sunHint
+        if (effectiveSun) results = results.filter((p) => p.sunRequirement === effectiveSun)
+        const effectiveWater = waterNeed ?? waterHint
+        if (effectiveWater) results = results.filter((p) => p.waterNeed === effectiveWater)
+    
+        return {
+          type: 'data',
+          data: results.slice(0, limit).map((p) => ({
+            id: p.id,
+            commonName: p.commonName,
+            botanicalName: p.botanicalName,
+            plantType: p.plantType,
+            sunRequirement: p.sunRequirement,
+            waterNeed: p.waterNeed,
+            matureHeightFt: p.matureHeightFt,
+            matureSpreadFt: p.matureSpreadFt,
+            hardinessZones: p.hardinessZones,
+          })),
+        }
+      }
+    
+      case 'get_design_materials_list': {
+        const materials = await computeMaterialsList(input.design_id as string)
+        return { type: 'data', data: materials }
+      }
+    
+      case 'create_design': {
+        return {
+          type: 'requires_approval',
+          action: {
+            tool: 'create_design',
+            input,
+            preview: `Create landscape design "${input.name}" for customer ${input.customer_id}${input.project_id ? `\nLinked to project: ${input.project_id}` : ''}`,
+          },
+        }
+      }
+    
+      case 'design_to_quote': {
+        return {
+          type: 'requires_approval',
+          action: {
+            tool: 'design_to_quote',
+            input,
+            preview: `Convert design ${input.design_id} to a quote draft.\nThis will compute the materials list and create a Draft quote in the Billing module.`,
+          },
+        }
+      }
+        
+
       default:
         return { type: 'error', message: `Unknown tool: ${toolName}` }
     }
@@ -357,6 +474,30 @@ export async function executeConfirmedAction(action: PendingAction): Promise<Too
         })
         if ('error' in result) return { type: 'error', message: result.error }
         return { type: 'data', data: result.data }
+      }
+      
+      case 'create_design': {
+        const result = await createDesign({
+          customerId: input.customer_id as string,
+          name: input.name as string,
+          projectId: (input.project_id as string) ?? null,
+          notes: (input.notes as string) ?? '',
+        })
+        if ('error' in result) return { type: 'error', message: result.error }
+        return { type: 'data', data: result.data }
+      }
+    
+      case 'design_to_quote': {
+        const result = await designToQuoteDraft(input.design_id as string)
+        if ('error' in result) return { type: 'error', message: result.error }
+        return {
+          type: 'data',
+          data: {
+            quoteId: result.data?.id,
+            quoteNumber: result.quoteNumber,
+            message: `Quote ${result.quoteNumber} created from design.`,
+          },
+        }
       }
 
       default:

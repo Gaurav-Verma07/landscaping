@@ -1,10 +1,9 @@
-import { ModulePlaceholder } from "@/components/dashboard/ui/module-placeholder"
+// app/dashboard/design/page.tsx
+
+import { DesignListWorkspace } from '@/components/dashboard/design/design-list-workspace'
+
+export const metadata = { title: 'Landscape Designs' }
 
 export default function DesignPage() {
-  return (
-    <ModulePlaceholder
-      title="Landscape Design Tool (Advanced)"
-      description="Input: property outline, customer goals, constraints. Output: concept layout, plant list, materials list, measurements, budget estimate, quote integration."
-    />
-  )
+  return <DesignListWorkspace />
 }
