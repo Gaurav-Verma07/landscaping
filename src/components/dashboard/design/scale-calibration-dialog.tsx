@@ -53,8 +53,9 @@ export function ScaleCalibrationDialog({
         </DialogHeader>
 
         <Field>
-          <FieldLabel required>Distance between points (feet)</FieldLabel>
+          <FieldLabel >Distance between points (feet)</FieldLabel>
           <Input
+            required
             type="number"
             min="0.1"
             step="0.5"

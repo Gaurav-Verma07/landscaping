@@ -81,17 +81,18 @@ export function NewDesignDialog({ open, onOpenChange, defaultCustomerId, default
 
         <div className="space-y-4 py-2">
           <Field>
-            <FieldLabel required>Design Name</FieldLabel>
+            <FieldLabel>Design Name</FieldLabel>
             <Input
               placeholder="e.g. Front Yard Refresh"
               value={name}
+              required
               onChange={(e) => setName(e.target.value)}
               autoFocus
             />
           </Field>
 
           <Field>
-            <FieldLabel required>Customer</FieldLabel>
+            <FieldLabel>Customer</FieldLabel>
             <Select value={customerId} onValueChange={setCustomerId}>
               <SelectTrigger>
                 <SelectValue placeholder="Select customer…" />
