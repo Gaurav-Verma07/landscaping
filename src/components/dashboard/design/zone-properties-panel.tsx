@@ -37,8 +37,8 @@ import {
 import type { ZoneType } from '@/enums/design-enums'
 import type { DesignZone } from '@/types/design-types'
 import { useMaterials } from '@/lib/hooks/use-billing'
-import { formatArea } from '../../../../utils/canva-utils'
-import { cn } from '../../../../utils/utils'
+import { formatArea } from '@/utils/canva-utils'
+import { cn } from '@/utils/utils'
 
 interface Props {
   zone: DesignZone

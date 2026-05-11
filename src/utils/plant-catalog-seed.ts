@@ -1,8 +1,3 @@
-// utils/plant-catalog-seed.ts
-// Run once to seed the global plant catalog in Supabase.
-// Execute via: bun run utils/plant-catalog-seed.ts
-// Or import seedPlantCatalog() in a one-time migration route.
-
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(

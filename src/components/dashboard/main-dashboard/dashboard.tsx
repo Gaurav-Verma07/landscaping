@@ -16,7 +16,7 @@ import { useEmployees, useActiveTimeEntries } from "@/lib/hooks/use-labor"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Progress } from "@/components/ui/progress"
-import { cn } from "../../../../utils/utils"
+import { cn } from "@/utils/utils"
 import { SectionHeader, StatCard, StatusDot } from "./state-cards"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

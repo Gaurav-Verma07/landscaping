@@ -1,7 +1,7 @@
 // app/api/gps/verify/route.ts
 import type { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { geocodeAddress, haversineMeters } from '../../../../../utils/geo'
+import { geocodeAddress, haversineMeters } from '@/utils/geo'
 
 export async function POST(req: NextRequest) {
   try {

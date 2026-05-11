@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAIChat } from "@/lib/hooks/use-ai-chat"
 import { Bot, StopCircle, Trash2, X } from "lucide-react"
 import { useEffect, useRef } from "react"
-import { cn } from "../../../../utils/utils"
+import { cn } from "@/utils/utils"
 import { AIChatMessage } from "./ai-chat-message"
 import { AIChatInput } from "./ai-chat-input"
 

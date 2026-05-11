@@ -37,7 +37,7 @@ import {
   LEAD_SOURCE_LABELS,
 } from "@/types/customer-types"
 import { CHANNEL_LABELS } from "@/types/communication-types"
-import { formatDate, formatBytes } from "../../../../../utils/utils"
+import { formatDate, formatBytes } from "@/utils/utils"
 import { MergeCustomerModal } from "@/components/dashboard/customers/merge-customer-modal"
 
 export default function CustomerDetailPage() {

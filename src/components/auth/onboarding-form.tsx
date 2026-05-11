@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import type {ComponentProps}from "react"
-import { cn } from "../../../utils/utils";
+import { cn } from "@/utils/utils";
 import { Card, CardContent } from "../ui/card";
 import { Building2, Check, ChevronLeft, ChevronRight, Mail, Upload, User, X } from "lucide-react";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "../ui/field";

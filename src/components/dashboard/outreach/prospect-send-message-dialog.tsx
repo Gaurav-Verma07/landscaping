@@ -20,7 +20,7 @@ import { useCommunicationStore } from '@/lib/stores'
 import { sendBulkEmails } from '@/lib/actions/email'
 import { CHANNEL_LABELS, type CommunicationChannel } from '@/types/communication-types'
 import type { OutreachProspect } from '@/types/outreach-types'
-import { applyTemplatePlaceholders } from '../../../../utils/utils'
+import { applyTemplatePlaceholders } from '@/utils/utils'
 
 interface ProspectSendMessageDialogProps {
   open: boolean

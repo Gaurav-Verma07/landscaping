@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Field, FieldLabel } from "@/components/ui/field"
 import type { CustomerFormData } from "@/types/customer-types"
-import { appendEmpty, updateAt, removeAt } from "../../../../../utils/utils"
+import { appendEmpty, updateAt, removeAt } from "@/utils/utils"
 
 type Props = {
   form: CustomerFormData

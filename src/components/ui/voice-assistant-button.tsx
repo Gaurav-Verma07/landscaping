@@ -2,7 +2,7 @@
 
 import { Mic, MicOff, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "../../../utils/utils"
+import { cn } from "@/utils/utils"
 
 interface VoiceAssistantButtonProps {
   status: "connected" | "connecting" | "disconnected" | "disconnecting"

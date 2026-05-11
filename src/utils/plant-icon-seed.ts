@@ -1,7 +1,3 @@
-// utils/plant-icon-seed.ts
-// Place your icon files in a local folder: utils/plant-icons/{common_name}.png
-// Run: bun run utils/plant-icon-seed.ts
-
 import { createClient } from '@supabase/supabase-js'
 import { readdir, readFile } from 'fs/promises'
 import path from 'path'

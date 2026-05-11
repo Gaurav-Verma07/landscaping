@@ -5,7 +5,7 @@ import type { PendingAction } from "@/lib/ai/tool-executor"
 import type { ChatMessage } from "@/lib/hooks/use-ai-chat"
 import { Bot, CheckCircle2, Loader2, User, XCircle } from "lucide-react"
 import React, { useState } from "react"
-import { cn } from "../../../../utils/utils"
+import { cn } from "@/utils/utils"
 
 interface AIChatMessageProps{
     message: ChatMessage

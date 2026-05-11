@@ -1,7 +1,3 @@
-// lib/design/canvas-utils.ts
-// Pure utility functions for the canvas editor.
-// No React, no Fabric — safe to import anywhere.
-
 import type { ZonePoint } from '@/types/design-types'
 
 // ─── Geometry ─────────────────────────────────────────────────────────────

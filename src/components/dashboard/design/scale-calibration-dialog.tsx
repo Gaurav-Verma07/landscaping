@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Field, FieldLabel } from '@/components/ui/field'
 import type { ZonePoint } from '@/types/design-types'
-import { calibrateScale } from '../../../../utils/canva-utils'
+import { calibrateScale } from '@/utils/canva-utils'
 
 interface Props {
   open: boolean

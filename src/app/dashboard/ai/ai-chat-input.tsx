@@ -1,7 +1,7 @@
 import { Textarea } from "@/components/ui/textarea"
 import {useRef, useState } from "react"
 import type { ChangeEvent, KeyboardEvent } from "react"
-import { cn } from "../../../../utils/utils"
+import { cn } from "@/utils/utils"
 import { Button } from "@/components/ui/button"
 import { Loader2, Send } from "lucide-react"
 

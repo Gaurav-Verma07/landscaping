@@ -29,7 +29,7 @@ import { useCustomers } from '@/lib/hooks/use-customers'
 import { DESIGN_STATUS_LABELS, DESIGN_STATUS_COLORS } from '@/enums/design-enums'
 import type { LandscapeDesign } from '@/types/design-types'
 import { NewDesignDialog } from './new-design-dialog'
-import { formatArea } from '../../../../utils/canva-utils'
+import { formatArea } from '@/utils/canva-utils'
 
 
 export function DesignListWorkspace() {

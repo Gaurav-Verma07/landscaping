@@ -25,7 +25,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMaterialsList, useDesignToQuote } from '@/lib/hooks/use-design'
 import { MATERIAL_UNIT_LABELS, type MaterialUnit } from '@/enums/design-enums'
-import { formatArea } from '../../../../utils/canva-utils'
+import { formatArea } from '@/utils/canva-utils'
 
 interface Props {
   open: boolean

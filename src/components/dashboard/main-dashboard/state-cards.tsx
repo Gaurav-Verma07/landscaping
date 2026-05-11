@@ -1,7 +1,7 @@
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 import { ArrowRight, ChevronRight } from "lucide-react"
-import { cn } from "../../../../utils/utils"
+import { cn } from "@/utils/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"

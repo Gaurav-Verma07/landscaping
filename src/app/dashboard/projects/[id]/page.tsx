@@ -19,7 +19,7 @@ import { ProjectTimelineSection } from "@/components/dashboard/projects/project-
 import { ProjectSupervisorReportsSection } from "@/components/dashboard/projects/project-supervisor-reports-section"
 import {  useCommunicationStore } from "@/lib/stores"
 import { toast } from "sonner"
-import { applyTemplatePlaceholders } from "../../../../../utils/utils"
+import { applyTemplatePlaceholders } from "@/utils/utils"
 
 const SUPERVISOR_PHOTO_REMINDER_STORAGE_KEY = "landscaping-v2-supervisor-photo-reminders"
 const SUPERVISOR_PHOTO_REMINDER_TEMPLATE_ID = "tpl-supervisor-photos-missing"

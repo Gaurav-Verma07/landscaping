@@ -1,4 +1,3 @@
-// lib/ai/tools/design-tools.ts
 import type { AITool } from '../provider.interface'
 
 export const designTools: AITool[] = [

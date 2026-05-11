@@ -66,7 +66,7 @@ import {
   useCommunicationStore,
 } from "@/lib/stores";
 import { useCustomerStore } from "@/lib/stores";
-import { applyTemplatePlaceholders } from "../../../../utils/utils";
+import { applyTemplatePlaceholders } from "@/utils/utils";
 
 export function CommunicationSettingsWorkspace() {
   const { customers, addTimelineEvent } = useCustomerStore();

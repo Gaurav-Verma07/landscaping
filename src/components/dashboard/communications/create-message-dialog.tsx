@@ -32,7 +32,7 @@ import {
   useCommunicationStore,
 } from "@/lib/stores";
 import { toast } from "sonner";
-import { applyTemplatePlaceholders } from "../../../../utils/utils";
+import { applyTemplatePlaceholders } from "@/utils/utils";
 
 interface CreateMessageDialogProps {
   open: boolean;

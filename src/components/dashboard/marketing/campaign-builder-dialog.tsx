@@ -24,7 +24,7 @@ import { useMarketingStore } from '@/lib/stores'
 import {
   AUDIENCE_TYPE_LABELS, type Campaign, type AudienceType, type AudienceFilters,
 } from '@/types/marketing-types'
-import { SEASONAL_TEMPLATES, type SeasonalTemplate } from '../../../../utils/marketing-templates'
+import { SEASONAL_TEMPLATES, type SeasonalTemplate } from '@/utils/marketing-templates'
 
 interface CampaignBuilderDialogProps {
   open: boolean

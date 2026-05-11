@@ -64,7 +64,7 @@ import {
   generateZoneName,
   formatArea,
   hexToRgba,
-} from '../../../../utils/canva-utils'
+} from '@/utils/utils'
 
 // ─── Fabric v7: augment FabricObject to accept custom `data` property ────────
 declare module 'fabric' {

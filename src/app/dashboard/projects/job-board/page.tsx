@@ -29,7 +29,7 @@ import {
   type ProjectStatus,
 } from "@/types/project-types"
 import { toast } from "sonner"
-import { applyTemplatePlaceholders } from "../../../../../utils/utils"
+import { applyTemplatePlaceholders } from "@/utils/utils"
 
 type JobBoardView = "kanban" | "timeline"
 
