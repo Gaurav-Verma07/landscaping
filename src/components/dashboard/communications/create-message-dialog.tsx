@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
@@ -28,11 +27,11 @@ import {
 import type { CommunicationChannel } from "@/types/communication-types";
 import { CHANNEL_LABELS } from "@/types/communication-types";
 import { useCustomerStore } from "@/lib/stores";
-import {
-  useCommunicationStore,
-} from "@/lib/stores";
+import { useCommunicationStore } from "@/lib/stores";
 import { toast } from "sonner";
 import { applyTemplatePlaceholders } from "@/utils/utils";
+import { getProfile } from "@/lib/actions/profile";
+import { SmtpRequiredBanner } from "@/components/ui/smtp-required-banner";
 
 interface CreateMessageDialogProps {
   open: boolean;
@@ -52,11 +51,25 @@ export function CreateMessageDialog({
   const [subject, setSubject] = React.useState("");
   const [body, setBody] = React.useState("");
   const [sending, setSending] = React.useState(false);
+  const [smtpConfigured, setSmtpConfigured] = React.useState<boolean | null>(null);
 
   const contact = contactId ? customers.find((c) => c.id === contactId) : null;
   const selectedTemplate = templateId
     ? templates.find((t) => t.id === templateId)
     : null;
+
+  // Check SMTP config whenever the dialog opens
+  React.useEffect(() => {
+    if (!open) return;
+    getProfile().then((data) => {
+      if (data) {
+        const p = data as any;
+        setSmtpConfigured(!!(p.smtp_host && p.smtp_email && p.smtp_password));
+      } else {
+        setSmtpConfigured(false);
+      }
+    }).catch(() => setSmtpConfigured(false));
+  }, [open]);
 
   React.useEffect(() => {
     if (selectedTemplate && contact) {
@@ -77,6 +90,7 @@ export function CreateMessageDialog({
     setTemplateId("");
     setSubject("");
     setBody("");
+    setSmtpConfigured(null);
   };
 
   const handleOpenChange = (next: boolean) => {
@@ -133,6 +147,8 @@ export function CreateMessageDialog({
     }
   };
 
+  const emailBlocked = channel === "email" && smtpConfigured === false;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-lg">
@@ -144,6 +160,10 @@ export function CreateMessageDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-2">
+
+          {/* SMTP warning */}
+          {emailBlocked && <SmtpRequiredBanner />}
+
           <FieldGroup>
             <FieldLabel>Use template</FieldLabel>
             <Select
@@ -233,7 +253,7 @@ export function CreateMessageDialog({
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={sending}>
+          <Button onClick={handleSend} disabled={sending || emailBlocked}>
             {sending ? "Sending…" : "Send"}
           </Button>
         </DialogFooter>

@@ -18,9 +18,11 @@ import { Badge } from '@/components/ui/badge'
 import { useOutreachStore } from '@/lib/stores'
 import { useCommunicationStore } from '@/lib/stores'
 import { sendBulkEmails } from '@/lib/actions/email'
+import { getProfile } from '@/lib/actions/profile'
 import { CHANNEL_LABELS, type CommunicationChannel } from '@/types/communication-types'
 import type { OutreachProspect } from '@/types/outreach-types'
 import { applyTemplatePlaceholders } from '@/utils/utils'
+import { SmtpRequiredBanner } from '@/components/ui/smtp-required-banner'
 
 interface ProspectSendMessageDialogProps {
   open: boolean
@@ -44,10 +46,24 @@ export function ProspectSendMessageDialog({
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
+  const [smtpConfigured, setSmtpConfigured] = useState<boolean | null>(null)
 
   const selectedTemplate = templateId ? templates.find((t) => t.id === templateId) : null
   const withEmail = allProspects.filter(p => p.email?.trim())
   const withoutEmail = allProspects.filter(p => !p.email?.trim())
+
+  // Check SMTP whenever dialog opens
+  useEffect(() => {
+    if (!open) return
+    getProfile().then((data) => {
+      if (data) {
+        const p = data as any
+        setSmtpConfigured(!!(p.smtp_host && p.smtp_email && p.smtp_password))
+      } else {
+        setSmtpConfigured(false)
+      }
+    }).catch(() => setSmtpConfigured(false))
+  }, [open])
 
   useEffect(() => {
     if (selectedTemplate) {
@@ -85,7 +101,6 @@ export function ProspectSendMessageDialog({
 
         const result = await sendBulkEmails(recipients, subject, body)
 
-        // Log each email in Communications with prospectId + contactType: 'prospect'
         const now = new Date().toISOString()
         for (const p of withEmail) {
           addCommunication({
@@ -103,7 +118,6 @@ export function ProspectSendMessageDialog({
           })
         }
 
-        // Move New → Contacted
         const newProspectIds = withEmail.filter(p => p.stage === 'New').map(p => p.id)
         if (newProspectIds.length > 0) {
           await bulkUpdate(newProspectIds, { stage: 'Contacted' })
@@ -147,6 +161,8 @@ export function ProspectSendMessageDialog({
 
   if (allProspects.length === 0) return null
 
+  const emailBlocked = channel === 'email' && smtpConfigured === false
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -174,6 +190,10 @@ export function ProspectSendMessageDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+
+          {/* SMTP warning */}
+          {emailBlocked && <SmtpRequiredBanner />}
+
           <Field>
             <FieldLabel>Use template</FieldLabel>
             <Select value={templateId || 'none'} onValueChange={(v) => setTemplateId(v === 'none' ? '' : v)}>
@@ -185,7 +205,7 @@ export function ProspectSendMessageDialog({
                 ))}
               </SelectContent>
             </Select>
-            <FieldDescription>Use {`{{contact_name}}`} — replaced with each prospect's name.</FieldDescription>
+            <FieldDescription>Use {`{{contact_name}}`} — replaced with each prospect&apos;s name.</FieldDescription>
           </Field>
 
           <Field>
@@ -224,7 +244,7 @@ export function ProspectSendMessageDialog({
             />
           </Field>
 
-          {channel === 'email' && (
+          {channel === 'email' && !emailBlocked && (
             <p className="text-xs text-muted-foreground">
               Emails sent via your SMTP config in Settings → Email configuration.
             </p>
@@ -233,7 +253,10 @@ export function ProspectSendMessageDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSend} disabled={sending || (channel === 'email' && withEmail.length === 0)}>
+          <Button
+            onClick={handleSend}
+            disabled={sending || emailBlocked || (channel === 'email' && withEmail.length === 0)}
+          >
             {sending ? (
               <><Loader2 className="size-4 mr-2 animate-spin" />Sending...</>
             ) : channel === 'email' ? (

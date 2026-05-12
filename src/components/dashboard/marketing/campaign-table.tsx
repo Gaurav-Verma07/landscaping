@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { formatDistanceToNow, format } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { IconDotsVertical } from '@tabler/icons-react'
-import { Send, Loader2 } from 'lucide-react'
+import { Send, Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -18,10 +18,15 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useMarketingStore } from '@/lib/stores'
+import { getProfile } from '@/lib/actions/profile'
 import {
   AUDIENCE_TYPE_LABELS, CAMPAIGN_STATUS_LABELS, type Campaign,
 } from '@/types/marketing-types'
+import Link from 'next/link'
 
 interface CampaignTableProps {
   campaigns: Campaign[]
@@ -41,6 +46,18 @@ export function CampaignTable({ campaigns, onEdit, onViewSends }: CampaignTableP
   const { deleteCampaign, sendCampaign, loading: marketLoading } = useMarketingStore()
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [smtpConfigured, setSmtpConfigured] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    getProfile().then((data) => {
+      if (data) {
+        const p = data as any
+        setSmtpConfigured(!!(p.smtp_host && p.smtp_email && p.smtp_password))
+      } else {
+        setSmtpConfigured(false)
+      }
+    }).catch(() => setSmtpConfigured(false))
+  }, [])
 
   const handleSend = async (campaign: Campaign) => {
     if (campaign.status === 'sent') return
@@ -65,11 +82,11 @@ export function CampaignTable({ campaigns, onEdit, onViewSends }: CampaignTableP
     setDeleteId(null)
   }
 
-  if(marketLoading){
+  if (marketLoading) {
     return (
       <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
-      Loading campaigns...
-    </div>
+        Loading campaigns...
+      </div>
     )
   }
 
@@ -81,8 +98,10 @@ export function CampaignTable({ campaigns, onEdit, onViewSends }: CampaignTableP
     )
   }
 
+  const smtpBlocked = smtpConfigured === false
+
   return (
-    <>
+    <TooltipProvider>
       <Table>
         <TableHeader>
           <TableRow>
@@ -128,16 +147,40 @@ export function CampaignTable({ campaigns, onEdit, onViewSends }: CampaignTableP
                       <DropdownMenuItem onClick={() => onViewSends(c)}>View sends</DropdownMenuItem>
                     )}
                     {c.status !== 'sent' && c.status !== 'sending' && (
-                      <DropdownMenuItem
-                        onClick={() => handleSend(c)}
-                        disabled={sendingId === c.id}
-                      >
-                        {sendingId === c.id ? (
-                          <><Loader2 className="size-4 mr-2 animate-spin" />Sending...</>
-                        ) : (
-                          <><Send className="size-4 mr-2" />Send now</>
-                        )}
-                      </DropdownMenuItem>
+                      smtpBlocked ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            {/* DropdownMenuItem doesn't forward refs cleanly when disabled, wrap in span */}
+                            <span>
+                              <DropdownMenuItem disabled className="text-muted-foreground">
+                                <AlertTriangle className="size-4 mr-2 text-amber-500" />
+                                Send now
+                              </DropdownMenuItem>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-[220px] text-center">
+                            Email not configured.{' '}
+                            <Link
+                              href="/dashboard/management/settings#email_config"
+                              className="underline underline-offset-2"
+                            >
+                              Set up SMTP in Settings
+                            </Link>{' '}
+                            to send campaigns.
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <DropdownMenuItem
+                          onClick={() => handleSend(c)}
+                          disabled={sendingId === c.id}
+                        >
+                          {sendingId === c.id ? (
+                            <><Loader2 className="size-4 mr-2 animate-spin" />Sending...</>
+                          ) : (
+                            <><Send className="size-4 mr-2" />Send now</>
+                          )}
+                        </DropdownMenuItem>
+                      )
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -169,6 +212,6 @@ export function CampaignTable({ campaigns, onEdit, onViewSends }: CampaignTableP
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </TooltipProvider>
   )
 }

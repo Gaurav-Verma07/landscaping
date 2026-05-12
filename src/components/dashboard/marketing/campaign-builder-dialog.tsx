@@ -21,10 +21,12 @@ import {
 } from '@/components/ui/collapsible'
 import { Badge } from '@/components/ui/badge'
 import { useMarketingStore } from '@/lib/stores'
+import { getProfile } from '@/lib/actions/profile'
 import {
   AUDIENCE_TYPE_LABELS, type Campaign, type AudienceType, type AudienceFilters,
 } from '@/types/marketing-types'
 import { SEASONAL_TEMPLATES, type SeasonalTemplate } from '@/utils/marketing-templates'
+import { SmtpRequiredBanner } from '@/components/ui/smtp-required-banner'
 
 interface CampaignBuilderDialogProps {
   open: boolean
@@ -45,8 +47,9 @@ export function CampaignBuilderDialog({ open, onOpenChange, campaign }: Campaign
   const [aiPrompt, setAiPrompt] = useState('')
   const [generatingAi, setGeneratingAi] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [smtpConfigured, setSmtpConfigured] = useState<boolean | null>(null)
 
-  // Scheduling — false = send immediately, true = schedule for later
+  // Scheduling
   const [scheduleEnabled, setScheduleEnabled] = useState(false)
   const [scheduledDate, setScheduledDate] = useState('')
   const [scheduledTime, setScheduledTime] = useState('09:00')
@@ -55,34 +58,44 @@ export function CampaignBuilderDialog({ open, onOpenChange, campaign }: Campaign
   const [templatesOpen, setTemplatesOpen] = useState(false)
 
   useEffect(() => {
-    if (open) {
-      if (campaign) {
-        setName(campaign.name)
-        setAudienceType(campaign.audienceType)
-        setSubject(campaign.subject)
-        setBody(campaign.body)
-        if (campaign.scheduledAt) {
-          setScheduleEnabled(true)
-          const d = new Date(campaign.scheduledAt)
-          setScheduledDate(format(d, 'yyyy-MM-dd'))
-          setScheduledTime(format(d, 'HH:mm'))
-        } else {
-          setScheduleEnabled(false)
-          setScheduledDate('')
-          setScheduledTime('09:00')
-        }
+    if (!open) return
+
+    // Check SMTP on open
+    getProfile().then((data) => {
+      if (data) {
+        const p = data as any
+        setSmtpConfigured(!!(p.smtp_host && p.smtp_email && p.smtp_password))
       } else {
-        setName('')
-        setAudienceType('all_customers')
-        setSubject('')
-        setBody('')
+        setSmtpConfigured(false)
+      }
+    }).catch(() => setSmtpConfigured(false))
+
+    if (campaign) {
+      setName(campaign.name)
+      setAudienceType(campaign.audienceType)
+      setSubject(campaign.subject)
+      setBody(campaign.body)
+      if (campaign.scheduledAt) {
+        setScheduleEnabled(true)
+        const d = new Date(campaign.scheduledAt)
+        setScheduledDate(format(d, 'yyyy-MM-dd'))
+        setScheduledTime(format(d, 'HH:mm'))
+      } else {
         setScheduleEnabled(false)
         setScheduledDate('')
         setScheduledTime('09:00')
       }
-      setAiPrompt('')
-      setTemplatesOpen(false)
+    } else {
+      setName('')
+      setAudienceType('all_customers')
+      setSubject('')
+      setBody('')
+      setScheduleEnabled(false)
+      setScheduledDate('')
+      setScheduledTime('09:00')
     }
+    setAiPrompt('')
+    setTemplatesOpen(false)
   }, [open, campaign])
 
   const applyTemplate = (t: SeasonalTemplate) => {
@@ -166,6 +179,8 @@ Keep the body professional, friendly, and under 150 words. Use {{contact_name}} 
   }
 
   const minDate = format(new Date(), 'yyyy-MM-dd')
+  // Campaigns are email-only — block send/schedule when SMTP not configured
+  const smtpBlocked = smtpConfigured === false
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -178,6 +193,9 @@ Keep the body professional, friendly, and under 150 words. Use {{contact_name}} 
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+
+          {/* SMTP warning — shown at the top so it's impossible to miss */}
+          {smtpBlocked && <SmtpRequiredBanner />}
 
           {/* Seasonal templates */}
           <Collapsible open={templatesOpen} onOpenChange={setTemplatesOpen}>
@@ -277,57 +295,57 @@ Keep the body professional, friendly, and under 150 words. Use {{contact_name}} 
               className="resize-none font-mono text-sm"
             />
             <FieldDescription>
-              Use {`{{contact_name}}`} — replaced with each recipient's name when sent.
+              Use {`{{contact_name}}`} — replaced with each recipient&apos;s name when sent.
             </FieldDescription>
           </Field>
 
         </div>
 
-          {/* Schedule */}
-          <div className="rounded-lg border p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="flex items-center gap-2 text-sm font-medium">
-                <Calendar className="size-4" />
-                Schedule for later
-              </Label>
-              <Switch
-                checked={scheduleEnabled}
-                onCheckedChange={setScheduleEnabled}
-              />
-            </div>
-            {scheduleEnabled ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field>
-                  <FieldLabel>Date</FieldLabel>
-                  <Input
-                    type="date"
-                    value={scheduledDate}
-                    min={minDate}
-                    onChange={e => setScheduledDate(e.target.value)}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel>Time</FieldLabel>
-                  <Input
-                    type="time"
-                    value={scheduledTime}
-                    onChange={e => setScheduledTime(e.target.value)}
-                  />
-                </Field>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                Off — campaign will send immediately when you click Send.
-              </p>
-            )}
+        {/* Schedule */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="flex items-center gap-2 text-sm font-medium">
+              <Calendar className="size-4" />
+              Schedule for later
+            </Label>
+            <Switch
+              checked={scheduleEnabled}
+              onCheckedChange={setScheduleEnabled}
+            />
           </div>
+          {scheduleEnabled ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field>
+                <FieldLabel>Date</FieldLabel>
+                <Input
+                  type="date"
+                  value={scheduledDate}
+                  min={minDate}
+                  onChange={e => setScheduledDate(e.target.value)}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Time</FieldLabel>
+                <Input
+                  type="time"
+                  value={scheduledTime}
+                  onChange={e => setScheduledTime(e.target.value)}
+                />
+              </Field>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Off — campaign will send immediately when you click Send.
+            </p>
+          )}
+        </div>
 
         <DialogFooter className="gap-2 flex-wrap">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button variant="outline" onClick={() => handleSave(true)} disabled={saving}>
             Save as draft
           </Button>
-          <Button onClick={() => handleSave(false)} disabled={saving}>
+          <Button onClick={() => handleSave(false)} disabled={saving || smtpBlocked}>
             {saving
               ? <><Loader2 className="size-4 mr-2 animate-spin" />Saving...</>
               : scheduleEnabled
