@@ -1,6 +1,8 @@
 # Landscaping Operations & AI Office Platform
 
-AI-powered landscaping business management software. CRM, project management, quoting, invoicing, scheduling, crew, equipment, communications, and AI office assistant.
+AI-powered landscaping business management software. CRM, project management, quoting, invoicing, scheduling, crew, equipment, communications, and AI office assistant. 
+
+Client guidelines: [here](./docs/client_readMe.md) 
 
 ## Stack
 
@@ -33,6 +35,7 @@ AI-powered landscaping business management software. CRM, project management, qu
      - `Project URL`
      - `anon public` key
      - `service_role` key
+     - `publishable_key` key
 
 3. **Environment variables**
 
@@ -47,11 +50,25 @@ AI-powered landscaping business management software. CRM, project management, qu
    GEOAPIFY_API_KEY=geoapify-api-key
    CRON_SECRET=a-random-strong-password
 
+   # AI provider — anthropic | openai | gemini (default: anthropic)
+   AI_PROVIDER=gemini
+
+   # API keys — only the active provider's key is required
+   ANTHROPIC_API_KEY=sk-ant-...
+   OPENAI_API_KEY=sk-...
+   GEMINI_API_KEY=AIza...
+
+   # Optional — override the default model for the active provider
+   # AI_MODEL=gemini-2.0-flash
+
    # ElevenLabs (optional, for voice/agent features)
    NEXT_PUBLIC_ELEVENLABS_AGENT_ID=your-agent-id
    ```
+   or run `cp .env.example .env.local`
 
    > For lead generation API setup instructions, see [lead_readMe.md](./docs/lead_readMe.md)
+
+   > For ai integration API setup instructions, see [ai_integration_readMe.md](./docs/ai_integration_readMe.md)
 
 
 4. **Install Supabase CLI**
