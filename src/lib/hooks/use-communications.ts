@@ -18,6 +18,7 @@ import type {
   Communication, MessageTemplate, AutomationRule,
   FollowUpSequence, ScheduledMessage, AutomationTrigger,
 } from '@/types/communication-types'
+import { useLogAudit } from '@/lib/hooks/use-audit'
 
 export const communicationKeys = {
   communications: ['communications'] as const,
@@ -53,9 +54,14 @@ export function useScheduledMessages() {
 
 export function useAddCommunication() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (comm: Omit<Communication, 'id'>) => addCommunicationAction(comm),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.communications }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.communications })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'communication_sent', entityType: 'communication', entityId: id, details: `${variables.channel} to ${variables.contactName}` })
+    },
   })
 }
 
@@ -79,20 +85,32 @@ export function useMarkRead() {
 
 export function useAddTemplate() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (t: Omit<MessageTemplate, 'id' | 'updatedAt'>) => addTemplateAction(t),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.templates }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.templates })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'communication_template_created', entityType: 'template', entityId: id, details: variables.name })
+    },
   })
 }
+
 export function useUpdateTemplate() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({ id, t }: { id: string; t: Partial<MessageTemplate> }) => updateTemplateAction(id, t),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.templates }),
+    onSuccess: (_result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.templates })
+      void logAudit.mutateAsync({ action: 'communication_template_updated', entityType: 'template', entityId: variables.id })
+    },
   })
 }
+
 export function useDeleteTemplate() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (id: string) => deleteTemplateAction(id),
     onMutate: async (id) => {
@@ -105,26 +123,41 @@ export function useDeleteTemplate() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(communicationKeys.templates, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: communicationKeys.templates }),
+    onSettled: (_result, _error, id) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.templates })
+      void logAudit.mutateAsync({ action: 'communication_template_deleted', entityType: 'template', entityId: id })
+    },
   })
 }
 
 export function useAddRule() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (r: Omit<AutomationRule, 'id' | 'createdAt'>) => addRuleAction(r),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.rules }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.rules })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'communication_rule_created', entityType: 'rule', entityId: id, details: variables.name })
+    },
   })
 }
+
 export function useUpdateRule() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({ id, r }: { id: string; r: Partial<AutomationRule> }) => updateRuleAction(id, r),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.rules }),
+    onSuccess: (_result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.rules })
+      void logAudit.mutateAsync({ action: 'communication_rule_updated', entityType: 'rule', entityId: variables.id })
+    },
   })
 }
+
 export function useDeleteRule() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (id: string) => deleteRuleAction(id),
     onMutate: async (id) => {
@@ -137,26 +170,37 @@ export function useDeleteRule() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(communicationKeys.rules, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: communicationKeys.rules }),
+    onSettled: (_result, _error, id) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.rules })
+      void logAudit.mutateAsync({ action: 'communication_rule_deleted', entityType: 'rule', entityId: id })
+    },
   })
 }
 
 export function useAddSequence() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (s: Omit<FollowUpSequence, 'id' | 'createdAt'>) => addSequenceAction(s),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.sequences }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.sequences })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'communication_sequence_created', entityType: 'sequence', entityId: id, details: variables.name })
+    },
   })
 }
+
 export function useUpdateSequence() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, s }: { id: string; s: Partial<FollowUpSequence> }) => updateSequenceAction(id, s),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.sequences }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: communicationKeys.sequences }),
   })
 }
+
 export function useDeleteSequence() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (id: string) => deleteSequenceAction(id),
     onMutate: async (id) => {
@@ -169,7 +213,10 @@ export function useDeleteSequence() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(communicationKeys.sequences, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: communicationKeys.sequences }),
+    onSettled: (_result, _error, id) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.sequences })
+      void logAudit.mutateAsync({ action: 'communication_sequence_deleted', entityType: 'sequence', entityId: id })
+    },
   })
 }
 
@@ -177,9 +224,10 @@ export function useAddScheduledMessage() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (s: Omit<ScheduledMessage, 'id' | 'createdAt'>) => addScheduledMessageAction(s),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.scheduled }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: communicationKeys.scheduled }),
   })
 }
+
 export function useUpdateScheduledStatus() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -197,15 +245,18 @@ export function useUpdateScheduledStatus() {
     },
   })
 }
+
 export function useRunDueScheduledMessages() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => runDueAction(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.scheduled }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: communicationKeys.scheduled }),
   })
 }
+
 export function useTriggerAutomation() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({ trigger, opts }: {
       trigger: AutomationTrigger
@@ -214,7 +265,10 @@ export function useTriggerAutomation() {
         contactPhone?: string; extras?: { invoice_number?: string; due_date?: string; date?: string; time?: string }
       }
     }) => triggerAutomationAction(trigger, opts),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: communicationKeys.communications }),
+    onSuccess: (_result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: communicationKeys.communications })
+      void logAudit.mutateAsync({ action: 'automation_triggered', entityType: 'automation', entityId: variables.opts.contactId, details: `Trigger: ${variables.trigger} for ${variables.opts.contactName}` })
+    },
   })
 }
 

@@ -13,9 +13,9 @@ import {
   createTimeEntry as createTimeEntryAction,
   updateTimeEntry as updateTimeEntryAction,
   deleteTimeEntry as deleteTimeEntryAction,
-  supervisorOverride as supervisorOverrideAction,
 } from '@/lib/actions/labor'
 import type { Employee, TimeEntry, CreateEmployeeData, CreateTimeEntryData } from '@/types/labor-types'
+import { useLogAudit } from '@/lib/hooks/use-audit'
 
 export const laborKeys = {
   employees: ['employees'] as const,
@@ -33,23 +33,33 @@ export function useEmployees() {
 
 export function useCreateEmployee() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (data: CreateEmployeeData) => createEmployeeAction(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: laborKeys.employees }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: laborKeys.employees })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'employee_created', entityType: 'employee', entityId: id, details: variables.name })
+    },
   })
 }
 
 export function useUpdateEmployee() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateEmployeeData> }) =>
       updateEmployeeAction(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: laborKeys.employees }),
+    onSuccess: (_result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: laborKeys.employees })
+      void logAudit.mutateAsync({ action: 'employee_updated', entityType: 'employee', entityId: variables.id })
+    },
   })
 }
 
 export function useDeleteEmployee() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (id: string) => deleteEmployeeAction(id),
     onMutate: async (id) => {
@@ -63,16 +73,13 @@ export function useDeleteEmployee() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(laborKeys.employees, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: laborKeys.employees }),
+    onSettled: (_result, _error, id) => {
+      void queryClient.invalidateQueries({ queryKey: laborKeys.employees })
+      void logAudit.mutateAsync({ action: 'employee_deleted', entityType: 'employee', entityId: id })
+    },
   })
 }
 
-//Time Entry Queries
-
-/**
- * All currently-clocked-in entries for the org.
- * Refreshes every 30 s so clock-in badges stay accurate without a manual reload.
- */
 export function useActiveTimeEntries() {
   return useQuery({
     queryKey: laborKeys.activeEntries,
@@ -81,10 +88,6 @@ export function useActiveTimeEntries() {
   })
 }
 
-/**
- * Full time-entry history for one employee.
- * Only fetches when an employeeId is provided (drives the log panel in CrewWorkspace).
- */
 export function useTimeEntriesByEmployee(employeeId: string | null) {
   return useQuery({
     queryKey: laborKeys.timeEntriesByEmployee(employeeId ?? ''),
@@ -93,10 +96,9 @@ export function useTimeEntriesByEmployee(employeeId: string | null) {
   })
 }
 
-//Time entry mutations
-
 export function useClockIn() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({
       employeeId,
@@ -108,28 +110,26 @@ export function useClockIn() {
       employeeId: string
       projectId: string
       gpsVerified?: boolean
-      gpsData?: {
-        lat: number
-        lng: number
-        accuracyMeters: number
-        distanceMeters: number | null
-      }
+      gpsData?: { lat: number; lng: number; accuracyMeters: number; distanceMeters: number | null }
       notes?: string
     }) => clockInAction(employeeId, projectId, gpsVerified, gpsData, notes),
-    onSuccess: () => {
+    onSuccess: (_result, variables) => {
       void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries })
       void queryClient.invalidateQueries({ queryKey: laborKeys.activeEntries })
+      void logAudit.mutateAsync({ action: 'employee_clocked_in', entityType: 'employee', entityId: variables.employeeId, details: `Project: ${variables.projectId}` })
     },
   })
 }
 
 export function useClockOut() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (timeEntryId: string) => clockOutAction(timeEntryId),
-    onSuccess: () => {
+    onSuccess: (_result, timeEntryId) => {
       void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries })
       void queryClient.invalidateQueries({ queryKey: laborKeys.activeEntries })
+      void logAudit.mutateAsync({ action: 'employee_clocked_out', entityType: 'employee', entityId: timeEntryId })
     },
   })
 }
@@ -138,7 +138,7 @@ export function useSupervisorOverride() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ timeEntryId, reason }: { timeEntryId: string; reason: string }) =>
-      supervisorOverrideAction(timeEntryId, reason),
+      clockOutAction(timeEntryId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: laborKeys.activeEntries })
       void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries })
@@ -162,7 +162,7 @@ export function useUpdateTimeEntry() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateTimeEntryData> }) =>
       updateTimeEntryAction(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries }),
   })
 }
 
@@ -181,7 +181,7 @@ export function useDeleteTimeEntry() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(laborKeys.timeEntries, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries }),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: laborKeys.timeEntries }),
   })
 }
 
@@ -205,13 +205,11 @@ export function useLaborStore() {
 
   return {
     employees,
-    // timeEntries are loaded per-employee on demand — always empty here
     timeEntries: [] as TimeEntry[],
     loading,
 
     getEmployee: (id: string) => employees.find((e) => e.id === id),
 
-    /** Now backed by real data from useActiveTimeEntries */
     getActiveTimeEntry: (employeeId: string) =>
       activeEntries.find((t) => t.employeeId === employeeId) ?? null,
 

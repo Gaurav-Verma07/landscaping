@@ -12,6 +12,7 @@ import {
   bulkUpdateProspects,
 } from '@/lib/actions/outreach'
 import type { OutreachProspect, OutreachStage } from '@/types/outreach-types'
+import { useLogAudit } from '@/lib/hooks/use-audit'
 
 export const outreachKeys = {
   all: ['prospects'] as const,
@@ -26,24 +27,34 @@ export function useProspects() {
 
 export function useCreateProspect() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (input: Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>) =>
       createAction(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: outreachKeys.all }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: outreachKeys.all })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'prospect_created', entityType: 'prospect', entityId: id, details: variables.name })
+    },
   })
 }
 
 export function useCreateProspects() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (inputs: Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>[]) =>
       createProspectsAction(inputs),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: outreachKeys.all }),
+    onSuccess: (_result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: outreachKeys.all })
+      void logAudit.mutateAsync({ action: 'prospect_created', entityType: 'prospect', entityId: 'bulk', details: `${variables.length} prospects imported` })
+    },
   })
 }
 
 export function useUpdateProspect() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({
       id,
@@ -52,12 +63,16 @@ export function useUpdateProspect() {
       id: string
       patch: Partial<Omit<OutreachProspect, 'id' | 'createdAt' | 'updatedAt'>>
     }) => updateAction(id, patch),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: outreachKeys.all }),
+    onSuccess: (_result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: outreachKeys.all })
+      void logAudit.mutateAsync({ action: 'prospect_updated', entityType: 'prospect', entityId: variables.id })
+    },
   })
 }
 
 export function useDeleteProspect() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (id: string) => deleteAction(id),
     onMutate: async (id) => {
@@ -71,16 +86,19 @@ export function useDeleteProspect() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(outreachKeys.all, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: outreachKeys.all }),
+    onSettled: (_result, _error, id) => {
+      void queryClient.invalidateQueries({ queryKey: outreachKeys.all })
+      void logAudit.mutateAsync({ action: 'prospect_deleted', entityType: 'prospect', entityId: id })
+    },
   })
 }
 
 export function useMoveProspectStage() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({ id, stage }: { id: string; stage: OutreachStage }) =>
       moveStageAction(id, stage),
-    // Optimistic update — stage change visible instantly
     onMutate: async ({ id, stage }) => {
       await queryClient.cancelQueries({ queryKey: outreachKeys.all })
       const previous = queryClient.getQueryData<OutreachProspect[]>(outreachKeys.all)
@@ -92,7 +110,10 @@ export function useMoveProspectStage() {
     onError: (_e, _vars, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(outreachKeys.all, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: outreachKeys.all }),
+    onSettled: (_result, _error, variables) => {
+      void queryClient.invalidateQueries({ queryKey: outreachKeys.all })
+      void logAudit.mutateAsync({ action: 'prospect_updated', entityType: 'prospect', entityId: variables.id, details: `Stage → ${variables.stage}` })
+    },
   })
 }
 
@@ -107,7 +128,6 @@ export function useBulkUpdateProspects() {
       if (data.notes !== undefined) dbData.notes = data.notes
       return bulkUpdateProspects(ids, dbData)
     },
-    // Optimistic update
     onMutate: async ({ ids, data }) => {
       await queryClient.cancelQueries({ queryKey: outreachKeys.all })
       const previous = queryClient.getQueryData<OutreachProspect[]>(outreachKeys.all)
@@ -119,12 +139,13 @@ export function useBulkUpdateProspects() {
     onError: (_e, _vars, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(outreachKeys.all, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: outreachKeys.all }),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: outreachKeys.all }),
   })
 }
 
 export function useBulkDeleteProspects() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (ids: string[]) => bulkDeleteProspects(ids),
     onMutate: async (ids) => {
@@ -138,7 +159,10 @@ export function useBulkDeleteProspects() {
     onError: (_e, _ids, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(outreachKeys.all, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: outreachKeys.all }),
+    onSettled: (_result, _error, ids) => {
+      void queryClient.invalidateQueries({ queryKey: outreachKeys.all })
+      void logAudit.mutateAsync({ action: 'prospect_deleted', entityType: 'prospect', entityId: 'bulk', details: `${ids.length} prospects deleted` })
+    },
   })
 }
 

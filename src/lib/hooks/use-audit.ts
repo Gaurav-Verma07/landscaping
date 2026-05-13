@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getAuditLog, logAudit as logAction, clearAuditLog as clearAction,
 } from '@/lib/actions/audit'
-import type { AuditEntry, AuditAction } from '@/types/audit-types'
+import type { AuditEntry, AuditAction, AuditEntityType } from '@/types/audit-types'
 
 export const auditKeys = {
   all: ['audit-log'] as const,
@@ -14,7 +14,7 @@ export function useAuditLog() {
   return useQuery({
     queryKey: auditKeys.all,
     queryFn: getAuditLog,
-    staleTime: 30 * 1000, // audit log refreshes every 30s
+    staleTime: 30 * 1000,
   })
 }
 
@@ -25,11 +25,10 @@ export function useLogAudit() {
       action, entityType, entityId, details,
     }: {
       action: AuditAction
-      entityType: AuditEntry['entityType']
+      entityType: AuditEntityType
       entityId: string
       details?: string
     }) => logAction(action, entityType, entityId, details ?? ''),
-    // Optimistic prepend
     onMutate: async ({ action, entityType, entityId, details = '' }) => {
       await queryClient.cancelQueries({ queryKey: auditKeys.all })
       const previous = queryClient.getQueryData<AuditEntry[]>(auditKeys.all)
@@ -45,7 +44,7 @@ export function useLogAudit() {
     onError: (_e, _vars, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(auditKeys.all, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: auditKeys.all }),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: auditKeys.all }),
   })
 }
 
@@ -67,7 +66,7 @@ export function useAuditStore() {
   return {
     entries,
     loading,
-    log: (action: AuditAction, entityType: AuditEntry['entityType'], entityId: string, details = '') =>
+    log: (action: AuditAction, entityType: AuditEntityType, entityId: string, details = '') =>
       logMutation.mutateAsync({ action, entityType, entityId, details }).then(() => {}),
     clear: () => clearMutation.mutateAsync().then(() => {}),
     refresh: () => queryClient.invalidateQueries({ queryKey: auditKeys.all }).then(() => {}),

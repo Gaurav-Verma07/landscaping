@@ -9,6 +9,7 @@ import {
   uploadDocument as uploadAction,
 } from '@/lib/actions/documents'
 import type { DocumentRecord, CreateDocumentData } from '@/types/document-types'
+import { useLogAudit } from '@/lib/hooks/use-audit'
 
 export const documentKeys = {
   all: ['documents'] as const,
@@ -23,18 +24,28 @@ export function useDocuments() {
 
 export function useCreateDocument() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (data: CreateDocumentData) => createAction(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: documentKeys.all })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'document_created', entityType: 'document', entityId: id, details: variables.name ?? '' })
+    },
   })
 }
 
 export function useUploadDocument() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({ file, meta }: { file: File; meta: Omit<CreateDocumentData, 'fileUrl'> }) =>
       uploadAction(file, meta),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: documentKeys.all })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'document_created', entityType: 'document', entityId: id, details: variables.file.name })
+    },
   })
 }
 
@@ -43,12 +54,13 @@ export function useUpdateDocument() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateDocumentData> }) =>
       updateAction(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: documentKeys.all }),
   })
 }
 
 export function useDeleteDocument() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (id: string) => deleteAction(id),
     onMutate: async (id) => {
@@ -62,7 +74,10 @@ export function useDeleteDocument() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(documentKeys.all, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: documentKeys.all }),
+    onSettled: (_result, _error, id) => {
+      void queryClient.invalidateQueries({ queryKey: documentKeys.all })
+      void logAudit.mutateAsync({ action: 'document_deleted', entityType: 'document', entityId: id })
+    },
   })
 }
 

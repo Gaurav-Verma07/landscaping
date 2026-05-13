@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import type { AuditEntry, AuditAction } from '@/types/audit-types'
+import type { AuditEntry, AuditAction, AuditEntityType } from '@/types/audit-types'
 
 const MAX_ENTRIES = 500
 
@@ -25,7 +25,7 @@ export async function getAuditLog(): Promise<AuditEntry[]> {
 
 export async function logAudit(
   action: AuditAction,
-  entityType: AuditEntry['entityType'],
+  entityType: AuditEntityType,
   entityId: string,
   details = ''
 ) {
@@ -52,7 +52,7 @@ function mapEntry(row: Record<string, unknown>): AuditEntry {
     id: row.id as string,
     timestamp: row.timestamp as string,
     action: row.action as AuditAction,
-    entityType: row.entity_type as AuditEntry['entityType'],
+    entityType: row.entity_type as AuditEntityType,
     entityId: row.entity_id as string,
     details: (row.details as string) ?? '',
     userId: (row.user_id as string) ?? undefined,

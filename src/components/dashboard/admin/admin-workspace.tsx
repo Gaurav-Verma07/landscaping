@@ -26,6 +26,70 @@ import { toast } from "sonner"
 const PAGE_SIZE = 25
 const ACTION_FILTER_ALL = "all"
 
+const ACTION_GROUPS: { label: string; actions: AuditAction[] }[] = [
+  {
+    label: "Customers",
+    actions: ["customer_created", "customer_updated", "customer_deleted"],
+  },
+  {
+    label: "Projects",
+    actions: ["project_created", "project_updated", "project_status_changed", "project_deleted"],
+  },
+  {
+    label: "Quotes & Billing",
+    actions: [
+      "quote_created", "quote_sent", "quote_accepted", "quote_rejected",
+      "contract_signed",
+      "invoice_created", "invoice_sent", "payment_recorded",
+      "material_created", "material_updated", "material_deleted",
+      "supplier_created", "supplier_updated", "supplier_deleted",
+    ],
+  },
+  {
+    label: "Appointments",
+    actions: ["appointment_created", "appointment_updated", "appointment_cancelled"],
+  },
+  {
+    label: "Equipment",
+    actions: [
+      "equipment_asset_created", "equipment_asset_updated", "equipment_asset_deleted",
+      "equipment_booking_created", "equipment_booking_updated", "equipment_booking_deleted",
+    ],
+  },
+  {
+    label: "Documents",
+    actions: ["document_created", "document_deleted"],
+  },
+  {
+    label: "Communications",
+    actions: [
+      "communication_sent",
+      "communication_template_created", "communication_template_updated", "communication_template_deleted",
+      "communication_rule_created", "communication_rule_updated", "communication_rule_deleted",
+      "communication_sequence_created", "communication_sequence_deleted",
+      "automation_triggered",
+    ],
+  },
+  {
+    label: "Outreach",
+    actions: [
+      "prospect_created", "prospect_updated", "prospect_deleted",
+      "prospect_converted", "prospect_message_sent",
+    ],
+  },
+  {
+    label: "Crew & Labor",
+    actions: [
+      "employee_created", "employee_updated", "employee_deleted",
+      "employee_clocked_in", "employee_clocked_out",
+    ],
+  },
+  {
+    label: "Marketing",
+    actions: ["campaign_created", "campaign_sent", "campaign_deleted"],
+  },
+]
+
 export function AdminWorkspace() {
   const { entries, clear, loading: auditLoading } = useAuditStore()
   const [actionFilter, setActionFilter] = useState<string>(ACTION_FILTER_ALL)
@@ -43,27 +107,13 @@ export function AdminWorkspace() {
     [filtered, pageIndex],
   )
 
-  const actions: AuditAction[] = [
-    "quote_created",
-    "quote_sent",
-    "quote_accepted",
-    "contract_signed",
-    "invoice_created",
-    "payment_recorded",
-    "project_created",
-    "project_status_changed",
-    "appointment_created",
-    "customer_created",
-    "automation_triggered",
-  ]
-
   return (
     <div className="flex flex-1 flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Admin & Audit</h1>
           <p className="text-muted-foreground text-sm">
-            Audit trail of key actions. Retention is local; clear when needed.
+            Audit trail of all actions across every module.
           </p>
         </div>
         <Button
@@ -81,15 +131,20 @@ export function AdminWorkspace() {
 
       <div className="flex flex-wrap items-center gap-2">
         <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(0) }}>
-          <SelectTrigger className="w-[200px] h-9">
+          <SelectTrigger className="w-[240px] h-9">
             <SelectValue placeholder="Filter by action" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-80">
             <SelectItem value={ACTION_FILTER_ALL}>All actions</SelectItem>
-            {actions.map((a) => (
-              <SelectItem key={a} value={a}>
-                {AUDIT_ACTION_LABELS[a]}
-              </SelectItem>
+            {ACTION_GROUPS.map((group) => (
+              <div key={group.label}>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{group.label}</div>
+                {group.actions.map((a) => (
+                  <SelectItem key={a} value={a}>
+                    {AUDIT_ACTION_LABELS[a]}
+                  </SelectItem>
+                ))}
+              </div>
             ))}
           </SelectContent>
         </Select>
@@ -97,14 +152,19 @@ export function AdminWorkspace() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Audit log</CardTitle>
+          <CardTitle className="text-base">
+            Audit log
+            {entries.length > 0 && (
+              <span className="ml-2 text-sm font-normal text-muted-foreground">({entries.length} entries)</span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          {auditLoading?
+          {auditLoading ? (
             <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
-            Loading audits...
-          </div>
-          : filtered.length !== 0 ? (
+              Loading audits...
+            </div>
+          ) : filtered.length !== 0 ? (
             <>
               <Table>
                 <TableHeader>
@@ -121,7 +181,7 @@ export function AdminWorkspace() {
                       <TableCell className="text-muted-foreground text-sm">
                         {new Date(e.timestamp).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
                       </TableCell>
-                      <TableCell>{AUDIT_ACTION_LABELS[e.action]}</TableCell>
+                      <TableCell>{AUDIT_ACTION_LABELS[e.action] ?? e.action}</TableCell>
                       <TableCell className="font-mono text-sm">{e.entityType} · {e.entityId}</TableCell>
                       <TableCell className="text-muted-foreground text-sm max-w-xs truncate">{e.details || "—"}</TableCell>
                     </TableRow>
@@ -149,8 +209,7 @@ export function AdminWorkspace() {
                 </div>
               </div>
             </>
-          )
-          : (
+          ) : (
             <p className="text-sm text-muted-foreground py-6 text-center">No audit entries yet.</p>
           )}
         </CardContent>

@@ -8,6 +8,7 @@ import { VoiceAssistantProvider } from "@/components/dashboard/layout/voice-assi
 import { VoiceAssistantDock } from "@/components/dashboard/layout/voice-assistant/voice-assistant-dock"
 import { QueryProvider } from "@/components/query-provider"
 import { AIPanelProvider } from "./ai/ai-panel-provider"
+import { redirect } from "next/navigation"
 
 export default async function DashboardLayout({
   children,
@@ -17,6 +18,9 @@ export default async function DashboardLayout({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  if (!user) {
+    redirect("/auth/login")
+  }
   const cookieStore = await cookies()
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
 

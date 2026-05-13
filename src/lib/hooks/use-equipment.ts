@@ -8,6 +8,7 @@ import {
   getConflictingBookings as getConflictingBookingsAction,
 } from '@/lib/actions/equipment'
 import type { EquipmentAsset, EquipmentBooking } from '@/types/equipment-types'
+import { useLogAudit } from '@/lib/hooks/use-audit'
 
 export const equipmentKeys = {
   assets: ['equipment-assets'] as const,
@@ -24,23 +25,33 @@ export function useBookings() {
 
 export function useCreateAsset() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (data: Omit<EquipmentAsset, 'id' | 'createdAt' | 'updatedAt'>) => createAssetAction(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: equipmentKeys.assets }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: equipmentKeys.assets })
+      const id = (result as any)?.data?.id ?? 'unknown'
+      void logAudit.mutateAsync({ action: 'equipment_asset_created', entityType: 'equipment', entityId: id, details: variables.name })
+    },
   })
 }
 
 export function useUpdateAsset() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Omit<EquipmentAsset, 'id' | 'createdAt' | 'updatedAt'>> }) =>
       updateAssetAction(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: equipmentKeys.assets }),
+    onSuccess: (_result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: equipmentKeys.assets })
+      void logAudit.mutateAsync({ action: 'equipment_asset_updated', entityType: 'equipment', entityId: variables.id })
+    },
   })
 }
 
 export function useDeleteAsset() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (id: string) => deleteAssetAction(id),
     onMutate: async (id) => {
@@ -49,7 +60,6 @@ export function useDeleteAsset() {
       queryClient.setQueryData<EquipmentAsset[]>(equipmentKeys.assets, (old) =>
         old?.filter((a) => a.id !== id) ?? []
       )
-      // Also remove bookings for this asset optimistically
       queryClient.setQueryData<EquipmentBooking[]>(equipmentKeys.bookings, (old) =>
         old?.filter((b) => b.assetId !== id) ?? []
       )
@@ -58,32 +68,43 @@ export function useDeleteAsset() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(equipmentKeys.assets, ctx.previous)
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: equipmentKeys.assets })
-      queryClient.invalidateQueries({ queryKey: equipmentKeys.bookings })
+    onSettled: (_result, _error, id) => {
+      void queryClient.invalidateQueries({ queryKey: equipmentKeys.assets })
+      void queryClient.invalidateQueries({ queryKey: equipmentKeys.bookings })
+      void logAudit.mutateAsync({ action: 'equipment_asset_deleted', entityType: 'equipment', entityId: id })
     },
   })
 }
 
 export function useCreateBooking() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (data: Omit<EquipmentBooking, 'id' | 'createdAt' | 'updatedAt'>) => createBookingAction(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: equipmentKeys.bookings }),
+    onSuccess: (result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: equipmentKeys.bookings })
+      const id = (result as any)?.data?.id ?? variables.assetId
+      void logAudit.mutateAsync({ action: 'equipment_booking_created', entityType: 'booking', entityId: id, details: `Asset: ${variables.assetId}` })
+    },
   })
 }
 
 export function useUpdateBooking() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Omit<EquipmentBooking, 'id' | 'createdAt' | 'updatedAt'>> }) =>
       updateBookingAction(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: equipmentKeys.bookings }),
+    onSuccess: (_result, variables) => {
+      void queryClient.invalidateQueries({ queryKey: equipmentKeys.bookings })
+      void logAudit.mutateAsync({ action: 'equipment_booking_updated', entityType: 'booking', entityId: variables.id })
+    },
   })
 }
 
 export function useDeleteBooking() {
   const queryClient = useQueryClient()
+  const logAudit = useLogAudit()
   return useMutation({
     mutationFn: (id: string) => deleteBookingAction(id),
     onMutate: async (id) => {
@@ -97,7 +118,10 @@ export function useDeleteBooking() {
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) queryClient.setQueryData(equipmentKeys.bookings, ctx.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: equipmentKeys.bookings }),
+    onSettled: (_result, _error, id) => {
+      void queryClient.invalidateQueries({ queryKey: equipmentKeys.bookings })
+      void logAudit.mutateAsync({ action: 'equipment_booking_deleted', entityType: 'booking', entityId: id })
+    },
   })
 }
 
