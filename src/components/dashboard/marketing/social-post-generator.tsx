@@ -145,7 +145,7 @@ Respond ONLY with a JSON array, no markdown, no preamble:
               <Input
                 value={companyName}
                 onChange={e => setCompanyName(e.target.value)}
-                placeholder="e.g. Cosmos Landscaping"
+                placeholder="e.g. Landscaping"
               />
             </div>
           </div>

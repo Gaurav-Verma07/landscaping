@@ -19,7 +19,7 @@ export function Trust() {
               stars: 5
             },
             {
-              quote: "The best CRM for roofers, period. The mobile app makes it easy for my crews to stay updated in the field.",
+              quote: "The best CRM for landscaping, period. The mobile app makes it easy for my crews to stay updated in the field.",
               author: "Sarah Jenkins",
               role: "Operations Mgr, Skyline Construction",
               stars: 5

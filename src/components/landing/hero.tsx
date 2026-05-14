@@ -19,12 +19,12 @@ export function Hero() {
         </Badge>
         
         <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl max-w-6xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 leading-[1.1]">
-          The Roofing Operating System <br className="hidden sm:inline" />
+          The Landscaping Operating System <br className="hidden sm:inline" />
           <span className="text-foreground">Built for Growth.</span>
         </h1>
         
         <p className="mx-auto max-w-[800px] text-muted-foreground text-xl md:text-2xl leading-relaxed">
-          Streamline your entire roofing business from lead to paid. 
+          Streamline your entire landscaping business from lead to paid. 
           Automate estimates, manage crews, and track profitability in one place.
         </p>
         

@@ -1,6 +1,6 @@
 # GPS Monitoring — Feature Documentation
 
-> **Project:** Cosmos Landscaping Operations Platform  
+> **Project:** Landscaping Operations Platform  
 > **Stack:** Next.js · Supabase · Tailwind CSS · shadcn/ui · Bun  
 > **Feature status:** Shipped ✅
 

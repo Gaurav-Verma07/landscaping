@@ -48,7 +48,7 @@ export function FeaturesGrid() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-20">
           <h2 className="text-4xl font-bold tracking-tight sm:text-5xl mb-6">
-            Built for the modern roofer
+            Built for the modern landscaping
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Every tool you need to scale your business, integrated into one powerful platform.

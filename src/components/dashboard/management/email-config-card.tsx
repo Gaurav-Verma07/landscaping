@@ -204,7 +204,7 @@ export function EmailConfigCard({ canEdit }: EmailConfigCardProps) {
               id="smtp-from-name"
               value={fromName}
               onChange={(e) => setFromName(e.target.value)}
-              placeholder="e.g. Cosmos Landscaping"
+              placeholder="e.g. Landscaping"
               disabled={loading || !canEdit}
             />
           </div>

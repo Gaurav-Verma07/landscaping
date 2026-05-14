@@ -1,5 +1,5 @@
 # Role-Based Access Control — Feature Blueprint
-## Cosmos Landscaping Operations Platform
+## Landscaping Operations Platform
 
 > **Version:** 1.0 · **Date:** April 2026  
 > **Stack:** Next.js · Supabase · Tailwind CSS · shadcn/ui · TanStack Query · Bun
@@ -23,7 +23,7 @@
 
 ## 1. Overview & Goals
 
-The platform currently treats every authenticated user as a single class with full access to all modules. As Cosmos scales to real crews and supervisors operating in the field, this is both a security risk and a UX problem — crew members shouldn't see invoicing data, supervisors shouldn't be able to delete customer records, and the AI assistant must scope its tool access per caller.
+The platform currently treats every authenticated user as a single class with full access to all modules. As it scales to real crews and supervisors operating in the field, this is both a security risk and a UX problem — crew members shouldn't see invoicing data, supervisors shouldn't be able to delete customer records, and the AI assistant must scope its tool access per caller.
 
 This blueprint defines a **role-based access system** with three primary operational roles (plus the existing Admin/Owner role), maps permissions across every existing module, and specifies the database schema, server-side enforcement strategy, and UI adaptation patterns needed to implement it cleanly without breaking existing features.
 
@@ -704,7 +704,7 @@ The `CommandMenu` (Cmd+K) should only surface routes and actions the current rol
 ### Scenario 3 — Manager Creating a Quote
 
 1. Manager Alex visits a customer, takes measurements
-2. Opens Cosmos on laptop → navigates to **Customers → Smith, John**
+2. Opens app on laptop → navigates to **Customers → Smith, John**
 3. Creates a new quote with AI assistance — AI reads plant catalog and suggests line items
 4. Sends quote to customer via the platform
 5. Customer approves → Alex accepts quote → project is auto-created
@@ -884,7 +884,7 @@ A hybrid between crew and supervisor: can view project details and materials lis
 An owner can designate another `owner`-role user as a co-admin for a specific time window (e.g. while on holiday). Scoped delegation with an expiry — automatically reverts after the window. Logged in audit.
 
 **SCIM / SSO Integration**  
-For larger landscaping companies (20+ employees), integrate with Google Workspace or Microsoft Entra for SSO. Role assignments can be sourced from directory groups. A Cosmos "Supervisor" maps to an Active Directory "Field Team" group.
+For larger landscaping companies (20+ employees), integrate with Google Workspace or Microsoft Entra for SSO. Role assignments can be sourced from directory groups. A "Supervisor" maps to an Active Directory "Field Team" group.
 
 ---
 
@@ -946,4 +946,4 @@ For larger landscaping companies (20+ employees), integrate with Google Workspac
 
 ---
 
-*Blueprint v1.0 — Cosmos Platform · RBAC Feature · April 2026*
+*Blueprint v1.0  · RBAC Feature · April 2026*

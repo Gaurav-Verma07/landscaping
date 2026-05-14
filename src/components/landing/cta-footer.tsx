@@ -11,7 +11,7 @@ export function CTAFooter() {
       
       <div className="container mx-auto px-4 relative z-10">
         <h2 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl mb-8 leading-tight">
-          Bring your roofing business <br className="hidden sm:inline" /> into the future.
+          Bring your landscaping business <br className="hidden sm:inline" /> into the future.
         </h2>
         <p className="text-xl md:text-2xl text-primary-foreground/90 max-w-2xl mx-auto mb-12 leading-relaxed">
           Join the beta today and start saving time on every job.
