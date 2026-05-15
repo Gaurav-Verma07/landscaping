@@ -75,18 +75,16 @@ export function InvoicesWorkspace() {
             Deposit, progress, and final invoices. Record payments and track status.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={exportCsv}>
-          <IconFileExport className="mr-2 size-4" />
-          Export CSV
-        </Button>
-        <Button variant="outline" size="sm" onClick={exportCsv}>
-          <IconFileExport className="mr-2 size-4" />
-          Export CSV
-        </Button>
-        <Button size="sm" onClick={() => { setEditingInvoice(null); setFormOpen(true) }}>
-          <IconPlus className="mr-2 size-4" />
-          New invoice
-        </Button>
+        <div>
+          <Button variant="outline" size="sm" onClick={exportCsv} className="me-3">
+            <IconFileExport className="mr-2 size-4" />
+            Export CSV
+          </Button>
+          <Button size="sm" onClick={() => { setEditingInvoice(null); setFormOpen(true) }}>
+            <IconPlus className="mr-2 size-4" />
+            New invoice
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -181,7 +179,7 @@ export function InvoicesWorkspace() {
           )
         }):
         (
-          <Card className="border-dashed">
+           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground">
                 {invoices.length === 0 ? "No invoices yet." : "No invoices match your filters."}

@@ -20,10 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Field, FieldLabel } from "@/components/ui/field"
-import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, type DocumentRecord, type CreateDocumentData, type DocumentType } from "@/types/document-types"
+import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, type DocumentRecord, type DocumentType } from "@/types/document-types"
 import { useDocumentStore } from "@/lib/stores"
 import { useCustomerStore } from "@/lib/stores"
 import { useProjectStore } from "@/lib/stores"
+import { CustomerCombobox } from "@/components/ui/customers-combobox"
 
 function parseTags(s: string): string[] {
   return s.split(",").map((x) => x.trim()).filter(Boolean)
@@ -39,7 +40,7 @@ interface DocumentFormDialogProps {
 }
 
 export function DocumentFormDialog({ open, onOpenChange, document, defaultCustomerId, defaultProjectId, onSaved }: DocumentFormDialogProps) {
-  const { createDocument,uploadDocument, updateDocument } = useDocumentStore()
+  const { uploadDocument, updateDocument } = useDocumentStore()
   const { customers } = useCustomerStore()
   const { getProjectsByCustomerId } = useProjectStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -123,15 +124,11 @@ export function DocumentFormDialog({ open, onOpenChange, document, defaultCustom
         <form id="document-form" onSubmit={handleSubmit} className="space-y-4">
           <Field>
             <FieldLabel>Customer</FieldLabel>
-            <Select value={customerId || "none"} onValueChange={(v) => { setCustomerId(v === "none" ? "" : v); setProjectId(null) }}>
-              <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {customers.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name || c.companyName || c.emails?.[0] || '—'}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CustomerCombobox
+              customers={customers}
+              value={customerId}
+              onChange={(id) => { setCustomerId(id); setProjectId(null) }}
+            />
           </Field>
           <Field>
             <FieldLabel>Project</FieldLabel>

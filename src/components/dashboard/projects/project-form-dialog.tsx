@@ -32,6 +32,7 @@ import {
 import { useProjectStore } from "@/lib/stores"
 import { useCustomerStore } from "@/lib/stores"
 import { Loader2, MapPin, Navigation } from "lucide-react"
+import { CustomerCombobox } from "@/components/ui/customers-combobox"
 
 const FORM_ID = "project-form-dialog"
 
@@ -214,18 +215,11 @@ export function ProjectFormDialog({
               </Field>
               <Field>
                 <FieldLabel>Customer</FieldLabel>
-                <Select value={customerId} onValueChange={setCustomerId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {customers.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name || c.companyName || c.id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CustomerCombobox
+                  customers={customers}
+                  value={customerId}
+                  onChange={setCustomerId}
+                />
               </Field>
             </div>
 

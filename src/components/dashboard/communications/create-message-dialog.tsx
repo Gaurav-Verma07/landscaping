@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { applyTemplatePlaceholders } from "@/utils/utils";
 import { getProfile } from "@/lib/actions/profile";
 import { SmtpRequiredBanner } from "@/components/ui/smtp-required-banner";
+import { CustomerCombobox } from "@/components/ui/customers-combobox";
 
 interface CreateMessageDialogProps {
   open: boolean;
@@ -203,30 +204,12 @@ export function CreateMessageDialog({
           </FieldGroup>
           <FieldGroup>
             <FieldLabel>To</FieldLabel>
-            <Select
-              value={contactId || "none"}
-              onValueChange={(v) => setContactId(v === "none" ? "" : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select contact" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Select contact</SelectItem>
-                {customers.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                    {c.companyName ? ` · ${c.companyName}` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {contact && (
-              <FieldDescription>
-                {channel === "email"
-                  ? contact.emails?.[0] || "No email"
-                  : contact.phones?.[0] || "No phone"}
-              </FieldDescription>
-            )}
+            <CustomerCombobox
+              customers={customers}
+              value={contactId}
+              onChange={setContactId}
+              channel={channel}
+            />
           </FieldGroup>
           {channel === "email" && (
             <FieldGroup>

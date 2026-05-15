@@ -36,6 +36,7 @@ import { useBillingStore } from "@/lib/stores"
 import { useCustomerStore } from "@/lib/stores"
 import { useCommunicationStore } from "@/lib/stores"
 import { useAuditStore } from "@/lib/stores"
+import { CustomerCombobox } from "@/components/ui/customers-combobox"
 
 const FORM_ID = "quote-form"
 
@@ -212,18 +213,11 @@ export function QuoteFormDialog({
             <div className="grid gap-4 sm:grid-cols-2">
               <Field>
                 <FieldLabel>Customer</FieldLabel>
-                <Select value={customerId} onValueChange={setCustomerId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {customers.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name || c.companyName || c.id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CustomerCombobox
+                  customers={customers}
+                  value={customerId}
+                  onChange={setCustomerId}
+                />
               </Field>
               <Field>
                 <FieldLabel>Status</FieldLabel>
