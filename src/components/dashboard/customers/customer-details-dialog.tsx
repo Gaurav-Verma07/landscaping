@@ -95,8 +95,20 @@ export function CustomerDetailsDialog({
           <div className="space-y-2 sm:col-span-2">
             <div className="text-xs text-muted-foreground">Tags</div>
             <div className="text-sm">
-              {customer.tags?.length ? customer.tags.join(", ") : "—"}
-            </div>
+            {customer.tags?.length ?                 
+                  <div className="flex">
+                    {
+                      
+                      customer.tags.map((tag: string, index: number)=>{
+                        return(<Badge
+                        key={index}
+                        variant="secondary"
+                        className="flex items-center gap-1 px-2 py-0.5 my-1 mx-0.5 text-xs font-medium"
+                      > {tag}</Badge>)
+                      })
+                    }
+                  </div> : "—"}
+                  </div>
           </div>
         </div>
 

@@ -39,6 +39,7 @@ import {
 import { CHANNEL_LABELS } from "@/types/communication-types"
 import { formatDate, formatBytes } from "@/utils/utils"
 import { MergeCustomerModal } from "@/components/dashboard/customers/merge-customer-modal"
+import { Badge } from "@/components/ui/badge"
 
 export default function CustomerDetailPage() {
   const params = useParams()
@@ -202,8 +203,20 @@ export default function CustomerDetailPage() {
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-muted-foreground">Tags</dt>
-                <dd>
-                  {customer.tags?.length ? customer.tags.join(", ") : "—"}
+                <dd >
+                  {customer.tags?.length ?                 
+                  <div className="flex">
+                    {
+                      
+                      customer.tags.map((tag: string, index: number)=>{
+                        return(<Badge
+                        key={index}
+                        variant="secondary"
+                        className="flex items-center gap-1 px-2 py-0.5 m-1 text-xs font-medium"
+                      > {tag}</Badge>)
+})
+                    }
+                  </div> : "—"}
                 </dd>
               </div>
             </dl>

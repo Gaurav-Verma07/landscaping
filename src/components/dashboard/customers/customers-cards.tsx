@@ -75,6 +75,26 @@ function CustomerStatusBadge({ status }: { status: string }) {
   )
 }
 
+function CustomerTagPills({ tags }: { tags?: string[] }) {
+  if (!tags || tags.length === 0) return null 
+  return (
+    <div className="flex flex-wrap items-center gap-1 mt-2"
+    >
+      {tags.map((tag) => (
+        <Badge
+          key={tag}
+          variant="secondary"
+          className="px-1.5 py-0 text-[12px] font-medium capitalize"
+        >
+          {tag}
+        </Badge>
+      ))}
+
+    </div>
+  )
+}
+
+
 function CustomerCard({
   customer,
   onView,
@@ -108,6 +128,8 @@ function CustomerCard({
               {subtitle}
             </span>
           </div>
+          <CustomerTagPills tags={customer.tags} />
+
         </div>
 
         <CardAction>

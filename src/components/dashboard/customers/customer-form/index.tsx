@@ -72,7 +72,7 @@ export function CustomerForm({
       </FieldGroup>
 
       {showActions && (
-        <div className="flex gap-3">
+        <div className="flex gap-3 pt-5">
           <Button type="submit">{submitLabel}</Button>
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
