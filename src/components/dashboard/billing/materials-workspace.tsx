@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input"
 import { useBillingStore } from "@/lib/stores"
 import type { MaterialCatalogItem } from "@/types/quote-types"
 import { MaterialFormDialog } from "./material-form-dialog"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 export function MaterialsWorkspace() {
   const { materials, suppliers, deleteMaterial, loading: billsLoading } = useBillingStore()
@@ -113,7 +114,7 @@ export function MaterialsWorkspace() {
                     <TableRow key={m.id}>
                       <TableCell className="font-medium">{m.name}</TableCell>
                       <TableCell>{m.unit}</TableCell>
-                      <TableCell className="text-right">£{m.defaultPrice.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{DEFAULT_CURRENCY}{m.defaultPrice.toFixed(2)}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {m.supplierId ? (
                           <Link href="/dashboard/suppliers" className="hover:underline">

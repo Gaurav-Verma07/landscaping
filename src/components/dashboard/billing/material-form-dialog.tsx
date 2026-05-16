@@ -23,6 +23,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field"
 import type { MaterialCatalogItem } from "@/types/quote-types"
 import { useBillingStore } from "@/lib/stores"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 interface MaterialFormDialogProps {
   open: boolean
@@ -98,7 +99,7 @@ export function MaterialFormDialog({ open, onOpenChange, material, onSaved }: Ma
               <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. m², bag, tonne" />
             </Field>
             <Field>
-              <FieldLabel>Default price (£)</FieldLabel>
+              <FieldLabel>Default price ({DEFAULT_CURRENCY})</FieldLabel>
               <Input type="number" min={0} step={0.01} value={defaultPrice} onChange={(e) => setDefaultPrice(e.target.value)} />
             </Field>
           </div>

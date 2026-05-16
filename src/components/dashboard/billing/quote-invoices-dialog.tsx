@@ -21,6 +21,7 @@ import { useBillingStore } from "@/lib/stores"
 import { INVOICE_STATUS_LABELS, INVOICE_TYPE_LABELS } from "@/types/quote-types"
 import type { Quote } from "@/types/quote-types"
 import type { Invoice } from "@/types/quote-types"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 interface QuoteInvoicesDialogProps {
   open: boolean
@@ -76,7 +77,7 @@ export function QuoteInvoicesDialog({
                         {INVOICE_STATUS_LABELS[inv.status]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">£{inv.total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{DEFAULT_CURRENCY}{inv.total.toFixed(2)}</TableCell>
                     <TableCell>{inv.dueDate}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">

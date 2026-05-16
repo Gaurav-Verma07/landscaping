@@ -16,6 +16,7 @@ import { Field, FieldLabel } from "@/components/ui/field"
 import type { Invoice } from "@/types/quote-types"
 import { useBillingStore } from "@/lib/stores"
 import { useAuditStore } from "@/lib/stores"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 interface RecordPaymentDialogProps {
   open: boolean
@@ -46,11 +47,11 @@ export function RecordPaymentDialog({
     }
     const remaining = invoice.total - invoice.paidAmount
     if (amt > remaining) {
-      toast.error(`Amount cannot exceed remaining £${remaining.toFixed(2)}.`)
+      toast.error(`Amount cannot exceed remaining ${DEFAULT_CURRENCY}${remaining.toFixed(2)}.`)
       return
     }
     recordPayment(invoice.id, amt, method.trim(), reference.trim() || undefined)
-    auditLog("payment_recorded", "invoice", invoice.id, `£${amt.toFixed(2)} ${method.trim()}`)
+    auditLog("payment_recorded", "invoice", invoice.id, `${DEFAULT_CURRENCY}${amt.toFixed(2)} ${method.trim()}`)
     toast.success("Payment recorded.")
     setAmount("")
     setReference("")
@@ -68,12 +69,12 @@ export function RecordPaymentDialog({
         <DialogHeader>
           <DialogTitle>Record payment</DialogTitle>
           <DialogDescription>
-            {invoice.invoiceNumber} — Total £{invoice.total.toFixed(2)}, paid £{invoice.paidAmount.toFixed(2)}, remaining £{remaining.toFixed(2)}.
+            {invoice.invoiceNumber} — Total {DEFAULT_CURRENCY}{invoice.total.toFixed(2)}, paid {DEFAULT_CURRENCY}{invoice.paidAmount.toFixed(2)}, remaining {DEFAULT_CURRENCY}{remaining.toFixed(2)}.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <Field>
-            <FieldLabel>Amount (£)</FieldLabel>
+            <FieldLabel>Amount ({DEFAULT_CURRENCY})</FieldLabel>
             <Input
               type="number"
               min={0.01}

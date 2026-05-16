@@ -27,6 +27,7 @@ import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, INVOICE_TYPES, INVOICE_TYPE_LA
 import { InvoiceFormDialog } from "./invoice-form-dialog"
 import { RecordPaymentDialog } from "./record-payment-dialog"
 import type { Invoice } from "@/types/quote-types"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 export function InvoicesWorkspace() {
   const { invoices, deleteInvoice, loading: billsLoading } = useBillingStore()
@@ -168,8 +169,8 @@ export function InvoicesWorkspace() {
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <Badge variant="outline">{INVOICE_TYPE_LABELS[inv.type]}</Badge>
                   <Badge variant={inv.status === "paid" ? "default" : "secondary"}>{INVOICE_STATUS_LABELS[inv.status]}</Badge>
-                  <span className="text-sm font-medium">£{inv.total.toFixed(2)}</span>
-                  {inv.paidAmount > 0 && <span className="text-xs text-muted-foreground">Paid £{inv.paidAmount.toFixed(2)}</span>}
+                  <span className="text-sm font-medium">{DEFAULT_CURRENCY}{inv.total.toFixed(2)}</span>
+                  {inv.paidAmount > 0 && <span className="text-xs text-muted-foreground">Paid {DEFAULT_CURRENCY}{inv.paidAmount.toFixed(2)}</span>}
                 </div>
               </CardHeader>
               <CardContent className="pt-0 text-sm text-muted-foreground">

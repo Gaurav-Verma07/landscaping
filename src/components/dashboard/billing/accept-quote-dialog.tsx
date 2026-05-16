@@ -32,6 +32,7 @@ import {
   MILESTONE_TYPE_LABELS,
   type TimelineMilestoneType,
 } from "@/types/project-types"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 interface AcceptQuoteDialogProps {
   open: boolean
@@ -73,7 +74,7 @@ export function AcceptQuoteDialog({
         company_name: "Landscaping",
         customer_name: customerName,
         scope_summary: quote.lineItems.map((l) => l.description).join("; ") || "As per quote",
-        total: `£${quote.total.toFixed(2)}`,
+        total: `${DEFAULT_CURRENCY}${quote.total.toFixed(2)}`,
         payment_terms: "As agreed",
       }
       const defaultContent = replaceTemplateVars(
@@ -94,7 +95,7 @@ export function AcceptQuoteDialog({
           company_name: "Landscaping",
           customer_name: customer?.name || customer?.companyName || "Customer",
           scope_summary: quote.lineItems.map((l) => l.description).join("; ") || "As per quote",
-          total: `£${quote.total.toFixed(2)}`,
+          total: `${DEFAULT_CURRENCY}${quote.total.toFixed(2)}`,
           payment_terms: "As agreed",
         }
         setContent(replaceTemplateVars(tpl.content, vars))

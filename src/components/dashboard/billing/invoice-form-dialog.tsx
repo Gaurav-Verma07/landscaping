@@ -37,6 +37,7 @@ import { useCustomerStore } from "@/lib/stores"
 import { useCommunicationStore } from "@/lib/stores"
 import { useAuditStore } from "@/lib/stores"
 import { CustomerCombobox } from "@/components/ui/customers-combobox"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 const FORM_ID = "invoice-form"
 
@@ -267,7 +268,7 @@ export function InvoiceFormDialog({
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
                       {customerQuotes.map((q) => (
-                        <SelectItem key={q.id} value={q.id}>{q.quoteNumber} — £{q.total.toFixed(2)}</SelectItem>
+                        <SelectItem key={q.id} value={q.id}>{q.quoteNumber} — {DEFAULT_CURRENCY}{q.total.toFixed(2)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -387,9 +388,9 @@ export function InvoiceFormDialog({
             </div>
 
             <div className="flex justify-end gap-4 text-sm">
-              <span>Subtotal: £{subtotal.toFixed(2)}</span>
-              {taxRatePercent > 0 && <span>Tax: £{taxAmount.toFixed(2)}</span>}
-              <span className="font-semibold">Total: £{total.toFixed(2)}</span>
+              <span>Subtotal: {DEFAULT_CURRENCY}{subtotal.toFixed(2)}</span>
+              {taxRatePercent > 0 && <span>Tax: {DEFAULT_CURRENCY}{taxAmount.toFixed(2)}</span>}
+              <span className="font-semibold">Total: {DEFAULT_CURRENCY}{total.toFixed(2)}</span>
             </div>
 
             <Field>

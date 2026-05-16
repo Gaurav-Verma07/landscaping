@@ -20,6 +20,7 @@ import { ProjectSupervisorReportsSection } from "@/components/dashboard/projects
 import {  useCommunicationStore } from "@/lib/stores"
 import { toast } from "sonner"
 import { applyTemplatePlaceholders } from "@/utils/utils"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 const SUPERVISOR_PHOTO_REMINDER_STORAGE_KEY = "landscaping-v2-supervisor-photo-reminders"
 const SUPERVISOR_PHOTO_REMINDER_TEMPLATE_ID = "tpl-supervisor-photos-missing"
@@ -183,7 +184,7 @@ export default function ProjectDetailPage() {
                 <p><span className="text-muted-foreground">Property size:</span> {project.propertySize || "—"}</p>
                 <p><span className="text-muted-foreground">Estimated landscape:</span> {project.estimatedLandscapeSqFt != null ? `${project.estimatedLandscapeSqFt} sq ft` : "—"}</p>
                 <p><span className="text-muted-foreground">Remaining sq ft:</span> {project.remainingSqFt != null ? project.remainingSqFt : "—"}</p>
-                <p><span className="text-muted-foreground">Estimated property value:</span> {project.estimatedPropertyValue != null ? `£${project.estimatedPropertyValue.toLocaleString()}` : "—"}</p>
+                <p><span className="text-muted-foreground">Estimated property value:</span> {project.estimatedPropertyValue != null ? `${DEFAULT_CURRENCY}${project.estimatedPropertyValue.toLocaleString()}` : "—"}</p>
                 <p><span className="text-muted-foreground">Terrain:</span> {project.terrainType || "—"}</p>
                 {project.accessNotes && (
                   <p><span className="text-muted-foreground">Access notes:</span> {project.accessNotes}</p>

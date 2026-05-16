@@ -31,6 +31,7 @@ import { QuoteInvoicesDialog } from "./quote-invoices-dialog"
 import { InvoiceFormDialog } from "./invoice-form-dialog"
 import type { Quote } from "@/types/quote-types"
 import type { Invoice } from "@/types/quote-types"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 export function QuotesWorkspace() {
   const { quotes, deleteQuote, getInvoicesByQuoteId, loading: billsLoading } = useBillingStore()
@@ -151,7 +152,7 @@ export function QuotesWorkspace() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <Badge variant="outline">{QUOTE_STATUS_LABELS[quote.status]}</Badge>
-                  <span className="text-sm font-medium">£{quote.total.toFixed(2)}</span>
+                  <span className="text-sm font-medium">{DEFAULT_CURRENCY}{quote.total.toFixed(2)}</span>
                 </div>
               </CardHeader>
               <CardContent className="pt-0 text-sm text-muted-foreground">

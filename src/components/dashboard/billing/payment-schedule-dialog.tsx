@@ -31,6 +31,7 @@ import { Field, FieldLabel } from "@/components/ui/field"
 import type { Quote } from "@/types/quote-types"
 import { INVOICE_TYPES, type InvoiceType } from "@/types/quote-types"
 import { useBillingStore } from "@/lib/stores"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 const DEFAULT_ENTRIES = [
   { percent: 30, type: "deposit" as InvoiceType, dueOffsetDays: 0 },
@@ -100,7 +101,7 @@ export function PaymentScheduleDialog({
         <DialogHeader>
           <DialogTitle>Create payment schedule</DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Split quote {quote.quoteNumber} (total £{quote.total.toFixed(2)}) into multiple invoices with due date offsets.
+            Split quote {quote.quoteNumber} (total {DEFAULT_CURRENCY}{quote.total.toFixed(2)}) into multiple invoices with due date offsets.
           </p>
         </DialogHeader>
         <form id="payment-schedule-form" onSubmit={handleSubmit} className="space-y-4">

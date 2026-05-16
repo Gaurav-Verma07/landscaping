@@ -19,6 +19,7 @@ import { useBillingStore } from "@/lib/stores"
 import { useCustomerStore } from "@/lib/stores"
 import { INVOICE_STATUS_LABELS, INVOICE_TYPE_LABELS } from "@/types/quote-types"
 import { RecordPaymentDialog } from "@/components/dashboard/billing/record-payment-dialog"
+import { DEFAULT_CURRENCY } from "@/enums/currency-enums"
 
 export default function InvoiceDetailPage() {
   const params = useParams()
@@ -89,16 +90,16 @@ export default function InvoiceDetailPage() {
                   <TableCell>{line.description}</TableCell>
                   <TableCell className="text-right">{line.quantity}</TableCell>
                   <TableCell className="text-right">{line.unit}</TableCell>
-                  <TableCell className="text-right">£{line.unitPrice.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">£{line.amount.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{DEFAULT_CURRENCY}{line.unitPrice.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{DEFAULT_CURRENCY}{line.amount.toFixed(2)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
           <div className="flex justify-end gap-6 mt-4 text-sm">
-            <span>Subtotal: £{invoice.subtotal.toFixed(2)}</span>
-            {invoice.taxRatePercent > 0 && <span>Tax: £{invoice.taxAmount.toFixed(2)}</span>}
-            <span className="font-semibold">Total: £{invoice.total.toFixed(2)}</span>
+            <span>Subtotal: {DEFAULT_CURRENCY}{invoice.subtotal.toFixed(2)}</span>
+            {invoice.taxRatePercent > 0 && <span>Tax: {DEFAULT_CURRENCY}{invoice.taxAmount.toFixed(2)}</span>}
+            <span className="font-semibold">Total: {DEFAULT_CURRENCY}{invoice.total.toFixed(2)}</span>
           </div>
         </CardContent>
       </Card>
@@ -107,8 +108,8 @@ export default function InvoiceDetailPage() {
         <CardHeader>
           <CardTitle className="text-base">Payment</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Due {invoice.dueDate} · Paid £{invoice.paidAmount.toFixed(2)} of £{invoice.total.toFixed(2)}
-            {remaining > 0 && ` · £${remaining.toFixed(2)} remaining`}
+            Due {invoice.dueDate} · Paid {DEFAULT_CURRENCY}{invoice.paidAmount.toFixed(2)} of {DEFAULT_CURRENCY}{invoice.total.toFixed(2)}
+            {remaining > 0 && ` · {DEFAULT_CURRENCY}${remaining.toFixed(2)} remaining`}
           </p>
         </CardHeader>
         <CardContent>
@@ -118,7 +119,7 @@ export default function InvoiceDetailPage() {
             <ul className="space-y-2">
               {invoice.payments.map((p) => (
                 <li key={p.id} className="flex justify-between text-sm">
-                  <span>£{p.amount.toFixed(2)} · {p.method} · {new Date(p.paidAt).toLocaleDateString()}</span>
+                  <span>{DEFAULT_CURRENCY}{p.amount.toFixed(2)} · {p.method} · {new Date(p.paidAt).toLocaleDateString()}</span>
                   {p.reference && <span className="text-muted-foreground">{p.reference}</span>}
                 </li>
               ))}
