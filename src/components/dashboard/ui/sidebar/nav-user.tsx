@@ -158,8 +158,14 @@ export function NavUser({
                   <Bell />
                   Notifications
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={cycleTheme} disabled={!mounted}>
-                  {theme === "dark" ? <Moon /> : <Sun />}
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    cycleTheme()
+                  }}
+                  disabled={!mounted}
+                >
+                  {theme === "dark" ? <Sun /> : <Moon />}
                   Toggle theme
                 </DropdownMenuItem>
               </DropdownMenuGroup>
