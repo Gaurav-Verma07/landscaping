@@ -58,7 +58,7 @@ export function LoginForm({
                     href="/"
                     className="flex items-center justify-center gap-2 text-sm font-medium text-foreground/90 hover:text-foreground transition-colors"
                   >
-                    <Image src="/logo.png" alt="Landscaping" width={40} height={40} className="size-9 object-contain" priority />
+                    <Image src="/landscraping_logo.png" alt="Landscaping" width={40} height={40} className="size-9 object-contain" priority />
                     <span className="text-base">Landscaping</span>
                   </Link>
                   <div className="flex flex-col items-center gap-2 text-center">
@@ -116,7 +116,7 @@ export function LoginForm({
                     href="/"
                     className="flex items-center justify-center gap-2 text-sm font-medium text-foreground/90 hover:text-foreground transition-colors"
                   >
-                    <Image src="/logo.png" alt="Landscaping" width={40} height={40} className="size-9 object-contain" priority />
+                    <Image src="/landscraping_logo.png" alt="Landscaping" width={40} height={40} className="size-9 object-contain" priority />
                     <span className="text-base">Landscaping</span>
                   </Link>
                   <div className="flex flex-col items-center gap-2 text-center">
@@ -165,7 +165,7 @@ export function LoginForm({
                   href="/"
                   className="flex items-center justify-center gap-2 text-sm font-medium text-foreground/90 hover:text-foreground transition-colors"
                 >
-                  <Image src="/logo.png" alt="Landscaping" width={40} height={40} className="size-9 object-contain" priority />
+                  <Image src="/landscraping_logo.png" alt="Landscaping" width={40} height={40} className="size-9 object-contain" priority />
                   <span className="text-base">Landscaping</span>
                 </Link>
                 <div className="flex flex-col items-center gap-4 text-center py-4">

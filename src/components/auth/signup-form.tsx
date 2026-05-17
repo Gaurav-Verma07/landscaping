@@ -38,7 +38,7 @@ export function SignupForm({
                 className="flex items-center justify-center gap-2 text-sm font-medium text-foreground/90 hover:text-foreground transition-colors"
               >
                 <Image
-                  src="/logo.png"
+                  src="/landscraping_logo.png"
                   alt="Landscaping"
                   width={40}
                   height={40}

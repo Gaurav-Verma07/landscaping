@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   },
   description: "Landscaping management software.",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/landscraping_logo.png",
+    apple: "/landscraping_logo.png",
   },
   openGraph: {
     type: "website",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     description: "Landscaping management software.",
     images: [
       {
-        url: "/logo.png",
+        url: "/landscraping_logo.png",
         width: 512,
         height: 512,
         alt: "Landscaping logo",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Landscaping",
     description: "Landscaping management software.",
-    images: ["/logo.png"],
+    images: ["/landscraping_logo.png"],
   },
 };
 

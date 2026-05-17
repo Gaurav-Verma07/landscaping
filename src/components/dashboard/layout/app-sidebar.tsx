@@ -136,10 +136,10 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
     try {
       const profile = await getProfile()
       const name = profile?.team_name || 'Landscaping'
-      const logoSrc = profile?.team_logo_url || '/logo.png'
+      const logoSrc = profile?.team_logo_url || '/landscraping_logo.png'
       setTeams([{ name, logoSrc, plan: 'Enterprise' }])
     } catch {
-      setTeams([{ name: 'Landscaping', logoSrc: '/logo.png', plan: 'Enterprise' }])
+      setTeams([{ name: 'Landscaping', logoSrc: '/landscraping_logo.png', plan: 'Enterprise' }])
     }
   }, [])
 

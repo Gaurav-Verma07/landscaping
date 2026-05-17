@@ -62,7 +62,7 @@ export default function ResetPassword() {
               <form onSubmit={handleSubmit}>
                 <FieldGroup>
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Image src="/logo.png" alt="Landscaping" width={36} height={36} className="size-9 object-contain" priority />
+                    <Image src="/landscraping_logo.png" alt="Landscaping" width={36} height={36} className="size-9 object-contain" priority />
                     <span className="text-base font-medium">Landscaping</span>
                   </div>
                   <div className="flex flex-col items-center gap-1 text-center mb-2">

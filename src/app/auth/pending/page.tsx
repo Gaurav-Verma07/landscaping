@@ -14,7 +14,7 @@ export default function PendingPage() {
           <Link href="/" className="flex items-center gap-2 self-center font-medium">
             <div className="flex aspect-square size-9 items-center justify-center rounded-md border bg-transparent">
               <Image
-                src="/logo.png"
+                src="/landscraping_logo.png"
                 alt="Landscaping"
                 width={36}
                 height={36}

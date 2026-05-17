@@ -21,7 +21,7 @@ export default async function Home() {
           <div className="flex items-center gap-2">
             <div className="flex aspect-square size-11 items-center justify-center rounded-lg border bg-transparent">
               <Image
-                src="/logo-bg.jpeg"
+                src="/landscraping_logo.png"
                 alt="Landscaping"
                 width={44}
                 height={44}
