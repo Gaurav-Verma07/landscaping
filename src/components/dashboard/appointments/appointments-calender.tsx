@@ -33,8 +33,8 @@ interface AppointmentCalendarViewProps {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const HOUR_HEIGHT = 64 // px per hour
-const DAY_START   = 7  // 07:00
-const DAY_END     = 20 // 20:00
+const DAY_START   = 0  // 07:00
+const DAY_END     = 24 // 20:00
 const TOTAL_HOURS = DAY_END - DAY_START
 
 function addDays(date: Date, n: number) {
