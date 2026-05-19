@@ -27,6 +27,7 @@ import { useAppointmentStore } from "@/lib/stores"
 import { useCustomerStore } from "@/lib/stores"
 import { useProjectStore } from "@/lib/stores"
 import { useCommunicationStore } from "@/lib/stores"
+import { CustomerCombobox } from "@/components/ui/customers-combobox"
 
 interface AppointmentFormDialogProps {
   open: boolean
@@ -178,18 +179,11 @@ export function AppointmentFormDialog({
         <form id="appointment-form" onSubmit={handleSubmit} className="space-y-4">
           <Field>
             <FieldLabel>Customer *</FieldLabel>
-            <Select value={customerId} onValueChange={(v) => { setCustomerId(v); setProjectId(null) }} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Select customer" />
-              </SelectTrigger>
-              <SelectContent>
-                {customers.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name || c.companyName || c.emails?.[0] || '—'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <CustomerCombobox
+                  customers={customers}
+                  value={customerId}
+                  onChange={setCustomerId}
+                />
           </Field>
           <Field>
             <FieldLabel>Project</FieldLabel>

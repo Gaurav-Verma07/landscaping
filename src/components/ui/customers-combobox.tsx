@@ -61,7 +61,7 @@ export function CustomerCombobox({
       <Input
         value={displayValue}
         onChange={handleChange}
-        onFocus={() => setOpen(true)}
+        onClick={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder={placeholder}
         autoComplete="off"
